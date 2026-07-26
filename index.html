@@ -344,28 +344,28 @@ function closeModal(){document.getElementById("room-modal").classList.remove("op
 function doItemAction(act,roomId){
 if(S.gameOver)return;
 switch(act){
-case"foyer_letter":addModalText("你捡起一封信："...仪式将于满月之夜完成...钥匙碎片散落在宅邸各处...他就在下面等着..."信纸在你手中碎裂。");S.events.foyer_letter=true;break;
+case"foyer_letter":addModalText("你捡起一封信：“...仪式将于满月之夜完成...钥匙碎片散落在宅邸各处...他就在下面等着...”信纸在你手中碎裂。");S.events.foyer_letter=true;break;
 case"foyer_light":addModalText("你抬头凝视吊灯。水晶中折射出不属此世的颜色——倒影中有一张不属于你的脸。");S.sanity=Math.max(0,S.sanity-2);break;
 case"living_portrait":if(!S.events.living_portrait){addModalText("你走近肖像。画中男人穿着19世纪礼服。凝视他的眼睛时——他眨了眨眼。你猛地后退，再看时画中人已恢复原状。");S.events.living_portrait=true;S.sanity=Math.max(0,S.sanity-3);pt(300,"square",0.2,0.1)}else{addModalText("你避开了与肖像的目光接触。它还在看着你。")}break;
 case"living_gramophone":if(!S.events.living_gramophone){addModalText("留声机发出刺耳杂音，扭曲的华尔兹响起，夹杂着低语、哭泣、笑声。唱针自动抬起，音乐戛然而止。");S.events.living_gramophone=true;pt(180,"triangle",2,0.04)}else{addModalText("留声机不再响应。唱片似乎消失了。")}break;
 case"living_fire":if(!S.events.living_fire){addModalText("你拨开灰烬，找到一个烧焦的小盒子，里面有一片钥匙碎片。");S.pieces++;S.events.living_fire=true;S.inventory.push("钥匙碎片("+S.pieces+"/4)");toast("获得钥匙碎片！("+S.pieces+"/4)")}else{addModalText("灰烬中什么也没有了。")}break;
 case"kitchen_key":if(S.inventory.indexOf("铁钥匙")<0){S.inventory.push("铁钥匙");S.events.iron_key=true;addModalText("你拿起了沉重的铁钥匙。它冰冷刺骨，刻着奇怪的符号。地下室的门现在可以打开了。");toast("获得铁钥匙！地下室已解锁")}else{addModalText("你已经拿走了铁钥匙。")}break;
-case"kitchen_cabinet":addModalText("架子上刻着："他在地下室。不要下去。他在地下室。求你不要下去。他...欢迎你..."最后几个字的笔迹变得扭曲而兴奋。");S.events.kitchen_cabinet=true;break;
+case"kitchen_cabinet":addModalText("架子上刻着：“他在地下室。不要下去。他在地下室。求你不要下去。他...欢迎你...”最后几个字的笔迹变得扭曲而兴奋。");S.events.kitchen_cabinet=true;break;
 case"dining_candle":if(!S.candle){S.candle=true;addModalText("你点燃蜡烛，温暖的光芒驱散了部分黑暗。现在你能看到更细微的细节了。");S.sanity=Math.min(100,S.sanity+5);pt(440,"sine",0.5,0.03)}else{addModalText("蜡烛已在燃烧。蜡油滴落成诡异的形状。")}break;
 case"dining_mirror":if(!S.events.dining_mirror){addModalText("你擦去灰尘。镜中的你疲惫苍白——但当你准备移开目光时，镜中的倒影对你微笑了。不是你。它缓缓举起手，指向你身后的门。");S.events.dining_mirror=true;S.sanity=Math.max(0,S.sanity-6);pt(500,"sawtooth",0.3,0.1)}else{addModalText("你不敢再看那面镜子了。")}break;
 case"dining_chair":if(!S.events.dining_chair){addModalText("那把拉出的椅子上有件叠好的衣服——和肖像画中的一样。口袋里有一片温热的钥匙碎片。");S.pieces++;S.events.dining_chair=true;S.inventory.push("钥匙碎片("+S.pieces+"/4)");toast("获得钥匙碎片！("+S.pieces+"/4)")}else{addModalText("椅子静静地伫立着。若有若无的香水味让你打了个寒颤。")}break;
-case"study_diary":if(!S.events.study_diary){addModalText("日记最后一页："我知道他要来了。我已经把钥匙分成四片藏在宅邸各处。地下室用铁钥匙开。阁楼用床头柜钥匙。收集所有碎片，在祭坛前摧毁那本书。"里面夹着一片钥匙碎片。");S.pieces++;S.events.study_diary=true;S.inventory.push("钥匙碎片("+S.pieces+"/4)");toast("获得钥匙碎片！("+S.pieces+"/4)")}else{addModalText("日记主人的绝望从每一页渗透出来。")}break;
+case"study_diary":if(!S.events.study_diary){addModalText("日记最后一页：“我知道他要来了。我已经把钥匙分成四片藏在宅邸各处。地下室用铁钥匙开。阁楼用床头柜钥匙。收集所有碎片，在祭坛前摧毁那本书。”里面夹着一片钥匙碎片。");S.pieces++;S.events.study_diary=true;S.inventory.push("钥匙碎片("+S.pieces+"/4)");toast("获得钥匙碎片！("+S.pieces+"/4)")}else{addModalText("日记主人的绝望从每一页渗透出来。")}break;
 case"study_floor":if(!S.events.study_floor){addModalText("烛光下你撬开了地板。天鹅绒袋子里装着最后一片钥匙碎片。所有碎片在你手中自动组合——封印钥匙形成了，散发出微弱而温暖的光芒。");S.pieces++;S.events.study_floor=true;S.inventory.push("封印钥匙");S.sealKey=true;toast("封印钥匙组合完成！")}else{addModalText("暗格已经空了。")}break;
 case"hall_window":addModalText("窗外花园里站着一个人影——一动不动。眨眼间消失了。但窗户玻璃上留下了一个手印...在室内这一侧。");S.sanity=Math.max(0,S.sanity-2);break;
 case"hall_listen":addModalText("你屏息聆听。低沉的重复呢喃从四面八方传来，像在念诵什么。");S.sanity=Math.max(0,S.sanity-3);break;
-case"bedroom_attic":if(S.inventory.indexOf("阁楼钥匙")<0){S.inventory.push("阁楼钥匙");S.events.attic_key=true;addModalText("你拿起床头柜上的生锈钥匙。标签写着"阁楼"——字迹和日记中一模一样。");toast("获得阁楼钥匙！")}else{addModalText("钥匙已经在你手中了。")}break;
+case"bedroom_attic":if(S.inventory.indexOf("阁楼钥匙")<0){S.inventory.push("阁楼钥匙");S.events.attic_key=true;addModalText("你拿起床头柜上的生锈钥匙。标签写着“阁楼”——字迹和日记中一模一样。");toast("获得阁楼钥匙！")}else{addModalText("钥匙已经在你手中了。")}break;
 case"bedroom_vanity":addModalText("梳妆台镜子上只有两个字：离开。旁边的口红被拧开，在桌面写了两个字：太晚了。");break;
 case"bedroom_wardrobe":if(!S.events.bedroom_wardrobe){addModalText("你打开衣柜。黑色连衣裙轻轻摆动。内侧缝着口袋——里面有张全家福，三个人站在这座宅邸前。小女孩的眼睛被抠掉了。");S.events.bedroom_wardrobe=true;S.sanity=Math.max(0,S.sanity-3)}else{addModalText("连衣裙停止了摆动。但它的位置和上次不一样了。")}break;
-case"bath_medicine":addModalText("便条贴在柜门内侧："他们给我开了这些药，让我以为是我疯了。但我知道——我看到的东西都是真的。如果你能看到这张纸条，你也能看到它们。"");S.events.bath_medicine=true;break;
+case"bath_medicine":addModalText("便条贴在柜门内侧：“他们给我开了这些药，让我以为是我疯了。但我知道——我看到的东西都是真的。如果你能看到这张纸条，你也能看到它们。”");S.events.bath_medicine=true;break;
 case"bath_tub":if(!S.events.bath_tub){addModalText("你走近浴缸。暗红液体散发铁锈味。水面漂着一小片东西——你伸手时水面骤然沸腾。你缩回手，那片东西沉了。水面恢复平静，颜色却更深了。");S.events.bath_tub=true;S.sanity=Math.max(0,S.sanity-4);pt(60,"sawtooth",2,0.05)}else{addModalText("浴缸看似平静。但水位似乎比上次更高了。")}break;
 case"attic_piece":if(!S.sealKey&&S.pieces>=4){S.inventory.push("封印钥匙");S.sealKey=true;addModalText("你捡起碎片。所有碎片在手中自动组合——封印钥匙形成了。它散发出微弱却坚定的光芒。");toast("封印钥匙组合完成！")}else if(S.sealKey){addModalText("封印钥匙已在你手中。")}else{addModalText("还缺"+ (4-S.pieces) +"片钥匙碎片。继续探索其他房间吧。")}break;
 case"attic_photos":addModalText("泛黄的照片记录了同一个家庭——生日、圣诞、花园。但每张照片的背景中都站着一个模糊黑影，越来越近。最后一张中黑影已清晰：一个没有面孔的人形。");break;
-case"attic_letter":addModalText("信上写着："我把他封印在地下室了。但封印正在减弱。如果你在阅读这封信，说明我可能已经不在了。地下室里的那本书——它是活的。它在等待。用钥匙封印它，或者...跑。能跑多远跑多远。"");S.events.attic_letter=true;break;
+case"attic_letter":addModalText("信上写着：“我把他封印在地下室了。但封印正在减弱。如果你在阅读这封信，说明我可能已经不在了。地下室里的那本书——它是活的。它在等待。用钥匙封印它，或者...跑。能跑多远跑多远。”");S.events.attic_letter=true;break;
 case"basement_altar":if(S.sealKey){S.gameOver=true;goodEnding()}else{addModalText("你靠近祭坛。书页翻动得更快了，千万个声音在脑海中同时低语。没有封印钥匙——黑暗抓住了你。");S.sanity=Math.max(0,S.sanity-25);if(S.sanity<=0){S.gameOver=true;badEnding()}else{toast("你的心智正在崩溃...");setTimeout(function(){if(!S.gameOver){S.sanity=Math.max(0,S.sanity-20);if(S.sanity<=0){S.gameOver=true;badEnding()}}},3000)}}break;
 case"basement_escape":addModalText("你转身想跑，但楼梯已经消失了。只有一面光滑的墙壁。空气中回荡着低沉的笑声。");S.sanity=Math.max(0,S.sanity-6);break;
 }
