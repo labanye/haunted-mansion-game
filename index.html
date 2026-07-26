@@ -3,12 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>???? ? Shadow Manor</title>
+<title>霍桑庄园 · Shadow Manor</title>
 <style>
-
 :root{--bg:#080404;--panel:#0d0909;--text:#c4b090;--text-dim:#887766;--accent:#992222;--accent-light:#cc4444;--gold:#aa8855;--border:#2a1515;--card:#120a06}
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
 body{font-family:"SimSun","Microsoft YaHei","Noto Serif SC",serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.8}
 body::before{content:"";position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 30%,rgba(30,10,5,0.3),transparent 70%);pointer-events:none;z-index:0}
 nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(180deg,rgba(10,5,5,0.98),rgba(8,4,4,0.95));border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(8px)}
@@ -27,13 +25,22 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(1
 .inv-pop-item:last-child{border-bottom:none}
 .inv-pop-empty{color:var(--text-dim);font-size:0.75em;font-style:italic}
 .inv-pop-frags{color:var(--gold);font-size:0.7em;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
+.prologue-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:10000;display:flex;align-items:center;justify-content:center;animation:fadeIn 1s}
+.prologue-box{background:linear-gradient(135deg,#0d0808,#150a0a);border:2px solid var(--accent);border-radius:8px;padding:40px 48px;max-width:700px;width:90%;max-height:85vh;overflow-y:auto;text-align:center;box-shadow:0 0 60px rgba(139,0,0,0.3);position:relative}
+.prologue-box h2{color:var(--accent-light);font-size:1.6em;letter-spacing:6px;margin-bottom:8px}
+.prologue-box .pro-sub{color:var(--gold);font-size:0.85em;letter-spacing:4px;margin-bottom:24px}
+.prologue-box p{text-align:left;color:var(--text);font-size:0.9em;line-height:2;margin-bottom:16px;text-indent:2em}
+.prologue-box .pro-highlight{color:var(--accent-light);font-weight:700}
+.prologue-btn{padding:14px 48px;border:2px solid var(--accent);background:transparent;color:var(--accent-light);font-size:1em;letter-spacing:6px;cursor:pointer;transition:all 0.4s;font-family:inherit;border-radius:4px;margin-top:20px}
+.prologue-btn:hover{background:var(--accent);color:#fff;box-shadow:0 0 30px rgba(139,0,0,0.5)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .hero{height:100vh;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;z-index:1}
 .hero h1{font-size:clamp(2.5em,5vw,4em);letter-spacing:10px;color:var(--accent-light);text-shadow:0 0 50px rgba(139,0,0,0.4);margin-bottom:8px}
 .hero .subtitle{font-size:clamp(0.8em,1.5vw,1.1em);color:var(--text-dim);letter-spacing:8px;margin-bottom:8px}
-.hero .year{font-size:0.75em;color:var(--gold);letter-spacing:6px;margin-bottom:36px}
 .hero-btn{padding:16px 52px;border:2px solid var(--accent);background:transparent;color:var(--accent-light);font-size:1.05em;letter-spacing:8px;cursor:pointer;transition:all 0.4s;font-family:inherit;border-radius:4px}
 .hero-btn:hover{background:var(--accent);color:#fff;box-shadow:0 0 40px rgba(139,0,0,0.5);transform:scale(1.03)}
-.rooms-section{padding:60px 32px 80px;max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.rooms-section{padding:60px 32px 80px;max-width:1100px;margin:0 auto;position:relative;z-index:1;display:none}
+.rooms-section.active{display:block}
 .rooms-section h2{text-align:center;color:var(--accent-light);letter-spacing:6px;margin-bottom:40px;font-size:1.3em}
 .rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
 .room-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:22px;cursor:pointer;transition:all 0.35s;position:relative;overflow:hidden}
@@ -45,250 +52,311 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(1
 .room-eng{font-size:0.65em;color:var(--text-dim);letter-spacing:2px}
 .room-req{font-size:0.65em;color:var(--accent);margin-top:6px}
 .room-lock{position:absolute;top:10px;right:12px;font-size:0.9em;color:var(--accent)}
-.footer{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:0.72em;letter-spacing:2px;position:relative;z-index:1}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:5000;justify-content:center;align-items:flex-start;padding-top:60px}
+.modal-overlay.active{display:flex}
+.modal-box{background:linear-gradient(180deg,#0d0808,#120a08);border:2px solid var(--border);border-radius:10px;width:90%;max-width:750px;max-height:80vh;overflow-y:auto;padding:32px 36px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.8);margin-bottom:60px}
+.modal-close{position:absolute;top:16px;right:16px;font-size:1.4em;cursor:pointer;color:var(--text-dim);background:none;border:none;transition:0.3s;z-index:5}
+.modal-close:hover{color:var(--accent-light)}
+.modal-header{text-align:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.modal-header h3{color:var(--accent-light);font-size:1.3em;letter-spacing:5px}
+.modal-desc{font-size:0.88em;line-height:2;color:var(--text);margin-bottom:28px;padding:20px;background:rgba(0,0,0,0.3);border-radius:6px;border-left:3px solid var(--accent)}
+.modal-actions{display:flex;flex-direction:column;gap:10px}
+.action-btn{display:block;width:100%;padding:14px 20px;background:rgba(139,0,0,0.08);border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;text-align:left;font-family:inherit;font-size:0.85em;letter-spacing:2px;transition:all 0.3s}
+.action-btn:hover{background:rgba(139,0,0,0.2);border-color:var(--accent);color:var(--accent-light)}
+.action-btn.done{opacity:0.5;pointer-events:none}
+.puzzle-box{display:none;flex-direction:column;gap:12px;align-items:center;padding:20px;background:rgba(0,0,0,0.3);border-radius:6px;margin-top:8px}
+.puzzle-box.active{display:flex}
+.puzzle-input{background:rgba(0,0,0,0.5);border:2px solid var(--accent);color:var(--accent-light);padding:12px 18px;font-size:1.1em;text-align:center;letter-spacing:4px;border-radius:4px;font-family:inherit;width:200px;outline:none}
+.puzzle-submit{background:var(--accent);color:#fff;border:none;padding:10px 30px;cursor:pointer;letter-spacing:3px;border-radius:4px;font-family:inherit;transition:0.3s}
+.puzzle-submit:hover{background:var(--accent-light)}
+.puzzle-hint{color:var(--text-dim);font-size:0.75em;letter-spacing:1px}
+.result-box{padding:16px 20px;margin:12px 0;background:rgba(0,0,0,0.3);border-left:3px solid var(--gold);border-radius:4px;color:var(--text);font-size:0.85em;line-height:1.9;white-space:pre-line;display:none}
+.jumpscare-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:10001;background:rgba(0,0,0,0.95);justify-content:center;align-items:center;flex-direction:column}
+.jumpscare-overlay.active{display:flex;animation:jFlicker 0.1s infinite}
+.jumpscare-face{font-size:8em;animation:jShake 0.3s infinite}
+.jumpscare-text{color:var(--accent-light);font-size:1.5em;letter-spacing:4px;margin-top:20px;animation:jGlitch 0.2s infinite}
+@keyframes jFlicker{0%,100%{opacity:1}50%{opacity:0.7}}
+@keyframes jShake{0%,100%{transform:translate(0,0)}25%{transform:translate(-10px,5px)}50%{transform:translate(10px,-5px)}75%{transform:translate(-5px,-10px)}}
+@keyframes jGlitch{0%,100%{transform:skew(0deg)}50%{transform:skew(3deg)}}
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(8,4,4,0.96);border:1px solid var(--accent);border-radius:6px;padding:14px 28px;color:var(--text);font-size:0.85em;opacity:0;transition:opacity 0.4s;pointer-events:none;max-width:500px;text-align:center;letter-spacing:1px;box-shadow:0 4px 24px rgba(0,0,0,0.6)}
 .toast.show{opacity:1}
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;z-index:5000;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s}
-.modal.open{opacity:1;pointer-events:all}
-.modal-box{background:linear-gradient(160deg,#0a0505,#110a08);border:1px solid var(--accent);border-radius:8px;width:92%;max-width:680px;max-height:82vh;overflow-y:auto;box-shadow:0 0 60px rgba(139,0,0,0.3)}
-.modal-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(10,5,5,0.97);z-index:1}
-.modal-header h3{color:var(--accent-light);letter-spacing:4px;font-size:1em}
-.modal-close{color:var(--text-dim);cursor:pointer;font-size:1.3em;background:none;border:none;transition:color 0.3s;padding:4px 8px}
-.modal-close:hover{color:var(--accent-light)}
-.modal-body{padding:22px 24px}
-.modal-body p{line-height:2;margin-bottom:10px;font-size:0.88em}
-.modal-body .clue-highlight{color:var(--accent-light);font-weight:700}
-.modal-desc{color:var(--text-dim);font-style:italic;margin-bottom:14px;line-height:1.8}
-.modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.modal-action-btn{padding:10px 18px;border:1px solid var(--accent);background:transparent;color:var(--text);font-size:0.82em;letter-spacing:2px;cursor:pointer;border-radius:4px;transition:all 0.3s;font-family:inherit}
-.modal-action-btn:hover{background:var(--accent);color:#fff}
-.modal-action-btn.danger{border-color:#772222;color:#cc6666}
-.modal-action-btn.danger:hover{background:#772222}
-.pw-modal{position:fixed;top:0;left:0;width:100%;height:100%;z-index:6000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s}
-.pw-modal.open{opacity:1;pointer-events:all}
-.pw-box{background:linear-gradient(160deg,#0a0505,#120a08);border:2px solid var(--accent);border-radius:8px;padding:28px;width:92%;max-width:400px;text-align:center;box-shadow:0 0 50px rgba(139,0,0,0.3)}
-.pw-box h3{color:var(--accent-light);letter-spacing:4px;margin-bottom:6px;font-size:1em}
-.pw-hint{color:var(--text-dim);font-size:0.78em;margin-bottom:14px;line-height:1.6}
-.pw-input{width:100%;padding:12px;background:rgba(0,0,0,0.5);border:1px solid var(--border);color:var(--text);font-size:1em;text-align:center;letter-spacing:5px;border-radius:4px;margin-bottom:6px;font-family:inherit;outline:none}
-.pw-input:focus{border-color:var(--accent)}
-.pw-input.error{border-color:#cc3333;animation:shake 0.4s}
-.pw-error{color:#cc4444;font-size:0.75em;min-height:18px;margin-bottom:6px}
-.pw-btns{display:flex;gap:10px;justify-content:center;margin-top:10px}
-.pw-btn{padding:10px 28px;border:1px solid var(--accent);background:transparent;color:var(--text);cursor:pointer;font-size:0.85em;letter-spacing:3px;border-radius:4px;transition:all 0.3s;font-family:inherit}
-.pw-btn:hover{background:var(--accent);color:#fff}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-.jumpscare{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10000;background:#000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none}
-.jumpscare.active{animation:jumpFlash 0.7s ease-out}
-.js-face{font-size:8em;text-align:center;color:#cc2222}
-@keyframes jumpFlash{0%{opacity:0;transform:scale(0.4)}25%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(1)}}
-.prologue-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.94);z-index:8000;display:flex;align-items:center;justify-content:center}
-.prologue-overlay.hidden{display:none!important}
-.prologue-box{background:linear-gradient(160deg,#0a0505,#140c0a);border:1px solid var(--accent);border-radius:8px;width:92%;max-width:620px;max-height:85vh;overflow-y:auto;box-shadow:0 0 80px rgba(139,0,0,0.35)}
-.prologue-inner{padding:28px 26px}
-.prologue-inner h3{color:var(--accent-light);font-size:1.15em;letter-spacing:5px;margin-bottom:18px;text-align:center}
-.prologue-inner p{color:#b0a080;font-size:0.88em;line-height:2;margin-bottom:12px}
-.prologue-inner .highlight-text{color:#cc8844;text-align:center;font-style:italic;padding:12px 16px;border-left:3px solid var(--accent);background:rgba(139,0,0,0.08);margin:12px 0;border-radius:0 4px 4px 0}
-.prologue-btn{display:block;margin:20px auto 0;padding:14px 44px;border:2px solid var(--accent);color:#cc8888;background:transparent;font-size:0.95em;letter-spacing:5px;cursor:pointer;border-radius:4px;transition:all 0.3s;font-family:inherit;text-align:center}
-.prologue-btn:hover{background:var(--accent);color:#fff;box-shadow:0 0 30px rgba(139,0,0,0.5)}
-.journal-entry{margin-bottom:14px;padding:12px 14px;border-left:2px solid var(--accent);background:rgba(139,0,0,0.04);border-radius:0 4px 4px 0}
-.journal-entry h4{color:var(--accent-light);font-size:0.85em;margin-bottom:3px}
-.journal-entry p{color:var(--text);font-size:0.78em;line-height:1.6}
-.story-card{padding:16px 18px;margin-bottom:12px;background:rgba(139,0,0,0.03);border-left:3px solid var(--accent);border-radius:0 6px 6px 0}
-.story-card h3{color:var(--accent-light);margin-bottom:10px;font-size:0.95em}
-.ending-box{text-align:center;padding:10px 0}
-.ending-box h3{color:var(--accent-light);font-size:1.2em;margin-bottom:14px;letter-spacing:4px}
-.ending-box p{line-height:2;margin-bottom:8px;font-size:0.88em}
-.clue-highlight{color:var(--accent-light);font-weight:700}
-.highlight-text{color:#cc8844;text-align:center;font-style:italic;padding:12px 16px;border-left:3px solid var(--accent);background:rgba(139,0,0,0.08);margin:12px 0;border-radius:0 4px 4px 0}
-
-#sanity-bar{position:fixed;top:0;left:0;height:3px;background:#cc2222;z-index:9999}
-#jumpscare-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10000;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;opacity:0;transition:opacity 0.1s}
-#jumpscare-overlay.active{opacity:1;animation:jumpFlash 0.7s ease-out}
-#jumpscare-face{font-size:8em;color:#cc2222}
-#jumpscare-text{color:#cc8888;font-size:1.2em;margin-top:16px;letter-spacing:3px}
-#ending{display:none}
-#ending.open{display:flex;position:fixed;top:0;left:0;width:100%;height:100%;z-index:5000;background:rgba(0,0,0,0.92);align-items:center;justify-content:center}
-#ending-content{background:linear-gradient(160deg,#0a0505,#140c0a);border:1px solid var(--accent);border-radius:8px;width:92%;max-width:620px;max-height:85vh;overflow-y:auto;padding:28px 26px;box-shadow:0 0 80px rgba(139,0,0,0.35)}
-#story-content{max-width:800px;margin:60px auto;padding:20px;z-index:1;position:relative}
-#journal-content{display:none}
-.inv-section h4{color:var(--accent-light);font-size:0.82em;letter-spacing:3px;margin-bottom:8px}
-.inv-section .inv-item{color:var(--text);font-size:0.78em;padding:4px 0;border-bottom:1px solid rgba(42,21,21,0.3)}
-.inv-section .inv-empty{color:var(--text-dim);font-size:0.75em;font-style:italic}
-.inv-section .inv-frags{color:var(--gold);font-size:0.7em;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
-.ending-card{text-align:center;padding:10px 0}
-.ending-title{font-size:1.2em;margin-bottom:14px;letter-spacing:4px}
-@keyframes jumpFlash{0%{opacity:0;transform:scale(0.4)}25%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(1)}}
+.footer{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:0.72em;letter-spacing:2px;position:relative;z-index:1}
 </style>
 </head>
 <body>
 
+<div class="prologue-overlay" id="prologue-overlay">
+  <div class="prologue-box">
+    <h2>⚰️ 序章：为何而来</h2>
+<p class="pro-sub">—— 阿卡姆镇 · 霍桑庄园 · 1897 ——</p>
+<p>你是一名自由记者，在阿卡姆镇旧报档案馆翻阅资料时，偶然发现了一则1897年的报道——<span class="pro-highlight">霍桑庄园惨案</span>。维克多·霍桑医生，他的妻子埃莉诺，以及他们年仅七岁的女儿莉莉安，在平安夜当晚全部死亡。警方结论是谋杀-自杀：维克多用手术刀杀害了妻女，然后饮弹自尽。</p>
+<p>但真正让你无法入眠的，是你在档案深处找到的一份<span class="pro-highlight">未归档的手写报告</span>——撰写者是一名被派往现场的低级警员，约拿·布莱克伍德。报告前三页还很正常：现场勘查、遗体描述、弹道分析。翻到第四页，字迹突然变了——越来越潦草，越来越急促。最后一页只有一句话：</p>
+<p style="color:#cc8844;text-align:center;font-style:italic;padding:10px">「地下室里有什么东西。它还在。它还在等着。不要派人来。不要——」</p>
+<p>报告到此戛然而止。档案管理员告诉你，布莱克伍德警长在写完这份报告后的第三天，被发现在家中上吊自杀。没有遗书，没有任何解释。他的那份报告从未被正式归档——有人在试图掩盖什么。</p>
+<p>你花了三个月追查霍桑庄园的一切——维克多的医学背景、埃莉诺的家族历史、莉莉安的病史、地下室的建筑图纸。每一个线索都像一只手，把你拽向同一个深渊。你给报社编辑留了一封信：<span class="pro-highlight">如果三天后没有收到你的消息，就把所有材料公开。</span></p>
+<p>今夜，你终于站在了庄园的大门前。雨开始下了。铁门的铰链已经锈蚀，推开时发出的尖叫声在空旷的黑夜中回荡了很久很久。宅邸的轮廓在雨幕中若隐若现——漆黑的窗户像无数只看不见底的眼睛，沉默地、耐心地注视着你。</p>
+<p style="color:#887766;font-style:italic">你深吸一口气，推开了那扇沉重的橡木大门。</p>
+    <button class="prologue-btn" onclick="closePrologue()">踏入宅邸</button>
+  </div>
+</div>
+
 <nav>
-  <span class="nav-brand">??? ????</span>
+  <div class="nav-brand">⚰️ 霍桑庄园</div>
   <div class="nav-actions">
-    <span class="nav-btn">??: 100</span>
+    <button class="nav-btn" onclick="scrollToRooms()">🏠 房间</button>
     <div class="nav-inv">
-      <span class="inv-trigger">?? ?? <span class="inv-badge" id="inv-count">0</span></span>
-      <div class="inv-popup inv-section" id="inv-items"></div>
+      <button class="inv-trigger">🎒 物品栏 <span class="inv-badge" id="inv-count">0</span></button>
+      <div class="inv-popup" id="inv-popup">
+        <h4>📦 已收集物品</h4>
+        <div id="inv-list"><span class="inv-pop-empty">空</span></div>
+        <div class="inv-pop-frags" id="inv-frags" style="display:none">🔑 钥匙碎片: <span id="frag-count">0</span>/3</div>
+      </div>
     </div>
   </div>
 </nav>
-<div id="sanity-bar"><div id="sanity-fill" style="width:100%;height:3px;background:#cc2222;transition:width 0.5s"></div></div>
 
-<div class="hero" id="hero">
-  <h1>????</h1>
+<section class="hero" id="hero">
+  <h1>霍桑庄园</h1>
   <div class="subtitle">SHADOW MANOR</div>
-  <div class="year">???? ? 1897</div>
-  <button class="hero-btn" id="hero-enter-btn">?? ????</button>
-</div>
+  <button class="hero-btn" onclick="enterMansion()">踏入宅邸</button>
+</section>
 
-<div class="rooms-section" id="rooms">
-  <h2>??? ????</h2>
+<section class="rooms-section" id="rooms-section">
+  <h2>🏚️ 探索宅邸</h2>
   <div class="rooms-grid" id="rooms-grid"></div>
+</section>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box" id="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
 </div>
 
-<div class="footer">??????????????</div>
-
-<div id="story-content"></div>
-<div id="journal-content"></div>
+<div class="jumpscare-overlay" id="jumpscare-overlay">
+  <div class="jumpscare-face" id="jumpscare-face">👁️</div>
+  <div class="jumpscare-text" id="jumpscare-text"></div>
+</div>
 
 <div class="toast" id="toast"></div>
-
-<div class="modal" id="room-modal">
-  <div class="modal-box">
-    <div class="modal-header"><h3 id="modal-title"></h3><button class="modal-close" onclick="closeModal()">&times;</button></div>
-    <div class="modal-body" id="modal-body"></div>
-  </div>
-</div>
-
-<div class="pw-modal" id="pw-modal">
-  <div class="pw-box">
-    <h3 id="pw-title">?? ????</h3>
-    <div class="pw-hint" id="pw-hint"></div>
-    <input type="text" class="pw-input" id="pw-input" placeholder="????...">
-    <div class="pw-error" id="pw-error"></div>
-    <div class="pw-btns">
-      <button class="pw-btn" onclick="closePW()">??</button>
-      <button class="pw-btn primary" id="pw-submit">??</button>
-    </div>
-  </div>
-</div>
-
-<div id="ending"><div id="ending-content"></div></div>
-<div id="jumpscare-overlay"><div id="jumpscare-face"></div><div id="jumpscare-text"></div></div>
+<div class="footer">霍桑庄园 · Shadow Manor · 1897</div>
 
 <script>
-
 "use strict";
-var actx=null;function ia(){if(actx)return;try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
-function pc(){if(!actx)return;var o=actx.createOscillator(),g=actx.createGain();o.type="square";o.frequency.value=80+Math.random()*40;g.gain.setValueAtTime(0.03,actx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+0.35);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+0.35);}
-function pwh(){if(!actx)return;for(var i=0;i<6;i++){(function(j){setTimeout(function(){var o=actx.createOscillator(),g=actx.createGain();o.type="sine";o.frequency.value=200+Math.random()*400;g.gain.setValueAtTime(0.01,actx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+0.25);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+0.25);},j*100+Math.random()*150);})(i);}}
-function phb(){if(!actx)return;for(var i=0;i<3;i++){(function(j){setTimeout(function(){var o=actx.createOscillator(),g=actx.createGain();o.type="sine";o.frequency.value=40;g.gain.setValueAtTime(0.1,actx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+0.12);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+0.12);},j*500);})(i);}}
-function psc(){if(!actx)return;for(var i=0;i<20;i++){(function(j){setTimeout(function(){var o=actx.createOscillator(),g=actx.createGain();o.type="sawtooth";o.frequency.value=300+Math.random()*800;g.gain.setValueAtTime(0.05,actx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+0.12);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+0.12);},j*50);})(i);}}
-var S={sanity:100,inventory:[],visitedRooms:{},foundItems:{},keyFragments:0,gameEnded:false,currentRoom:null,unlockedRooms:{foyer:true,living:true,kitchen:false,dining:false,study:false,hallway:false,bedroom:true,bathroom:true,attic:false,basement:false},solvedPuzzles:{},currentPW:null,currentPWTarget:null,endingTriggered:false,journalEntries:[],storyClues:[]};
-function st(msg,dur){ia();if(!dur)dur=4000;var t=document.getElementById("toast");if(!t)return;t.textContent=msg;t.classList.add("show");clearTimeout(t._tid);t._tid=setTimeout(function(){t.classList.remove("show");},dur);}
-function aJ(title,content){S.journalEntries.push({title:title,content:content});rJ();}
-function aS(type,title,content){S.storyClues.push({type:type,title:title,content:content});rS();}
-function uH(){var sf=document.getElementById("sanity-fill");if(sf)sf.style.width=S.sanity+"%";var ic=document.getElementById("inv-count");if(ic)ic.textContent="物品: "+S.inventory.length;}
-function uM(){if(!S.currentRoom)return;rRM(S.currentRoom);}
-function dJS(face,text){ia();psc();var jo=document.getElementById("jumpscare-overlay");var jf=document.getElementById("jumpscare-face");var jt=document.getElementById("jumpscare-text");if(!jo||!jf||!jt)return;jf.textContent=face||"👁";jt.textContent=text||"...";jo.classList.add("active");S.sanity=Math.max(0,S.sanity-15);uH();setTimeout(function(){jo.classList.remove("active");},1500);}
-var rooms={
-foyer:{id:"foyer",name:"门厅",eng:"FOYER",icon:"🚪",unlockMsg:null,desc:"沉重的橡木大门在你身后缓缓关闭，发出一声令人不安的闷响——那声音不像木头撞击门框，更像是某种庞大的生物终于合上了它的嘴，而你刚刚走进了它的咽喉。门厅比从外面看起来要宽敞得多，天花板的高度至少有三层楼。一盏巨大的水晶吊灯悬挂在正中央，上面蒙着的灰尘厚得像一层灰色的毛毯，但水晶棱镜仍然在某种看不见的气流中轻轻晃动，相互碰撞，发出细微的、如同骨头摩擦的咔嗒声。墙壁上贴着暗红色的织锦壁纸，金色花纹已经褪成了病态的黄色。凑近看的时候，你会发现在一些花纹之间，有手指甲反复刮擦留下的深深痕迹——十道并排的，像是两只手同时抓了上去。一张桃花心木桌上放着三样东西：一封用红蜡封好的信件、一把系着泛黄标签的黄铜小钥匙、一本皮质封面的来访登记簿。桌腿旁的地板上，东方地毯的中央有一条明显的深色拖痕——从大门的位置一直延伸到客厅的方向，宽度恰好和一个成年人的身体差不多。空气中混杂着枯萎玫瑰的甜腻气味、陈旧血腥的铁锈气息、以及一种更古老的、令人联想到医院手术室的消毒水味道。墙上挂着一幅被墨水大半涂抹过的宅邸地图，旁边钉着一张字条，字迹潦草而仓促：不要一个人去地下室。"},
-living:{id:"living",name:"客厅",eng:"LIVING ROOM",icon:"🛋️",unlockMsg:null,desc:"客厅比你想象的要大得多，也暗得多——这不仅仅是因为光线不足，而是因为这里的黑暗似乎拥有重量，像一层薄纱一样压在皮肤上。厚重的酒红色天鹅绒窗帘紧紧闭合着，但从布料间隙中挤入的几道苍白光线却诡异地落在了不该落的位置——它们不是在照亮，而是在刻意地避开某些角落。壁炉已经冰冷了一个多世纪，炉膛里残留着半截焦黑的圆木和一撮灰白色的灰烬——灰烬中似乎有烧过的纸张残片，边缘还能看到半个烧焦的字母。壁炉台上摆着一张褪了色的全家福：维克多穿着高领黑色外套，脸上挂着僵硬的微笑，但他的眼睛并不在看镜头，而是斜斜地凝视着画面之外的某个方向——恰好是书房和地下室所在的东侧。埃莉诺穿着一件深绿色长裙，嘴角微微上扬，但如果你凝视足够久，你会发现那种表情不是微笑，而是一个人在极度恐惧中试图保持镇静时面部肌肉不由自主的绷紧。她搭在莉莉安肩膀上的手指，指节因为用力而泛白。莉莉安穿着白色连衣裙，抱着那只只有一只眼睛的绿色布娃娃，脸上挂着天真的笑容——但在褪色的照片中，她的左眼瞳孔里有一个微小的白色反光点，像一个针尖大小的珍珠。角落里立着一架桃花心木的三角钢琴，琴键上蒙着厚灰，但琴凳的表面却有好几个清晰的手印——像是最近才有人坐上去过。琴凳的盖子被一把精致的小锁锁住了，锁孔旁有三个字母的空位。谱架上放着一张被烧掉一半的乐谱——纸张边缘焦黑卷曲，第一个和最后一个被红圈标注的音符都是D。茶几上摊开着一本乐谱集，沙发扶手上放着埃莉诺的皮质日记，书签夹在某一页。通往厨房的门被一把铜锁锁住了——锁上刻着一架钢琴的精致图案。"},
-kitchen:{id:"kitchen",name:"厨房",eng:"KITCHEN",icon:"🍳",unlockMsg:"客厅的钢琴凳里藏着厨房的钥匙。仔细阅读客厅里的所有文本——日记、乐谱和乐谱集中藏着打开琴凳的三位字母密码。",desc:"厨房里弥漫着一股甜腻的腐败气味，混杂着变质食物的酸臭和某种更根本、更原始的恶臭——那种味道让你本能地想起了很久以前闻过的、已经记不清具体场景但身体依然记得恐惧的某种东西。橱柜的门半开半合，里面除了几只干瘪的蟑螂尸体外空空如也。但橱柜的内壁上还残留着几道深色的刮痕——不像老鼠，更像是有人用指甲从里面抓过。水龙头在有节奏地滴水——滴答。滴答。滴答——每一滴都精确地落在瓷质水槽的同一个位置，在绝对的寂静中形成一种催眠般的、令人莫名焦虑的节奏。一张厚重的松木桌上放着一个小小的铁质保险箱，箱门上的标签用大写字母写着「按顺序输入」。保险箱旁边的砧板上横放着一把切肉刀，刀刃上沾着的暗色污渍已经干涸成了巧克力色的硬壳，但在刀柄的接缝处，你看到了几根纤细的、淡色的、卷曲的毛发——不是动物的。冰箱门上用磁铁贴着两张泛黄的纸：一张范德比尔特杂货店的购物小票和一张手写食谱卡。冰箱旁边的抽屉半开着，里面有一张折成三折的纸条。地板上那些早已干涸的深色污渍从桌子一路延伸到后门——宽度不均，边缘不齐，像是某种液体在地面上缓慢拖行后留下的痕迹。"},
-dining:{id:"dining",name:"餐厅",eng:"DINING ROOM",icon:"🍽️",unlockMsg:"厨房的保险箱里藏着餐厅的钥匙。密码是三位数字——结合食谱卡、购物小票和抽屉里的纸条来推理。",desc:"一张可以容纳十二人的桃花心木长桌从房间的一端延伸到另一端，但桌上只摆了六套餐具——盘子里的残留物已经变成了无法辨认的黑色硬块，但叉子和刀的位置摆放得整整齐齐，像是有人在进餐中途突然放下餐具起身离开，就再也没有回来。最令人不安的是墙上悬挂的三幅等人高的家族肖像油画。最左边是维克多——戴着高顶礼帽，眼神锐利而偏执，右手握着一根银柄手杖。中间的埃莉诺身着深绿色丝绒长裙，左手无名指戴着婚戒，右手却紧紧攥成拳头——指甲陷进掌心的肉里。最右边是莉莉安，穿着白色连衣裙，裙摆上绣着细小的蓝色花朵，怀里抱着那只独眼布娃娃——但画中的娃娃的独眼似乎在直直地盯着你，无论你站在房间的哪个角落。每幅肖像下方的黄铜铭牌都被尖锐物体狠狠地刮花了——但不是随机的破坏，而是有目的地刮掉了某些特定的信息。维克多的铭牌上被刮掉的是日期；埃莉诺的铭牌上后半段文字被完全抹去；莉莉安的铭牌几乎完好无损。餐桌正中央的银质烛台上刻着一行极小的字迹，烛光在无风的封闭房间里摇曳——但你分明记得，你进来的时候并没有点燃任何蜡烛。"},
-study:{id:"study",name:"书房",eng:"STUDY",icon:"📚",unlockMsg:"破解餐厅三幅肖像的秘密！烛台铭文和肖像铭牌残文中藏着四位数密码——由母亲与女儿的享年组合而成。",desc:"书房四壁是直达天花板的红木书架，但书籍乱七八糟地散落一地——有些摊开的书页上沾着早已干涸的深色污渍，有些书被撕掉了整页，残骸散落在四周。空气中有一种特殊的气味——旧书页的霉味、皮革的腐臭、以及某种更细微的、令人不安的焦糊味，像是什么东西在很久以前被焚烧过。书桌上摊开着一份1897年12月24日的《阿卡姆公报》——头版标题的粗体大字如同一个无声的呐喊：霍桑庄园惨案！报纸边缘碎裂，像被人愤怒地揉搓后又小心地展平了。报纸旁边放着一本黑色封面的笔记本——封面是空的，没有任何标识。翻开前几页，字迹工整而理性，用的是深蓝色钢笔墨水，写的是标准的外科医生风格的医疗日志。但翻到大约三分之一处，字迹突然变了——墨水从深蓝变成了黑色，字体从工整的印刷体变成了倾斜的草书，字母之间的间距越来越不均匀，笔压越来越重，有些地方甚至将纸张戳破了。最后几页已经无法辨认——那不是文字，那是疯狂的涂鸦。角落里有一个带四位数密码锁的红木书架——锁的黄铜转轮上刻着「1897」。书桌最下层的抽屉里有一份手绘解剖图，但标注的不是任何已知的器官名称，而是一系列扭曲的符号，每个符号旁边用红笔写着日期——最早的日期是1897年7月14日，莉莉安生日后的第一天。最后一个日期是1897年12月23日——惨案的前一天。"},
-hallway:{id:"hallway",name:"二楼走廊",eng:"HALLWAY",icon:"🪜",unlockMsg:"书房书架的四位数密码锁保护着通往二楼的钥匙。密码藏在报纸和笔记本中——需要推算日期。",desc:"二楼的走廊狭窄而漫长——它的比例似乎有些不对，天花板比一楼矮了太多，让你不由自主地微微弯腰。墙壁本应垂直，但仔细看的话你会发现它们似乎向内微微倾斜，像一条逐渐收窄的隧道。每走一步，脚下的地板都会发出尖叫声——先是左脚踩下去时的一声高亢的嘎吱，然后是右脚踩下去时的一声低沉的呜咽，交替着，像某个人在一问一答地重复着同一个痛苦的句子。壁纸大片大片地剥落，露出下面发黑的木质结构——木头上有些地方似乎被液体浸泡过，颜色比周围的木头深得多。走廊的尽头被厚重的木板交叉钉死了——钉子的头已经锈蚀成橘红色，但钉入的角度不像是出于安全考虑而封堵出口，更像是想把什么东西关在里面。但有一道极其微弱的、几乎是银色的光线从木板缝隙中射入，刚好照亮了对面墙上的一行暗红色字迹——字歪歪扭扭的，大小不一，像是用手指蘸着液体写上去的。字的高度大约在一米左右——恰好是一个七岁孩子举手写字的高度。地上散落着两张撕碎的纸片，纸张的质地和颜色各不相同，似乎是被什么人刻意从不同房间收集到这里来的。"},
-bedroom:{id:"bedroom",name:"主卧室",eng:"BEDROOM",icon:"🛏️",unlockMsg:null,desc:"这是维克多和埃莉诺的主卧室。一张巨大的四柱大床上铺着褪色的酒红色被褥，枕头被整齐地摆好，被角也被仔细地折了进来——这不像一个在疯狂中结束生命的人会做的最后一件事。这更像是有人在为一场永远不会到来的归来做准备。但当你走近时，你会发现枕头上面没有任何凹陷的痕迹，床头柜上积着的灰尘厚得足以用指尖写字。梳妆台上的一面椭圆形镜子裂成了三块——但它们没有散落，而是各自维持在原位，像三块拼错的拼图。更诡异的是，这三块碎片各自映出了不同的画面：最左边的一块映出的是一个正在掩面哭泣的女人的模糊轮廓；中间的那块映出的是一张扭曲的、像是在咆哮中变形了的面孔；最右边的那块只映出了一扇紧闭着的、微微发出蓝色光芒的门。镜子右下角的木质边框上，有人用小刀——或者是用指甲——刻下了一行细小的字。枕头下方露出一封泛黄的信件——信封上没有地址也没有邮票——还夹着一张碎纸片。衣柜的门虚掩着，只开了大约三厘米的缝隙，从里面传来一阵阵若有若无的沙沙声，像丝绸摩擦丝绸——但是你反复检查过，房间里没有任何一扇窗户是开着的。"},
-bathroom:{id:"bathroom",name:"浴室",eng:"BATHROOM",icon:"🛁",unlockMsg:null,desc:"浴室的白色瓷砖在时间的侵蚀下已经变成了灰黄色，上面布满了褐色的旧污渍——有些是水渍，有些是霉菌，但有一些的形状和分布方式让人不愿意多想。浴缸里积着一层浑浊的暗红色液体，表面漂浮着几缕黑色头发——有的长度像是成年女性的，有的短得多。液体没有异味，但在灯光下可以看到它并不是静止的——极慢地、几乎不可察觉地，表面在微微旋转，像一个正在呼吸的活物。洗手台上方的镜面上，不知何时浮现出了一行暗红色的字迹——你最初以为它是写在镜子表面的，但当你用手去擦拭时，字迹纹丝不动。它不是写在镜子上，而是从镜子里面渗出来的。洗手台旁边放着一个装着深红色浓稠液体的小玻璃瓶——瓶口被暗红色的蜡封得很紧。将瓶子放在光下转动，可以看到瓶底有一个极薄的夹层，在液体和玻璃之间隐约藏着一张纸片。地板上散落着碎玻璃——似乎是另一面被打碎的镜子——其中最大的那片上沾着暗色的痕迹。墙角还有一张被揉皱了又展平的碎纸片。"},
-attic:{id:"attic",name:"阁楼",eng:"ATTIC",icon:"🪜",unlockMsg:"阁楼需要特殊线索——对着卧室镜子说出正确的词语。仔细阅读卧室中的文本，特别是那封未寄出的信。",desc:"阁楼的天花板低得令人窒息，你必须弯着腰行走——裸露的木梁上挂满了蜘蛛网，在不知从哪里来的微风中轻轻飘荡。灰尘浓得几乎让你无法呼吸，每吸一口气都能在舌头上尝到一种苦涩的、像旧报纸一样的粉末味。这里堆满了被遗忘了一个多世纪的物品：生锈的铁皮行李箱、木框已经散架的相框、被虫蛀得千疮百孔的衣物——一件小小的白色连衣裙，领口还别着一朵早已干枯的蓝色小花。角落里有一个沉重的橡木箱，箱盖上雕刻着三个符号——一道弯月、一颗六芒星和一轮太阳——它们围绕着一个圆形锁孔排列。箱子旁边的地板上，有人用白粉笔写了一行歪歪扭扭的句子，字迹稚嫩，横不平竖不直，像是一个刚学会写字不久的孩子留下的。另一个角落里，一个绿色的布娃娃独自靠着墙壁坐着——它只有一只眼睛，绿色的裙子已经褪色，一只胳膊的缝线松开了，露出里面发黄的棉花。它和你在全家福照片中看到莉莉安手里抱的那一只一模一样。在幽暗的光线中，你几乎可以肯定——它刚刚动了。"},
-basement:{id:"basement",name:"地下室",eng:"BASEMENT",icon:"⚰️",unlockMsg:"地下室的钥匙被埃莉诺拆成三片，散落各处。仔细重读她的日记中关于藏匿的每一句话来找到它们。",desc:"石阶一直向下延伸。你已经数不清自己走了多少步了，但每一级台阶都让温度骤降半度——当你终于走完最后一级时，呼出的气息已经在面前凝成了一团白雾，在黑暗中停留了很久才消散。地下室出乎意料地宽敞——宽敞到你的脚步声在墙壁之间反弹了三次才消失。中央是由黑色火山岩砌成的一座圆形祭坛，直径大约两米，表面密密麻麻地刻满了你无法辨认的符号——但你已经见过它们了：书房抽屉里那张解剖图上标注的就是一模一样的符号。祭坛上有三个分布均匀的凹槽，形状与你收集到的三片钥匙碎片完美吻合。在你走近的那一刻，围绕祭坛排列的黑色蜡烛自动燃起了火焰——不是正常的橙黄色，而是一种不自然的、偏蓝色的苍白。烛光在四周的粗糙石壁上投下了扭曲的影子，但那些影子的移动方式与蜡烛火焰的摇曳频率并不同步。一本封面质地异常的厚重书籍静躺在祭坛正中央——它的封面摸起来是温暖的，带着你不想去思考是什么材质的弹性。书页在无风的地下室里自动翻动着，每次都恰好停在某一张画满了符号的插图页。空气中弥漫着泥土、铁锈、霉菌和某种更古老的、你无法辨认但本能地知道不应该存在于这个世界上的气味。祭坛旁边放着一把锈迹斑斑的铁锤——它的手柄朝着祭坛的方向，有人刻意把它放在了触手可及的地方。是给你留下的选择。"},
-};
-var roomOrder=["foyer","living","kitchen","dining","study","hallway","bedroom","bathroom","attic","basement"];
-var roomItems={
-foyer:["f_letter","f_key","f_register"],
-living:["l_photo","l_sheet","l_mbook","l_diary","l_piano"],
-kitchen:["k_recipe","k_receipt","k_note","k_safe"],
-dining:["d_candle","d_portv","d_porte","d_portl","d_door"],
-study:["s_news","s_note","s_shelf","s_draw"],
-hallway:["h_wall","h_pap1","h_pap2"],
-bedroom:["b_mirror","b_letter","b_ward"],
-bathroom:["bh_mirror","bh_vial","bh_glass"],
-attic:["a_chest","a_chalk","a_doll","a_keyf"],
-basement:["bs_book","bs_hammer"]
-};
-var items={};
-items.f_letter={id:"f_letter",name:"红蜡封信件",icon:"✉️",desc:"一封用深红色蜡封的信件。蜡封上压着交叉手术刀与凋零玫瑰的家族纹章。收件人：维克多·霍桑医生。蜡封完好——这封信从未被打开过。",aLabel:"拆开阅读",act:function(){if(S.foundItems.f_letter)return;S.foundItems.f_letter=true;st("你小心翼翼地揭开蜡封，展开泛黄的信纸。\n\n维克多·霍桑医生：\n\n医疗理事会已经注意到了你在霍桑庄园地下室进行的活动。过去三个月内，我们收到五位患者家属的正式投诉——你以实验性治疗为由，未经知情同意对患者实施非标准手术。\n\n埃莉诺·霍桑女士于两周前携带女儿莉莉安暂时离开了庄园。她留下的证词令人极为不安。她提到你正在被某种不属于这个世界的东西引导着。\n\n我们理解你对莉莉安病情的担忧。但这些实验已经远远超出了任何医学伦理的底线。\n\n请立即停止地下室内的一切活动，前往阿卡姆镇医疗理事会接受质询。我们已委派专员前往调查。\n\n此信抄送至阿卡姆镇治安官办公室。\n\n——阿卡姆镇医疗理事会\n1897年12月10日",8000);aJ("理事会的警告信","发现了一封来自医疗理事会的正式警告信，日期为1897年12月10日——惨案前两周。信中指控维克多进行非法实验，埃莉诺已带着莉莉安逃离。关键细节：蜡封完好无损。有人截住了这封信。");aS("clue","理事会的介入","这封信揭示了几个关键信息。莉莉安患有严重疾病、维克多在地下室进行秘密实验、埃莉诺察觉真相后逃离。信是惨案前两周发出的——但蜡封完好。有人阻止了维克多看到这封警告。是谁？");}},
-items.f_key={id:"f_key",name:"黄铜小钥匙（钢琴凳）",icon:"🔑",desc:"一把黄铜钥匙，手柄上系着泛黄的标签。标签上写着「钢琴凳」。钥匙手柄的镀层因为反复使用而磨损了——这把钥匙一定经常被人握在手中。",aLabel:"拾起钥匙",act:function(){if(S.foundItems.f_key)return;S.foundItems.f_key=true;S.inventory.push("门厅黄铜钥匙（标签：钢琴凳）");st("你拾起了黄铜钥匙。标签上写着「钢琴凳」——去客厅试试吧。");uH();uM();}},
-items.f_register={id:"f_register",name:"来访登记簿",icon:"📖",desc:"一本皮质封面的登记簿，封面因年代久远而开裂。最后一页记录着：「约翰·布莱克伍德警长，1897年12月25日」——惨案后的第二天。书脊夹层似乎有铅笔字迹。",aLabel:"仔细翻阅",act:function(){if(S.foundItems.f_register)return;S.foundItems.f_register=true;st("你在登记簿背面发现了一行淡得几乎看不见的铅笔字迹：\n「埃莉诺没有疯。她只是看到了真相。地下室的符号——它们是钥匙，不是门。」\n笔迹与登记簿上其他签名都不匹配。",8000);aJ("登记簿的秘密","来访登记簿背面有一行铅笔留言：「地下室的符号是钥匙，不是门。」是谁留下了这句话？它到底是警告还是引导？");}},
-items.l_photo={id:"l_photo",name:"全家福照片",icon:"🖼️",desc:"一张褪色的全家福，银色相框一角有明显摔碰凹痕。照片中维克多斜视右上方而非镜头，埃莉诺紧抓莉莉安的肩膀，莉莉安抱着独眼布娃娃。",aLabel:"翻看背面",act:function(){if(S.foundItems.l_photo)return;S.foundItems.l_photo=true;st("照片背面用钢笔写着一行褪色的字：\n「1897年7月13日——莉莉安的七岁生日。她许愿说希望明年还能和我们在一起。我答应了她。——E.H.」");aJ("全家福的背面","照片背面有埃莉诺的留言，日期为1897年7月13日——莉莉安的七岁生日。她许愿「明年还能和家人在一起」。五个月后，这个愿望以最残酷的方式实现了。");}},
-items.l_sheet={id:"l_sheet",name:"烧毁的乐谱",icon:"🎵",desc:"一张被烧去大半的钢琴乐谱，边缘焦黑卷曲。残存部分显示第一个和最后一个音符被红圈标注——都是D。中间被烧毁，但灰烬边缘隐约可见第三个音符位置也有红圈痕迹。乐谱标题残存字母：Yong...",aLabel:"仔细研究",act:function(){if(S.foundItems.l_sheet)return;S.foundItems.l_sheet=true;st("你把乐谱残片举到光下。第一个音符D，中间烧毁，最后一个也是D。标题残存字母「Yong...」——一首中文歌名的开头。三个被圈出的音符形成了D-?-D的模式。",6000);aJ("烧毁的乐谱","钢琴上烧毁的乐谱形成了D-?-D的音符模式。标题字母是「Yong...」——需要结合乐谱集找出完整歌名来推理缺失的音符。");}},
-items.l_mbook={id:"l_mbook",name:"霍桑家庭乐谱集",icon:"📕",desc:"一本厚重的乐谱集，封面烫金文字大半剥落，但可辨「霍桑家庭乐谱集」。目录收录许多古典名曲及几首手写添加的中文歌曲。其中一首的标题似乎与烧毁乐谱残片吻合。",aLabel:"翻阅目录",act:function(){if(S.foundItems.l_mbook)return;S.foundItems.l_mbook=true;st("你找到了那首歌的完整标题：「致永远的女儿」。歌曲说明写道：「维克多·霍桑献给莉莉安——她最爱听爸爸弹这首曲子。每当琴声响起，三个音符便组成了她最常呼唤的那个词。」",6000);aJ("乐谱集的关键信息","乐谱集中找到了对应歌曲：《致永远的女儿》。说明写着：「三个音符组成了她最常呼唤的那个词。」D-?-D = 莉莉安最常对父亲说的三个字母词 = DAD。");}},
-items.l_diary={id:"l_diary",name:"埃莉诺的日记",icon:"📔",desc:"深棕色皮质日记本，封面有烫金缩写「E·H·」。书签夹在某页，纸张边缘因反复翻阅和泪痕变得皱巴巴的。字迹开始时优雅工整，越往后越潦草绝望。",aLabel:"开始阅读",act:function(){if(S.foundItems.l_diary)return;S.foundItems.l_diary=true;st("1897年11月20日\n维克多已经好几天没有上楼睡觉了。每天晚上我都能听到地下室传来敲击声——一下、一下，像是在凿石头。他的眼睛变了。他看莉莉安的时候，不再像在看自己的女儿。\n\n1897年11月28日\n今天我趁维克多去镇上的时候溜进了地下室。祭坛上有一本书——它的封面摸起来不对劲。我只看了一页就扔了。但有一行字烙印在我脑海里：「真理之钥，散于三处：镜中所见不可见之物，黑夜中最亮之星，以及从未寄出的忏悔。」\n\n1897年12月8日\n我把仪式钥匙拆成了三片。一片藏在浴室的暗格里，一片藏在阁楼木箱的夹层中。最后一片……就连我自己也不太确定藏在哪里了——我只记得把它放在了一个永远不会被找到的地方。\n\n1897年12月22日\n维克多发现了。他全都发现了。他在客厅砸东西。我抱着莉莉安躲在楼上。她问我：妈妈，爸爸怎么了？我说，爸爸只是迷路了。她沉默了一会儿，说了一句让我心脏几乎停止的话：「那他还能找到回家的路吗？」",8000);aJ("埃莉诺的日记（核心线索）","日记记录了1897年11-12月的关键事件。维克多被禁书影响后性情大变。埃莉诺将仪式钥匙拆成三片藏匿，禁书记载的线索：①镜中所见不可见之物（浴室镜子暗格）②黑夜中最亮之星（阁楼木箱星辰符号）③从未寄出的忏悔（卧室未寄出的信）。最后，莉莉安问了一句令人心碎的话：爸爸还能找到回家的路吗？");aS("clue","三片钥匙碎片的分布","埃莉诺的日记记录了三条线索：①镜中所见不可见之物→浴室镜子暗格→血瓶夹层；②黑夜中最亮之星→阁楼雕刻星辰的木箱→需要卧室线索打开；③从未寄出的忏悔→卧室枕头下未寄出的信→第一片钥匙。");}},
-items.l_piano={id:"l_piano",name:"钢琴凳（已上锁）",icon:"🎹",desc:"三角钢琴的琴凳上有五个清晰手印。琴凳被一把小锁锁住——锁孔旁有三个字母空位，需要输入三个字母的单词。锁的形状与你手中的黄铜钥匙吻合。",aLabel:"尝试解锁",act:function(){if(!S.foundItems.f_key){st("琴凳锁住了。你需要先找到钥匙——门厅的桃花心木桌上有把系着标签的黄铜钥匙。");return;}if(S.solvedPuzzles.l_piano){st("钢琴凳已经打开过了。里面有一把刻着厨房图案的铜钥匙。");return;}showPW("钢琴凳密码锁","请输入三位字母密码\n提示：D-?-D，组成莉莉安最常呼唤的词。\n（结合烧毁乐谱与乐谱集来推理）","l_piano");}},
-items.k_recipe={id:"k_recipe",name:"手写食谱卡",icon:"📝",desc:"一张泛黄卷边的手写食谱卡，用磁铁吸在冰箱门上。标题是「霍桑夫人特制蛋糕——莉莉安的最爱」。下面列出了所需材料及精确数量。右下角沾着深色污渍。",aLabel:"阅读食谱",act:function(){if(S.foundItems.k_recipe)return;S.foundItems.k_recipe=true;st("霍桑夫人特制蛋糕\n\n所需材料：\n面粉——七杯（过筛三次）\n鸡蛋——三枚（室温、新鲜）\n小苏打——九克\n黄油——一百二十克（软化）\n糖——一杯半\n香草精——五滴\n\n母亲的眼泪——（被笔划掉了）\n\n制作方法：将所有干性材料混合后，分三次加入湿性材料，搅拌均匀至没有颗粒——\n\n（后面的内容被深色污渍遮盖了）",6000);aJ("霍桑夫人特制蛋糕食谱","食谱卡列出了精确的材料用量：面粉七杯、鸡蛋三枚、小苏打九克。配方中有一行被埃莉诺划掉的文字：「母亲的眼泪」——她在写下这道食谱时已经知道自己和女儿的时间不多了。");}},
-items.k_receipt={id:"k_receipt",name:"购物小票",icon:"🧾",desc:"一张范德比尔特杂货店的购物小票，日期为1897年12月23日——惨案前一天。纸张极其脆弱。小票列着三样物品及价格。背面有潦草的铅笔字迹。",aLabel:"查看小票",act:function(){if(S.foundItems.k_receipt)return;S.foundItems.k_receipt=true;st("范德比尔特杂货店\n1897年12月23日\n━━━━━━━━━━\n1. 小苏打——\$0.15\n2. 鸡蛋——\$0.50\n3. 面粉——\$0.80\n━━━━━━━━━━\n总计：\$1.45\n\n（背面铅笔字迹：维克多，记住了，按我买回来的顺序就行。你总是记不住。——埃莉诺）",6000);aJ("12月23日的购物小票","小票记录了惨案前一天的采购——小苏打→鸡蛋→面粉。背面有埃莉诺留给维克多的铅笔留言：按我买回来的顺序就行。这是她生前最后的字迹之一。");}},
-items.k_note={id:"k_note",name:"抽屉里的纸条",icon:"📋",desc:"从冰箱旁边半开的抽屉里找到的一张纸条，折成整齐三折。纸张质量比食谱和小票好，似乎被特意放在这里。上面用黑墨水写着一行字——字写得比平时快，最后一笔拖得很长。",aLabel:"展开阅读",act:function(){if(S.foundItems.k_note)return;S.foundItems.k_note=true;st("展开的纸条上只有一行字：\n\n维克多——保险箱密码改成了采购单上的顺序，别再用莉莉安生日了，不安全。厨房钥匙在保险箱里。——埃莉诺，12月23日\n\n你明白了：保险箱密码应遵循购物小票上三样物品的购买顺序——小苏打→鸡蛋→面粉——依次输入它们在食谱中的对应数量。小苏打9克、鸡蛋3枚、面粉7杯。密码是937。",6000);aJ("埃莉诺的最后纸条","抽屉里的纸条解释了密码规则：「改成了采购单上的顺序」。结合购物小票（小苏打→鸡蛋→面粉）和食谱数量（9→3→7），保险箱密码是937。");}},
-items.k_safe={id:"k_safe",name:"铁质保险箱",icon:"🔐",desc:"一个沉甸甸的铁质保险箱，被螺丝固定在木桌上。箱门上有三位数黄铜转轮密码锁，标签写着「按顺序输入」。里面一定放着重要的东西。",aLabel:"输入密码",act:function(){if(S.solvedPuzzles.k_safe){st("保险箱已经打开了。里面放着一把刻有餐厅图案的铜钥匙。");return;}showPW("厨房保险箱","请输入三位数密码\n（线索：食谱卡+购物小票+抽屉纸条）","k_safe");}},
-items.d_candle={id:"d_candle",name:"银质烛台上的刻字",icon:"🕯️",desc:"餐桌正中央银质烛台上刻着一行极小的字。尽管经历了百余年的锈蚀，字迹依然清晰——像有人每天都在描刻。烛火在无风中静静燃烧，火焰呈不自然的偏蓝苍白。",aLabel:"凑近阅读",act:function(){if(S.foundItems.d_candle)return;S.foundItems.d_candle=true;st("你凑近烛台，看清了那行刻字：\n\n维克多·霍桑，生于1862年3月15日\n埃莉诺·霍桑，生于1865年8月20日\n莉莉安·霍桑，生于1890年7月13日\n\n通往知识之门需要知晓——母亲与女儿的享年\n\n享年即去世时的年龄。埃莉诺和莉莉安都死于1897年。\n埃莉诺享年：1897-1865=32岁\n莉莉安享年：1897-1890=7岁\n密码：3207",7000);aJ("烛台上的家族生卒","餐桌烛台刻着三人出生日期。惨案发生于1897年——埃莉诺享年32岁，莉莉安享年7岁。将享年组合：3207。这就是通往书房门的四位数密码。");}},
-items.d_portv={id:"d_portv",name:"维克多的肖像",icon:"👨",desc:"最左边的等人高肖像。维克多戴着高顶礼帽，右手握银柄手杖。他的眼神不看向画外，而是斜视着书房和地下室的方向。铭牌被刮花了，但仍能辨认部分文字。",aLabel:"查看铭牌",act:function(){if(S.foundItems.d_portv)return;S.foundItems.d_portv=true;st("铭牌残留文字：\n\n维克多·霍桑医生\n生于1862年 卒于1897年\n享年35岁\n他追寻真相 却被真相吞噬");aJ("维克多的铭牌","维克多享年35岁。铭牌刻着：他追寻真相，却被真相吞噬。是谁为他刻下了这行墓志铭？");}},
-items.d_porte={id:"d_porte",name:"埃莉诺的肖像",icon:"👩",desc:"中间的等人高肖像。埃莉诺身着深绿色丝绒长裙，左手无名指戴着婚戒，右手紧紧攥成拳头。她的嘴唇紧抿，眼神流露出恐惧而非悲伤。铭牌被刮得最严重。",aLabel:"查看铭牌",act:function(){if(S.foundItems.d_porte)return;S.foundItems.d_porte=true;st("埃莉诺的铭牌被刮得最严重，但仍可辨认：\n\n埃莉诺·霍桑\n生于1865年 卒于1897年\n享年32岁\n她试图拯救——\n（后半部分被完全刮掉了）\n\n烛台刻字确认：埃莉诺享年32岁，莉莉安享年7岁。3207——通往书房的密码。");aJ("埃莉诺的铭牌","埃莉诺享年32岁。铭牌后半部分被恶意刮掉。结合烛台线索，书房密码是3207（32+07=母亲享年32，女儿享年7）。");}},
-items.d_portl={id:"d_portl",name:"莉莉安的肖像",icon:"👧",desc:"最右边的等人高肖像。莉莉安穿着白色连衣裙，裙摆绣着蓝色小花，抱着独眼布娃娃——画中娃娃的独眼似乎正直直盯着你。她的微笑起初天真，但凝视久了会渐渐变味。铭牌几乎完好无损。",aLabel:"查看铭牌",act:function(){if(S.foundItems.d_portl)return;S.foundItems.d_portl=true;st("莉莉安的铭牌完好无损：\n\n莉莉安·霍桑\n生于1890年 卒于1897年\n享年7岁\n她只是想要爸爸回家");aJ("莉莉安的铭牌","莉莉安享年仅7岁。铭牌刻着：她只是想要爸爸回家。一个七岁孩子最纯粹的愿望。但她的父亲已经迷失在了黑暗中。");}},
-items.d_door={id:"d_door",name:"通往书房的门（密码锁）",icon:"🚪",desc:"餐厅角落的厚重橡木门，装着一个四位数密码锁。黄铜面板上刻着：「唯有知晓母亲与女儿享年者，方可进入。」",aLabel:"输入密码",act:function(){if(S.unlockedRooms.study){st("书房的门已经打开了。");return;}showPW("书房门密码锁","请输入四位数密码\n（线索：餐厅烛台和三幅肖像的铭牌——母亲与女儿的享年）","d_door");}},
-items.s_news={id:"s_news",name:"1897年12月《阿卡姆公报》",icon:"📰",desc:"一份泛黄发脆的旧报纸，摊开在书桌上。日期：1897年12月24日——惨案当天。头版头条的粗体大字触目惊心。纸张边缘碎裂，像被人愤怒地揉搓过。",aLabel:"阅读头版",act:function(){if(S.foundItems.s_news)return;S.foundItems.s_news=true;st("《阿卡姆公报》1897年12月24日\n\n【头版头条】\n霍桑庄园惨案！\n著名外科医生一家三口被发现死于庄园\n\n本报快讯：今日凌晨，警方接到邻居报案，深夜听到庄园内传出枪声与尖叫声。警方破门而入，发现维克多·霍桑医生（35岁）、其妻埃莉诺（32岁）及女儿莉莉安（7岁）均已死亡。\n\n据初步调查，维克多在杀害妻女后饮弹自尽。调查人员在地下室发现未经授权实验室及大量来源不明的医学设备。\n\n12月24日——这就是报纸日期，平安夜。",7000);aJ("《阿卡姆公报》头版","报纸日期：1897年12月24日——惨案当天。记住这个日期：12月24日。它将用于解开书架密码锁。");}},
-items.s_note={id:"s_note",name:"维克多的黑色笔记本",icon:"📓",desc:"黑色封面笔记本，无任何标识。前半部分字迹工整——标准医疗日志风格。越往后越潦草扭曲，笔压越来越重，有些地方纸张被戳破。最后几页几乎无法辨认。",aLabel:"翻阅笔记",act:function(){if(S.foundItems.s_note)return;S.foundItems.s_note=true;st("1897年7月13日——莉莉安七岁了。她瞳孔上出现了白色斑点。常规医学无法解释也无法治愈。但我找到了另一条路。\n\n1897年10月3日——第83天。第一次实验成功。受试者生命体征在临床死亡后维持了整整三分钟。\n\n1897年11月15日——第126天。在动物身上完成转移。下一步需要人类受试者。\n\n1897年12月10日——第151天。收到了医疗理事会的信。埃莉诺背叛了我。她偷走了钥匙——拆成三片。但我能找到。\n\n（最后几页是无法辨认的疯狂涂鸦）",8000);aJ("维克多的笔记本","笔记本记录了维克多的堕落过程。关键在于：实验开始于莉莉安生日7月13日的第83天。计算：7月13日+83天=10月4日。月份和日期：1004——这就是书架密码锁的密码。");}},
-items.s_shelf={id:"s_shelf",name:"红木书架（密码锁）",icon:"📚",desc:"角落里的红木书架比其他书架都华丽。架上放的不是书，而是一排排标有日期的玻璃标本瓶，里面泡着无法辨认的组织。书架装着四位数黄铜密码转轮——锁上刻着「1897」。",aLabel:"转动密码轮",act:function(){if(S.solvedPuzzles.s_shelf){st("书架已经打开了。通往二楼的钥匙就在里面。");return;}showPW("书架密码锁","请输入四位数密码\n提示：实验开始于莉莉安生日（7月13日）后第83天。7月13日+83天=10月4日。密码=1004（月份+日期）","s_shelf");}},
-items.s_draw={id:"s_draw",name:"手绘解剖图",icon:"🫀",desc:"一张手绘人体解剖图，纸张发黄。标注的不是器官名称，而是一系列扭曲的符号——和地下室的符号一模一样。图上似乎在描述某种灵魂移植的程序。",aLabel:"仔细查看",act:function(){if(S.foundItems.s_draw)return;S.foundItems.s_draw=true;st("图纸下方用极小字迹写着：「灵魂可以被转移，但容器必须是自愿的。第一个容器——失败的。第二个——部分成功的。第三个……我需要第三个。——维克多·霍桑」日期被污渍遮盖了。");aJ("维克多的解剖图","抽屉里的解剖图不是医学图——而是某种灵魂移植的示意图。维克多写道：第一个容器失败了，第二个部分成功，我需要第三个。他到底在寻找什么——以及在用谁做实验？");}},
-items.h_wall={id:"h_wall",name:"墙上的暗红色字迹",icon:"🩸",desc:"走廊尽头，一缕白光从钉死木板的缝隙中射入，照亮对面墙上一行暗红色字迹。字迹歪歪扭扭，约在一米高度——一个七岁孩子举手能及的位置。",aLabel:"辨认字迹",act:function(){if(S.foundItems.h_wall)return;S.foundItems.h_wall=true;st("你凑近墙壁，艰难辨认出歪扭的字迹：\n\n妈妈说要勇敢。\n爸爸说他快要找到方法了。\n但我不喜欢地下室里的那个声音。\n它每天夜里都在叫我的名字。\n妈妈把那三片东西藏起来了。\n她说只要分开它们——\n爸爸就不能把那个东西放进我身体里了。\n藏在镜子里、藏在天花板上、藏在——\n\n（最后两个字完全无法辨认——像是一个人在极度恐惧中写完的）\n\n这是莉莉安的笔迹。一个七岁孩子在被害之前留下的最后信息。",8000);aJ("莉莉安的墙书","走廊墙上是莉莉安用暗红色液体写下的最后信息。她提到地下室的声音、埃莉诺藏匿钥匙碎片。这印证了日记中的线索：钥匙碎片藏在浴室镜子、阁楼和卧室中。");}},
-items.h_pap1={id:"h_pap1",name:"撕碎纸片A——食谱残页",icon:"📄",desc:"一片从某本烹饪书上撕下的残页。纸张质地与厨房的食谱卡相似。残页上残留着半行文字，似乎是某道菜的配方说明。",aLabel:"阅读残页",act:function(){if(S.foundItems.h_pap1)return;S.foundItems.h_pap1=true;S.inventory.push("走廊纸片A：食谱残页");st("残页上的文字：……将蛋黄与蛋白分离后，把蛋白打发至硬性发泡，然后轻轻拌入面糊中。记住——永远不要逆行——");aS("clue","走廊纸片A","这片食谱残页上的最后一句话——永远不要逆行——似乎是一个重要提示。也许和某个需要按特定顺序操作的谜题有关。");uH();uM();}},
-items.h_pap2={id:"h_pap2",name:"撕碎纸片B——日记残页",icon:"📄",desc:"一片从日记本上撕下的残页。纸张与你之前在客厅找到的埃莉诺日记属于同一材质。字迹潦草慌张——字间间距不均匀，像写字时手在颤抖。",aLabel:"阅读残页",act:function(){if(S.foundItems.h_pap2)return;S.foundItems.h_pap2=true;S.inventory.push("走廊纸片B：日记残页");st("残页上的字迹勉强可辨：……莉莉安今晚又在梦中尖叫了。她说地下室里有很多眼睛在看她。我不能再等下去了。我必须在明天之前把所有钥匙碎片藏好。最后一片……我就放在那里——他永远不会发现的——");uH();uM();}},
-items.b_mirror={id:"b_mirror",name:"裂成三块的梳妆镜",icon:"🪞",desc:"梳妆台上的椭圆形镜子裂成三块但未散落——更诡异的是三块碎片映出不同画面：左边是哭泣的女人，中间是咆哮的面容，右边是一扇紧闭的门。镜子右下角边框刻着一行细小文字。",aLabel:"查看边框刻字",act:function(){if(S.foundItems.b_mirror)return;S.foundItems.b_mirror=true;st("你把脸凑近镜框，艰难地看清了右下角的刻字：\n\n唯有说出我的名字——你最真实的忏悔——门才会为你敞开\n\n你需要对着镜子说出一个特定的名字。答案就在枕头下面那封没有寄出的信中。");aJ("卧室梳妆镜的秘密","镜子边框刻着：唯有说出我的名字——门才会为你敞开。这面镜子是通往阁楼的入口。答案藏在枕头下那封未寄出的信中——信的作者就是你需要说出的名字。");}},
-items.b_letter={id:"b_letter",name:"未寄出的信",icon:"💌",desc:"一封从枕头下找到的信，无地址无邮票——一封写了但从未寄出的忏悔信。信封因泪痕变得皱巴巴，部分墨水洇开了。信封里夹着一片形状不规则的金属碎片——钥匙残片。",aLabel:"打开阅读",act:function(){if(S.foundItems.b_letter)return;S.foundItems.b_letter=true;S.keyFragments++;S.inventory.push("钥匙碎片之一：从未寄出的忏悔");st("亲爱的主啊：\n\n我不知道该向谁忏悔，所以我只能写在这里。\n\n那天晚上我看到维克多走进莉莉安的房间时，我假装睡着了。我没有阻止他。因为我知道——如果阻止了他，他就永远不会再爱我了。我选择了沉默，选择了自己的婚姻，而不是女儿的安全。\n\n上帝作证——我听到了她叫妈妈。就一声。然后就是沉默。这份沉默将伴随我的余生。\n\n如果有后来者读到这封信——请你说出我的名字：埃莉诺。对着二楼的镜子说出这个名字——它将指引你去往我藏匿最后真相的地方。\n\n署名：埃莉诺·霍桑\n1897年12月23日",8000);aJ("埃莉诺未寄出的忏悔信","卧室枕头下发现了一封埃莉诺写给上帝的忏悔信。她承认在维克多走进莉莉安房间的夜晚，她假装睡着了——因为害怕失去丈夫的爱。信的最后指示：对着镜子说出「埃莉诺」。信封中夹着第一片钥匙碎片。");aS("clue","第一片钥匙到手","埃莉诺的忏悔信中夹着第一片钥匙残片。信中她坦白了自己最深的罪。对着镜子说出「埃莉诺」来打开通往阁楼的通道。");uH();uM();}},
-items.b_ward={id:"b_ward",name:"虚掩的衣柜",icon:"🚪",desc:"卧室衣柜的门虚掩着，只开了约三厘米缝隙。站这么远仍能听到缝隙中传来的沙沙声——不像风，像什么东西在布料上来回摩擦。",aLabel:"鼓足勇气打开",act:function(){if(S.foundItems.b_ward)return;S.foundItems.b_ward=true;st("你深吸一口气，猛地拉开了衣柜门。\n\n里面空空如也。只有几件连衣裙和西装挂在衣架上，随着你拉门的动作轻轻晃动。\n\n但衣架停止晃动后——你清楚听到了一个声音。来自衣柜最深处，像有人贴着后板在对你耳语：\n\n妈妈……妈妈……爸爸说他爱我……但他把我切开的时候……我一直在喊你……你听到了吗……妈妈……\n\nSAN值骤降。");S.sanity=Math.max(0,S.sanity-20);uH();phb();setTimeout(function(){dJS("👁️","妈妈...你听到了吗...");},1200);aJ("衣柜中的声音","打开衣柜后没有看到任何异常——但听到了一个孩子声音贴着你耳朵重复：妈妈……你听到了吗……这是莉莉安在被害前最后的呼喊，而她的母亲选择了沉默。");}},
-items.bh_mirror={id:"bh_mirror",name:"镜面上的暗红字迹",icon:"🪞",desc:"洗手台上方镜面上浮现出一行暗红色字迹。在昏黄灯光下，字似乎从镜子里渗出来的——你试图擦拭，却丝毫没有变淡。",aLabel:"阅读文字",act:function(){if(S.foundItems.bh_mirror)return;S.foundItems.bh_mirror=true;st("你凑近镜面，看清了那行暗红色的字：\n\n她的血——第七天的——就是钥匙。喝下它——或者打碎它——由你选择。但小心——瓶子里装的是真相。\n\n这句话似乎指向洗手台旁那个装满深红色液体的小玻璃瓶。第七天……什么第七天？也许是莉莉安死后的第七天？");aJ("浴室镜面的提示","浴室镜面浮现的暗红色字指向洗手台旁的血瓶——她的血，第七天的，就是钥匙。血瓶底部似乎有一个夹层。第七天可能指莉莉安死后第七天采集的血样。");}},
-items.bh_vial={id:"bh_vial",name:"深红色血瓶",icon:"🧪",desc:"一个装着深红色浓稠液体的小玻璃瓶。瓶塞用暗红蜡封紧。转动瓶子可见瓶底有极薄的夹层——透过暗红液体隐约看到里面夹着纸片。瓶外壁沾着暗色干涸痕迹。",aLabel:"小心处理",act:function(){if(S.foundItems.bh_vial)return;S.foundItems.bh_vial=true;S.keyFragments++;S.inventory.push("钥匙碎片之二：镜中所见不可见之物");st("你小心揭开蜡封，将瓶中液体倒入水槽——深红液体在瓷面上缓慢流淌。从瓶底夹层中取出一张极薄纸片。\n\n纸片写着：「莉莉安的血样——第七天采集。她的血液中出现了前所未有的异常细胞结构。这或许就是永生的关键。但我不能再继续了——这已经不再是医学。」\n\n纸片背面贴着一片金属钥匙碎片。这是第二片——镜中所见不可见之物。",8000);aJ("血瓶与第二片钥匙","浴室血瓶夹层中藏着第二片钥匙碎片。瓶中血液是莉莉安死后第七天采集的——维克多在她死后还在进行实验。纸片写着：这已经不再是医学。");aS("clue","第二片钥匙到手","在浴室镜子暗格——血瓶底部的夹层中——找到了第二片钥匙碎片。对应埃莉诺日记第一条线索：镜中所见不可见之物。");uH();uM();}},
-items.bh_glass={id:"bh_glass",name:"地板的碎玻璃",icon:"💎",desc:"浴室地板散落着碎玻璃——似乎是另一面被打碎的镜子。昏暗灯光下碎片反射微弱黄光。其中一片较大碎片上沾着暗色痕迹。",aLabel:"检查碎玻璃",act:function(){if(S.foundItems.bh_glass)return;S.foundItems.bh_glass=true;st("你蹲下观察。最大一片玻璃上沾着明显血迹——已干涸成暗褐色。血迹的形状不像飞溅的，更像是有人用血写了一个字母——L——然后就被人打碎了。");aJ("碎玻璃上的血迹","浴室碎玻璃上沾着一个血写的字母L——可能是莉莉安名字的首字母。是谁在镜子上写了她的名字然后打碎了它？愤怒的维克多？还是被囚禁在宅邸中的灵魂？");}},
-items.a_chest={id:"a_chest",name:"雕刻木箱",icon:"📦",desc:"阁楼角落沉重的橡木箱，箱盖雕刻着三个符号——弯月、六芒星、太阳，围绕锁孔排列。箱子旁地板上有人用粉笔写了一句话。箱盖边缘沾着干涸蜡泪。",aLabel:"研究箱子",act:function(){if(S.solvedPuzzles.a_chest){st("木箱已经打开了。里面放着第三片钥匙碎片。");return;}showPW("阁楼木箱密码","请输入三位数密码\n提示：阅读箱子旁的粉笔字——莉莉安喜欢的顺序是星星→月亮→太阳。三个符号上分别刻着小字：星=8、月=3、日=1。密码=831","a_chest");}},
-items.a_chalk={id:"a_chalk",name:"粉笔字迹",icon:"✏️",desc:"箱子旁地板上用粉笔写着歪歪扭扭的句子。粉笔字在灰尘映衬下格外明亮——像是最近才写上去的。字迹稚嫩，像一个刚学写字的孩子写的。",aLabel:"俯身阅读",act:function(){if(S.foundItems.a_chalk)return;S.foundItems.a_chalk=true;st("你擦去灰尘，看清了粉笔写下的句子：\n\n星星是莉莉安最喜欢的——因为妈妈说星星是那些离开的人在天上点的灯。月亮是第二喜欢的——因为月亮每晚都会来看她。太阳她不太喜欢——因为太阳出来的时候爸爸就会假装什么都没发生。\n\n所以莉莉安的顺序是：星星→月亮→太阳。仔细看三个符号上都刻着小数字：星=8、月=3、日=1。密码831。");aJ("阁楼粉笔字","莉莉安写的粉笔字列出了她喜欢的天体顺序：星星→月亮→太阳。对应木箱符号上的数字：8→3→1。密码是831。");}},
-items.a_doll={id:"a_doll",name:"莉莉安的布娃娃",icon:"🧸",desc:"角落里独眼的绿色布娃娃——和全家福中莉莉安抱的那只一模一样。裙子褪色，一只胳膊缝线松开，露出发黄棉花。但最令人不安的是它独眼中的那一点微光。",aLabel:"捡起娃娃",act:function(){if(S.foundItems.a_doll)return;S.foundItems.a_doll=true;S.inventory.push("莉莉安的布娃娃");st("你弯下腰捡起布娃娃。那一瞬间——你发誓你感觉到了——娃娃的手指动了一下。不是被风吹的，是一只小手本能地抓住了你的手指。娃娃裙摆里有一颗线缝的蓝色小花——和肖像中裙摆上的花朵一模一样。\n\n你明白了——这不是普通娃娃。它是莉莉安留在这个世界上最后的、没有被碰过的东西。也许一部分的她，还住在这里面。");aJ("莉莉安的布娃娃","在阁楼角落找到了莉莉安的独眼布娃娃——她生前最珍爱的物件。当你捡起它时，娃娃的手指无依无据地轻轻动了一下。也许莉莉安的一部分灵魂还住在这个娃娃里。这是唯一没有被维克多实验玷污的东西。");}},
-items.a_keyf={id:"a_keyf",name:"钥匙碎片之三：黑夜中最亮之星",icon:"🗝️",desc:"从阁楼木箱夹层中取出的第三片钥匙碎片。它和前两片边缘完美吻合。三片拼合恰好形成完整仪式钥匙——纹路和地下室门锁孔一模一样。你拥有了通往最终真相的一切条件。",aLabel:"集齐三片",act:function(){if(S.foundItems.a_keyf)return;S.foundItems.a_keyf=true;S.keyFragments++;S.inventory.push("钥匙碎片之三：黑夜中最亮之星");st("第三片钥匙碎片完美地拼合——三片融合成完整仪式钥匙。拼接完成的瞬间，钥匙发出温暖金色光芒，持续三秒后恢复冰冷。你能感受到钥匙中蕴藏的力量。去地下室吧——最终真相在等待着你。");aS("final","三片钥匙集齐","三片钥匙碎片拼合成完整仪式钥匙。它在你手中微微颤抖——不是在害怕，而是在期待。通往地下室的最后一扇门即将打开。你准备好了吗？");uH();uM();}},
-items.bs_book={id:"bs_book",name:"祭坛上的禁书",icon:"📕",desc:"地下室祭坛上，一本厚重书籍静躺着。封面不是普通皮革——摸起来温暖有弹性，甚至能感到微弱脉动，像活物。书页在无风地下室自动翻动，每次停在插图页。",aLabel:"翻开禁书",act:function(){if(S.foundItems.bs_book)return;S.foundItems.bs_book=true;st("你的手指碰触书页的瞬间——\n\n一股冰凉电流从指尖直窜脑后。你看到无数画面在脑海中炸开：维克多在地下室的疯狂实验。埃莉诺跪在祭坛前哭泣。莉莉安——不是那个七岁女孩——而是一种被不属于这个世界力量攫住的形态。\n\n然后你看到了真相：维克多试图通过仪式将莉莉安灵魂移植到不朽容器——为了让她永生。但仪式需要三个祭品：自愿的身体、不自愿的灵魂、和被背叛者。\n\n维克多选择了自己。埃莉诺是不自愿的灵魂。莉莉安是被背叛者——被母亲以沉默背叛。\n\n仪式失败了——因为莉莉安的意志太强。她的灵魂拒绝被移植，撕裂了纽带，将三个人一同拖入死亡——也将他们困在这座宅邸中，永远。\n\n你现在站在祭坛前。你有两个选择：完成仪式释放黑暗，或用铁锤摧毁祭坛让灵魂安息。",8000);aJ("禁书揭示的真相","禁书揭示了霍桑惨案真相：维克多试图通过仪式让莉莉安永生——但仪式需要三个祭品。莉莉安的意志力撕裂了仪式，三人灵魂被困宅邸百年。现在你有选择：完成仪式或摧毁祭坛。");aS("final","真相大白","维克多试图让莉莉安永生。埃莉诺以沉默背叛女儿。莉莉安意志力撕裂仪式——三人灵魂被困百年。现在你有了选择。");}},
-items.bs_hammer={id:"bs_hammer",name:"生锈的铁锤",icon:"🔨",desc:"祭坛旁放着一把锈迹斑斑的铁锤。不是偶然掉落——有人刻意放在触手可及的地方，手柄朝着祭坛方向。木柄上刻着两个维多利亚时代字体的字。",aLabel:"查看铁锤",act:function(){if(S.foundItems.bs_hammer)return;S.foundItems.bs_hammer=true;st("你拿起铁锤翻看。木柄上刻的两个字是：「自由」。\n\n这把铁锤是埃莉诺在最后时刻放在这里的——作为给后来者的一个选择。她自己无法完成任务——她太爱维克多了。但她希望有人能替她完成。");aJ("铁锤上的两个字","地下室祭坛旁的铁锤上刻着「自由」。这是埃莉诺留给后来者的选择——她因为深爱维克多而无法亲手摧毁祭坛，但她将工具留给了能够做到的人。");}},
+var ROOMS = [{"id": "foyer", "name": "门厅", "eng": "FOYER", "icon": "🚪", "unlocked": true, "desc": "沉重的橡木大门在你身后缓缓关闭，发出一声令人不安的闷响。门厅比从外面看起来要宽敞得多。一盏巨大的水晶吊灯悬挂在正中央，上面蒙着的灰尘厚得像一层灰色的毛毯，但水晶棱镜仍然在某种看不见的气流中轻轻晃动，发出细微的咔嗒声。墙壁上贴着暗红色的织锦壁纸，金色花纹已经褪成了病态的黄色。一张桃花心木桌上放着三样东西：一封用红蜡封好的信件、一把系着泛黄标签的黄铜小钥匙、一本皮质封面的来访登记簿。桌腿旁的地板上有一条明显的深色拖痕。墙上钉着一张字条：不要一个人去地下室。"}, {"id": "living", "name": "客厅", "eng": "LIVING ROOM", "icon": "🛋️", "unlocked": true, "desc": "客厅比你想像的要大得多，也暗得多——这里的黑暗似乎拥有重量。厚重的酒红色天鹅绒窗帘紧紧闭合着。壁炉已经冰冷了一个多世纪。壁炉台上摆着一张褪了色的全家福：维克多医生、埃莉诺和莉莉安。角落里立着一架桃花心木的三角钢琴，琴凳的盖子被一把精致的小锁锁住了，锁孔旁有三个字母的空位。谱架上放着一张被烧掉一半的乐谱——第一个和最后一个被红圈标注的音符都是D。沙发扶手上放着埃莉诺的皮质日记。"}, {"id": "kitchen", "name": "厨房", "eng": "KITCHEN", "icon": "🍳", "unlocked": false, "unlock_item": "brass_key", "desc": "黄铜小钥匙在锁孔里转动时发出一声尖锐的金属摩擦声。厨房中央一座巨大的铸铁炉灶占据了房间的三分之一。炉灶上还架着一口黑铁锅，锅底残留着深褐色硬壳。橱柜门上有从内部向外的抓痕。最高的那个柜子半开着，铰链上挂着一小片深绿色的碎布。储物柜上贴着标签：医疗用品——仅限维克多医生使用。水龙头每隔几秒就滴下一滴水。"}, {"id": "dining", "name": "餐厅", "eng": "DINING ROOM", "icon": "🍽️", "unlocked": false, "unlock_item": "diary_clue", "desc": "餐厅的桃花心木长桌可以坐十二个人，但现在只有三个位置摆放着餐具。桌上的银质烛台已经发黑。桌布上有大片暗色污渍。墙上挂着一幅静物油画——野鸡的眼睛被换成了一个小小的黑色按钮。三个茶杯中有一个被打翻在地，碎成了两半。墙角有一台老式的留声机，黄铜喇叭上蒙着蛛网。"}, {"id": "study", "name": "书房", "eng": "STUDY", "icon": "📚", "unlocked": false, "unlock_puzzle": "书房门上有一个四位数字密码锁。提示：莉莉安的生日（月日）。", "unlock_answer": "0706", "desc": "书房的空气比宅邸里其他任何地方都要浓稠。三面墙壁被顶天立地的书架占据。维克多的书桌上放着一张医学院毕业证书：维克多·霍桑，阿卡姆大学医学院，1882届。证书下方压着一本皮面笔记本，封面上写着：VEN。靠窗的位置有一个上锁的橡木抽屉，把手上系着一根粉色丝带。窗台上放着玻璃罐，里面浸泡着的标本形状不太对。"}, {"id": "hallway", "name": "走廊", "eng": "HALLWAY", "icon": "🕯️", "unlocked": false, "unlock_msg": "需要更多线索才能探查走廊", "desc": "走廊比宅邸里其他任何地方都要狭窄、都要长。墙壁上挂着六幅画像。第六幅——维克多的画像——脸部被刮掉了。地板有几处松动的木板。墙壁上有蜡烛壁灯，一盏还在燃烧，下面压着一张纸条：372。走廊尽头有一扇窗户，月光在地板上投下十字形阴影。十字形正中心有一个小小的暗门。"}, {"id": "bedroom", "name": "卧室", "eng": "BEDROOM", "icon": "🛏️", "unlocked": true, "desc": "主卧室弥漫着闷热的、带着轻微腐烂气息的暖意。双人床上铺着褪色的深红色床单。被子下面像是躺着一个人。梳妆台上摆满了维多利亚时代的化妆品。镜子被人用口红涂满了字：你永远无法离开。我也是。埃莉诺的衣柜半开着。梳妆台的抽屉里有一本小圣经，唯一还能看清的一行字被用红墨水圈出：信我的人，虽然死了，也必复活。"}, {"id": "bathroom", "name": "浴室", "eng": "BATHROOM", "icon": "🛁", "unlocked": true, "desc": "浴室的门一推开，潮湿的霉味扑面而来。浴缸里盛着半缸水——一个多世纪后还没有蒸发？水底沉着一个小小的、布制的、只有一只眼睛的绿色娃娃。莉莉安的娃娃。洗手台上方的镜子上用口红写满了字。浴帘后面藏着一个隐藏的壁龛——壁龛里有一台密码锁保险箱。"}, {"id": "attic", "name": "阁楼", "eng": "ATTIC", "icon": "🪜", "unlocked": false, "unlock_msg": "需要打开走廊暗门才能进入阁楼", "desc": "阁楼的天花板低得你必须弯着腰走路。灰尘聚集成一缕一缕的，像是有人刚刚走过。角落里堆满了旧家具——在黑暗中像一群蹲伏的生物。正中央放着一台缝纫机，踏板上夹着一件未完成的白色小裙子。靠近天窗有一张儿童书桌。墙角大木箱贴着霍桑家族文件。天窗玻璃上刻着：妈妈从这扇窗户看星星。最亮的那颗比爸爸大七倍。"}, {"id": "basement", "name": "地下室", "eng": "BASEMENT", "icon": "⚠️", "unlocked": false, "unlock_msg": "需要集齐三片钥匙碎片", "desc": "通往地下室的楼梯又窄又陡。越往下走空气越冷——一种掠夺体温的阴寒。拱顶很低，中央地面上刻着巨大的圆形图案。图案里嵌套着倒三角形，每个角上都摆放着黑色蜡烛。正对楼梯的墙上有一扇沉重的铁门——暗门。门上没有锁孔，没有把手，只有一个圆形凹槽。暗门旁散落着几本古籍。角落有一个巨大的铁笼子。实验台上摆满手术器械，台面上有一个干净的、人头大小的长方形区域。"}];
+var ACTIONS = {"foyer": [{"type": "read", "label": "阅读信件", "item": "letter", "result": "你小心地拆开那封用红蜡封好的信。信纸已经泛黄发脆。\n\n致我最爱的埃莉诺：\n仪式所需的最后一个条件，我已经找到了。莉莉安会好起来的，我向你保证。\n\n你拆散的那把钥匙，我已经找回了第一片——就在你藏在钢琴凳里的那个天鹅绒小袋里。\n\n不要试图阻止我。仪式一旦开始就不能中断。\n\n永远爱你的，维克多\n又及：记住我们女儿最喜欢在浴室里唱的那首歌——它也是解开她保险箱的密码。"}, {"type": "read", "label": "翻阅来访登记簿", "item": "register", "result": "登记簿的皮革封面已经干裂。翻到1897年11月之后，记录戛然而止。最后一页只有一行字：他不会再让别人进来了。登记簿的封底夹层里塞着一张折叠的小纸条，写着：1897.12.24。纸条背面画着一个符号：圆圈里套着一个倒三角形，三角形里写着一个数字：3。"}, {"type": "pickup", "label": "拾起黄铜小钥匙", "item": "brass_key", "result": "你拾起那把黄铜小钥匙。标签上写着几个褪色的字：厨房储物柜。钥匙握在手中有一种异常的冰冷，仿佛它从未被任何人的体温温暖过。"}], "living": [{"type": "read", "label": "阅读埃莉诺的日记", "item": "diary", "result": "你拿起沙发上的皮质日记。书签夹在1897年12月20日。\n\n12月20日\n我今天趁维克多出门，偷偷去了地下室。门上的密码锁还是那三个字母——LIL，莉莉安的名字缩写。\n\n我把钥匙拆成了三片。一片在钢琴凳里，一片在厨房最高的柜子里，最后一片在书房带锁的橡木抽屉里。密码是她的生日。"}, {"type": "puzzle", "label": "打开钢琴凳锁", "item": "piano_lock", "puzzle": "请输入三个字母的密码打开钢琴凳（提示：日记中提到地下室密码锁是哪三个字母？）：", "answer": "LIL", "reward": "key_fragment_1", "result": "锁咔嗒一声弹开了。钢琴凳的夹层里有一个天鹅绒小袋。你打开小袋，里面躺着一片形状奇特的金属碎片。这是第一片钥匙碎片。"}, {"type": "read", "label": "查看被烧毁的乐谱", "item": "sheet_music", "result": "你拿起那张烧掉一半的乐谱。第一行和最后一行都被红圈标注了D音。乐谱空白处有人用铅笔潦草地写道：D是开始也是结束。女儿的昵称，母亲的姓氏，父亲每天念叨的那个词的前三个字母。"}], "kitchen": [{"type": "pickup", "label": "打开储物柜", "item": "storage", "result": "你打开贴有医疗用品标签的储物柜。柜子底层有一个上锁的铁盒，盒子上刻着一行字：每日服用，一次一片，父亲的希望。铁盒的密码锁是一个四位数字。"}, {"type": "puzzle", "label": "打开铁盒密码锁", "item": "iron_box", "puzzle": "铁盒密码锁。提示：维克多的医学院毕业年份（四位数字）：", "answer": "1882", "reward": "diary_clue", "result": "铁盒打开了。里面有一张羊皮纸，画着人体解剖图，所有标注汇聚到颅骨底部的松果体。下方写着：松果体——灵魂的居所。仪式第三阶段：在子夜时分，将三片钥匙合而为一。"}, {"type": "pickup", "label": "翻找最高处的橱柜", "item": "top_cabinet", "result": "你搬来椅子够到最高的橱柜。里面有一件深绿色长裙。裙子的口袋里有一张纸片，上面写着：我把第二片藏在了每天都能看到阳光的地方。莉莉安最喜欢在那里吃东西。"}], "dining": [{"type": "read", "label": "播放留声机", "item": "phonograph", "result": "你转动留声机的手柄——它还能工作。唱针落到唱片上，不是弥撒。不是唱诗班。是一个男人和一个女人在争吵，夹杂着瓷器碎裂声和孩子的哭声。你听出了几个词：……地下室……放开她……你疯了维克多……然后是一声枪响。这是1897年平安夜的真实录音。"}, {"type": "pickup", "label": "检查被打翻的茶杯", "item": "teacup", "result": "茶杯碎片之间夹着一张羊皮纸卷。展开一看——上面写着三个字母：VEN。你想起了乐谱上的提示：父亲每天念叨的那个词的前三个字母。"}, {"type": "puzzle", "label": "打开餐边柜密码抽屉", "item": "buffet_drawer", "puzzle": "餐边柜密码抽屉。锁上刻着父亲的身份。请输入三个字母。", "answer": "VEN", "reward": "key_fragment_2", "result": "抽屉滑开了。里面有一个天鹅绒小袋——第二片钥匙碎片。和第一片刚好互补，拼在一起能看到圆环和三角形的轮廓。还缺最后一角。"}], "study": [{"type": "read", "label": "翻阅笔记本(VEN)", "item": "notebook", "result": "你翻开封面写着VEN的皮面笔记本。VENI, VIDI, VICI——我来，我见，我征服。凯撒的名言。维克多写道：Veni——来到医学的边界。Vidi——见到了莉莉安的病。Vici——将征服死亡本身。仪式需要三样东西：一把钥匙（已被埃莉诺拆成三片）、一句真言（VENI VIDI VICI）、以及一个足够纯洁的灵魂容器。"}, {"type": "puzzle", "label": "打开莉莉安的橡木抽屉", "item": "lily_drawer", "puzzle": "抽屉锁上刻着我女儿的生日。请输入四位数（月日）：", "answer": "0706", "reward": "silver_key", "result": "抽屉打开了。里面是一叠莉莉安的画作。最后几张画上出现了黑色和红色。一个小女孩躺在桌子上，周围站着三个没有脸的人。画的背面，莉莉安用歪歪扭扭的笔迹写着：爸爸说要带我去一个很远的地方。妈妈哭了。我不想去。画纸下面压着一把银色小钥匙。"}], "hallway": [{"type": "pickup", "label": "拾起左轮手枪", "item": "revolver", "result": "走廊地板下面有一把左轮手枪，枪柄刻着V.H.——维克多·霍桑。弹仓里卡着一颗哑火子弹。取出来之后，子弹壳里掉出一张纸条：372。"}, {"type": "puzzle", "label": "打开走廊暗门", "item": "hallway_door", "puzzle": "暗门上刻着以372为钥。请输入三位数密码。", "answer": "372", "reward": "attic_unlock", "result": "暗门上的密码锁咔嗒一声打开了。一条狭窄的楼梯通往上方——通往阁楼。灰尘滚滚而下。"}], "bedroom": [{"type": "read", "label": "阅读未寄出的信", "item": "unsent_letter", "result": "你拆开埃莉诺衣柜里那封未寄出的信。收件人是阿卡姆镇警察局。\n\n致阿卡姆镇警察局：\n维克多在宅邸地下室进行非法的医学实验。他和某些不该打交道的东西建立了联系。我已经把钥匙拆成了三片藏了起来。请立刻派人来。不要一个人来。带枪。\n\n埃莉诺·霍桑\n1897年12月22日\n\n两天后，三个人都死了。"}, {"type": "pickup", "label": "搜查梳妆台抽屉", "item": "dresser", "result": "梳妆台底层抽屉有假夹层。里面排列着：一张埃莉诺结婚前的照片——她笑得很灿烂；一把银质发梳，背面刻着给妈妈——莉莉安，1897年圣诞礼物；一个玻璃瓶，标签写着：水合氯醛——用于镇静。瓶子几乎是空的。"}], "bathroom": [{"type": "read", "label": "检查镜子上口红字迹", "item": "mirror_writing", "result": "你用袖子擦去镜面上的灰尘。埃莉诺用口红写的是：莉莉安最喜欢在洗澡时唱歌。那首歌的名字是她名字的前三个字母。莉莉安的前三个字母：L-I-L。"}, {"type": "puzzle", "label": "打开壁龛保险箱", "item": "alcove_safe", "puzzle": "保险箱密码锁。提示：莉莉安在洗澡时唱的歌是什么（三个字母）？", "answer": "LIL", "reward": "locket", "result": "保险箱打开了。里面是一个心形小金盒吊坠。打开吊坠，里面有一张微型照片：埃莉诺抱着莉莉安，两个人都笑得很灿烂。吊坠背面刻着：无论发生什么，妈妈永远爱你。吊坠链子上还系着一个小小的银色钥匙——标签上写着：地下室。"}], "attic": [{"type": "read", "label": "检查缝纫机和未完成的裙子", "item": "sewing", "result": "你拿起那条未完成的白色小裙子。裙摆上绣的花是铃兰——莉莉安的名字就是铃兰的意思。裙子内部缝着标签：给我最亲爱的莉莉安——希望你永远不需要穿它。缝纫机台面下有一个暗格，里面躺着一枚金戒指，内侧刻着V. & E. 1885。戒指旁有纸条：我把最后一片藏在了离天空最近的地方，和他从大学带回的第一个奖杯放在一起。"}, {"type": "pickup", "label": "翻找霍桑家族文件箱", "item": "family_crate", "result": "你在文件箱中找到了一份阿卡姆大学的劝退通知书——维克多因非法器官移植实验被开除。文件最底部压着一个金色奖杯，刻着：阿卡姆大学解剖学竞赛第一名——维克多·霍桑，1882。奖杯是中空的——你拧开底部，天鹅绒衬里中掉出了第三片钥匙碎片。三片拼在一起——一把完整的钥匙。"}], "basement": [{"type": "read", "label": "检查古籍中的拉丁文", "item": "ancient_book", "result": "你翻阅那本古籍。在子夜，当月亮运行至天顶，点燃三支蜡烛，将钥匙插入暗门。念诵真言三次：Veni, Vidi, Vici。暗门将开启，门后的存在将回应你的呼唤。警告：不要试图在仪式中途离开。那个存在不喜欢被打断。"}, {"type": "ending", "label": "治愈莉莉安——完成仪式", "ending_key": "cure", "result": "你大声说出了你的选择：治愈她。黑暗中伸出了一只无形的手，穿透了时间，穿透了空间——然后一切都归于安静。\n\n当你再次醒来时，宅邸已经不同了。阳光透过窗户照进来——真正的阳光。你听到楼上传来一个小女孩的笑声。维克多和埃莉诺站在楼梯口，穿着1887年的衣服，面带微笑。莉莉安从楼梯上跑下来——她是真实的，温暖的，活着的。\n\n🎭 结局一：轮回\n你改写了历史。莉莉安活了下来。但你付出的代价——你被困在了1887年，永永远远地成为了霍桑家庭的一员。"}, {"type": "ending", "label": "摧毁暗门——释放灵魂", "ending_key": "destroy", "result": "你拔出那把在走廊找到的左轮手枪。对着暗门后的黑暗扣动了扳机。一声巨大的爆炸声响彻了整个地下室。三片钥匙碎片同时炸开，化作三道刺眼的白光。\n\n当你的视线恢复时，你看到三个模糊的人影——一个高个子男人、一个穿着长裙的女人、中间是一个抱着布娃娃的小女孩。他们消失了。暗门也消失了。你走出宅邸时，天已经亮了。\n\n🎭 结局二：解脱\n你释放了霍桑一家的灵魂。暗门被永远封印。但你的人生从此不同——你看到的世界比常人多了一个层面。每当夜深人静时，你能看到那些被困在两个世界之间的人影。而你学会了不去打扰他们。"}]};
 
-this.rRooms = function(){var g=document.getElementById('rooms-grid');if(!g)return;var h='';for(var i=0;i<roomOrder.length;i++){var rid=roomOrder[i],r=rooms[rid];var ul=S.unlockedRooms[rid];var vis=S.visitedRooms[rid];var cls='room-card';if(vis)cls+=' visited';if(!ul)cls+=' locked';h+='<div class="'+cls+'" onclick="openRoom(\''+rid+'\')">';h+='<span class="room-icon">'+r.icon+'</span>';h+='<div class="room-name">'+r.name+'</div>';h+='<div class="room-eng">'+r.eng+'</div>';if(!ul){h+='<div class="room-hint">🔒 需要线索解锁</div>';}else if(vis){h+='<div class="room-hint">✓ 已探索</div>';}else{h+='<div class="room-hint">可探索</div>';}h+='</div>';}g.innerHTML=h;}
-function openRoom(rid){ia();if(S.gameEnded)return;var r=rooms[rid];if(!r)return;if(!S.unlockedRooms[rid]&&r.unlockMsg){st(r.unlockMsg);return;}S.currentRoom=rid;pc();if(!S.visitedRooms[rid]){S.visitedRooms[rid]=true;var dm={foyer:2,living:3,kitchen:4,dining:4,study:5,hallway:8,bedroom:6,bathroom:7,attic:8,basement:15};S.sanity=Math.max(0,S.sanity-(dm[rid]||5));uH();if(S.sanity<20)phb();else if(Math.random()<0.3)pwh();if(['hallway','attic','basement'].indexOf(rid)>=0&&Math.random()<0.35){setTimeout(function(){dJS('👁️','你感觉背后...有什么东西...');},800);}}rRM(rid);rRooms();}
-function rRM(rid){var r=rooms[rid];document.getElementById('modal-title').textContent=r.icon+' '+r.name+' \u00b7 '+r.eng;var body=document.getElementById('modal-body');var h='<div class="modal-desc">'+r.desc+'</div>';var rItems=roomItems[rid]||[];h+='<div class="modal-items-title">📋 可互动的物品 ('+rItems.length+'件)</div>';for(var i=0;i<rItems.length;i++){var it=items[rItems[i]];if(!it)continue;var done=S.foundItems[it.id]?true:false;h+='<div class="item-card">';h+='<div class="item-name">'+it.icon+' '+it.name+'</div>';h+='<div class="item-desc">'+it.desc+'</div>';h+='<button class="item-act'+(done?' done':'')+'" onclick="doAction(\''+it.id+'\')">'+(done?'✓ 已完成':it.aLabel)+'</button>';h+='</div>';}body.innerHTML=h;document.getElementById('room-modal').classList.add('open');if(rid==='basement'&&S.keyFragments>=3&&!S.endingTriggered){setTimeout(function(){var b2=document.getElementById('modal-body');b2.innerHTML+='<div class="item-card" style="border:2px solid #aa4422;margin-top:12px"><div class="item-name">🔮 最终抉择</div><div class="item-desc" style="color:#cc8888">你集齐了三片钥匙碎片。选择你的命运\u2014\u2014</div><button class="item-act" onclick="doRitual(\'complete\')">■ 完成仪式</button> <button class="item-act" onclick="doRitual(\'destroy\')">✨ 摧毁祭坛</button></div>';},100);}}
-function closeModal(){document.getElementById('room-modal').classList.remove('open');}
-function doAction(itemId){var it=items[itemId];if(!it||!it.act)return;if(S.foundItems[itemId]){st('你已经完成了这个操作。');return;}it.act();}
-function showPW(title,hint,target){document.getElementById('pw-title').textContent=title||'🔒 需要密码';document.getElementById('pw-hint').textContent=hint||'';document.getElementById('pw-input').value='';document.getElementById('pw-error').textContent='';document.getElementById('pw-modal').classList.add('open');S.currentPW=null;S.currentPWTarget=target;document.getElementById('pw-input').focus();}
-function closePW(){document.getElementById('pw-modal').classList.remove('open');S.currentPW=null;S.currentPWTarget=null;}
-function submitPW(){var inp=document.getElementById('pw-input');var val=inp.value.trim().toUpperCase();var err=document.getElementById('pw-error');var target=S.currentPWTarget;if(!target){closePW();return;}var correct=false;
-if(target==='l_piano'&&val==='DAD')correct=true;
-if(target==='k_safe'&&val==='937')correct=true;
-if(target==='d_door'&&val==='3207')correct=true;
-if(target==='s_shelf'&&val==='1004')correct=true;
-if(target==='a_chest'&&val==='831')correct=true;
-if(target==='b_mirror'&&(val==='ELEANOR'||val==='埃莉诺'))correct=true;
-if(!correct){inp.classList.add('error');err.textContent='密码错误。请重新阅读文本线索。';setTimeout(function(){inp.classList.remove('error');},1500);phb();return;}
-closePW();pc();
-if(target==='l_piano'){S.solvedPuzzles.l_piano=true;S.unlockedRooms.kitchen=true;st('咔哒\u2014\u2014琴凳打开了！里面放着一把刻有厨房图案的黄铜钥匙。厨房现在可以进入了。');S.inventory.push('厨房钥匙');aJ('厨房已解锁','你破解了琴凳的密码\u2014\u2014DAD。莉莉安最常呼唤父亲的那个词。琴凳里藏着通往厨房的钥匙。');uH();uM();rRooms();}
-else if(target==='k_safe'){S.solvedPuzzles.k_safe=true;S.unlockedRooms.dining=true;st('保险箱发出了沉闷的咔嗒声\u2014\u2014门开了。里面放着一把刻有餐厅图案的钥匙和一张泛黄的家庭照片。');S.inventory.push('餐厅钥匙');aJ('餐厅已解锁','你破解了厨房保险箱的密码\u2014\u2014937。购物小票的顺序乘以食谱的数量。');uH();uM();rRooms();}
-else if(target==='d_door'){S.unlockedRooms.study=true;st('密码锁发出了清脆的咔嗒声\u2014\u20143207，正确。书房的门无声地滑开了。');aJ('书房已解锁','你破解了餐厅书房门的密码\u2014\u20143207。埃莉诺享年32岁，莉莉安享年7岁。');uH();uM();rRooms();}
-else if(target==='s_shelf'){S.solvedPuzzles.s_shelf=true;S.unlockedRooms.hallway=true;st('黄铜转轮转到了正确位置\u2014\u20141004。书架滑开，露出通往二楼的狭窄梯道和一把生锈的铁钥匙。');S.inventory.push('二楼走廊钥匙');aJ('二楼走廊已解锁','书架密码1004\u2014\u2014莉莉安生日7月13日后第83天=10月4日。');uH();uM();rRooms();}
-else if(target==='a_chest'){S.solvedPuzzles.a_chest=true;st('木箱的锁在831密码下弹开了。箱子里放着第三片钥匙碎片\u2014\u2014黑夜中最亮之星，还有一本莉莉安的画册。');aJ('阁楼解锁','木箱密码831\u2014\u2014星星(8)\u2192月亮(3)\u2192太阳(1)\u2014\u2014莉莉安最喜欢的顺序。');uH();uM();rRooms();}
-else if(target==='b_mirror'){S.unlockedRooms.attic=true;st('你对着镜子轻声说出了那个名字\u2014\u2014埃莉诺。镜面中紧闭的门缓缓打开了，镜子碎片重新拼合，变成了一道通往阁楼的光梯。');aJ('阁楼通道打开','你对着卧室梳妆镜说出了埃莉诺的名字\u2014\u2014那个选择了沉默的母亲。');uH();uM();rRooms();}
+var G = {
+    inv: [],
+    frags: 0,
+    done: {},
+    unlocked: {foyer:true,living:true,kitchen:false,dining:false,study:false,hallway:false,bedroom:true,bathroom:true,attic:false,basement:false},
+    curRoom: null,
+    gameOver: false
+};
+
+function toast(m) {
+    var t = document.getElementById("toast");
+    t.textContent = m; t.classList.add("show");
+    clearTimeout(t._tid);
+    t._tid = setTimeout(function(){t.classList.remove("show");}, 3000);
 }
-function doRitual(choice){if(S.endingTriggered||S.gameEnded)return;S.endingTriggered=true;S.gameEnded=true;var ed=document.getElementById('ending-content');if(choice==='complete'){ed.innerHTML='<div class="ending-card"><div class="ending-title" style="color:#cc4444">⬛ 坏结局：永恒的囚禁</div><p style="color:#b0a080">你选择了完成仪式。三片钥匙碎片插入凹槽的瞬间，地下室开始颤抖。黑色的液体从祭坛裂缝中涌出，冰冷刺骨。维克多的狂笑回荡在墙壁之间。黑暗被释放了\u2014\u2014莉莉安的灵魂被永远束缚在仪式之中，而你的名字出现在了门厅登记簿的最末尾\u2014\u2014等待下一个闯入者。</p><p style="color:#aa5555;font-size:0.9em;margin-top:16px">真理的代价是永恒的囚禁。</p></div>';psc();dJS('💀','真理的代价...是永恒的囚禁...');}else{ed.innerHTML='<div class="ending-card"><div class="ending-title" style="color:#66cc66">✨ 好结局：灵魂的安息</div><p style="color:#b0a080">你举起铁锤，狠狠地砸向祭坛。石头碎裂的瞬间，一声悠长的叹息充满了整个地下室。裂缝从祭坛扩散到墙壁，又从墙壁扩散到整座宅邸。在崩塌的轰鸣中，你看到了三个模糊的身影：维克多跪倒在尘埃中，第一次流下了真正的泪水；埃莉诺伸手抱住了她的女儿；莉莉安回过头，对你露出了微笑\u2014\u2014她怀里的布娃娃，两只眼睛都完好无损。</p><p style="color:#66cc66;font-size:0.9em;margin-top:16px">他们终于自由了。就像莉莉安在走廊墙上写的那样\u2014\u2014妈妈说要勇敢。而你，做到了他们自己无法做到的事。</p></div>';pwh();}document.getElementById('ending').scrollIntoView({behavior:'smooth'});closeModal();uH();}
-window.doRitual=doRitual;
-function rJ(){var jc=document.getElementById('journal-content');if(!jc)return;var h='';for(var i=S.journalEntries.length-1;i>=0;i--){h+='<div class="journal-entry"><h4>📌 '+S.journalEntries[i].title+'</h4><p>'+S.journalEntries[i].content+'</p></div>';}if(!h)h='<p style="color:#554433">尚未发现任何线索... 去探索房间吧。</p>';jc.innerHTML=h;}
-function rS(){var sc=document.getElementById('story-content');if(!sc)return;var h=sc.innerHTML;for(var i=0;i<S.storyClues.length;i++){var c=S.storyClues[i];if(h.indexOf(c.title)>=0)continue;h+='<div class="story-card"><h3>'+c.title+'</h3><p>'+c.content+'</p></div>';}sc.innerHTML=h;}
-function rI(){var iv=document.getElementById('inv-items');if(!iv)return;if(S.inventory.length===0){iv.innerHTML='<span style="color:#554433">尚未收集任何物品...</span>';return;}var h='';for(var i=0;i<S.inventory.length;i++){h+='<span class="inv-item">'+S.inventory[i]+'</span> ';}h+='<div style="margin-top:12px;color:#aa8855;font-size:0.85em">🔑 钥匙碎片：'+S.keyFragments+'/3</div>';iv.innerHTML=h;}
-var _origUH=uH;uH=function(){_origUH();rI();};
-function initEvents(){var hb=document.getElementById('hero-enter-btn');if(hb)hb.addEventListener('click',function(){ia();pc();document.getElementById('rooms').scrollIntoView({behavior:'smooth'});st('你踏入了暗影宅邸。耐心阅读每一个文本\u2014\u2014线索就藏在字里行间。从门厅和客厅开始探索吧。');setTimeout(function(){pwh();},2000);});var md=document.getElementById('room-modal');if(md)md.addEventListener('click',function(e){if(e.target===md)closeModal();});var pm=document.getElementById('pw-modal');if(pm)pm.addEventListener('click',function(e){if(e.target===pm)closePW();});document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(document.getElementById('pw-modal').classList.contains('open'))closePW();else closeModal();}});var nls=document.querySelectorAll('.nav-item a');for(var i=0;i<nls.length;i++){nls[i].addEventListener('click',function(e){e.preventDefault();var h=this.getAttribute('href');if(h&&h.startsWith('#')){var el=document.querySelector(h);if(el)el.scrollIntoView({behavior:'smooth'});}});}document.getElementById('pw-submit').addEventListener('click',submitPW);document.getElementById('pw-input').addEventListener('keypress',function(e){if(e.key==='Enter')submitPW();});document.getElementById('pw-input').addEventListener('input',function(){document.getElementById('pw-error').textContent='';});}
-function init(){var sc=document.getElementById('story-content');sc.innerHTML='<div class="story-card" style="border-left-color:#aa4422"><h3>🕯️ 序章：为何而来</h3><p>你叫<span class="clue-highlight">林远</span>，一名自由撰稿人，专攻未解悬案与都市传说。三个月前，你在整理阿卡姆镇旧报纸档案时，偶然翻到了一则1897年的报道——霍桑庄园惨案。一家三口，平安夜当晚，全部死亡。警方结论是谋杀-自杀。案件被匆匆了结，庄园被查封，此后再无人踏入。</p><p>但真正让你无法入睡的，是你在档案室深处找到的一份<span class="clue-highlight">未归档的手写报告</span>。撰写者是一名被派往现场的低级警员——约翰·布莱克伍德。报告前三页还很正常：现场勘查、遗体描述、弹道分析。翻到第四页，字迹突然变了——越来越潦草，越来越急促。最后一页只有一句话：</p><p style="color:#cc8844;text-align:center;font-style:italic;padding:10px">「地下室里有什么东西。它还在。它还在等着。不要派人来。不要——」</p><p>报告到此戛然而止。档案管理员告诉你，布莱克伍德警长在写完这份报告后的第三天，被发现在家中上吊自杀。没有遗书，没有任何解释。他的那份报告从未被正式归档——有人在试图掩盖什么。</p><p>你花了三个月追查霍桑庄园的一切——维克多的医学背景、埃莉诺的家族历史、莉莉安的病历、地下室的建筑图纸。每一个线索都像一只手，把你拽向同一个深渊。你给报社编辑留了一封信：如果三天后没有收到你的消息，就把所有材料公开。</p><p>今夜，你终于站在了庄园的大门前。雨开始下了。铁门的铰链已经锈蚀，推开时发出的尖叫声在空旷的黑夜中回荡了很久很久。宅邸的轮廓在雨幕中若隐若现——漆黑的窗户像无数只看不见底的眼睛，静默地、耐心地注视着你。</p><p style="color:#887766;font-style:italic">你深吸一口气，推开了那扇沉重的橡木大门。</p></div><div class="story-card"><h3>📜 任务简报</h3><p>1897年，著名外科医生<span class="clue-highlight">维克多·霍桑</span>在阿卡姆镇郊外建造了这座哥特式宅邸。他与妻子<span class="clue-highlight">埃莉诺</span>和七岁的女儿<span class="clue-highlight">莉莉安</span>一同搬入。起初一切如常——直到莉莉安患上了一种无法被常规医学解释的罕见疾病。维克多开始在地下室进行未经授权的实验性治疗，声称在古籍中找到了「永生」的方法。埃莉诺发现真相后，将完成仪式所需的关键钥匙拆成了<span class="clue-highlight">三片</span>，分别藏在宅邸各处，试图阻止丈夫的疯狂计划并带着女儿逃离。</p><p>她失败了。1897年12月24日，平安夜。邻居听到了枪声和尖叫。</p><p>如今一百二十多年过去了，宅邸依然矗立在这片被遗忘的土地上。布莱克伍德警长的遗言、地下室中尚未消散的黑暗、以及依然游荡在走廊中的三道灵魂——一切都在等待着一个足够勇敢——或足够愚蠢——的人来终结这段历史。</p><p>你需要<span class="clue-highlight">仔细阅读每一个文本、从字里行间推理出密码和真相</span>。每个房间都隐藏着文字线索。注意——在这座宅邸里，<span class="clue-highlight" style="color:#cc5555">答案永远藏在文本之中</span>，而非你的直觉。</p></div>';rRooms();rJ();rI();initEvents();uH();}
-window.openRoom=openRoom;window.closeModal=closeModal;window.doAction=doAction;window.doJumpScare=dJS;
-if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
 
+function closePrologue() {
+    document.getElementById("prologue-overlay").style.display = "none";
+    toast("序章已阅。你站在庄园大门前。");
+}
+
+function enterMansion() {
+    document.getElementById("hero").style.display = "none";
+    document.getElementById("rooms-section").classList.add("active");
+    rRooms();
+    toast("你推开了沉重的橡木大门...");
+}
+
+function scrollToRooms() {
+    document.getElementById("rooms-section").scrollIntoView({behavior:"smooth"});
+}
+
+function rRooms() {
+    var grid = document.getElementById("rooms-grid");
+    grid.innerHTML = "";
+    ROOMS.forEach(function(rm) {
+        var ul = G.unlocked[rm.id];
+        var c = document.createElement("div");
+        c.className = "room-card" + (ul ? "" : " locked");
+        var lk = ul ? "" : '<div class="room-lock">🔒</div>';
+        var rq = "";
+        if (!ul) {
+            if (rm.unlock_msg) rq = '<div class="room-req">' + rm.unlock_msg + '</div>';
+            else if (rm.unlock_puzzle) rq = '<div class="room-req">🔒 需要密码</div>';
+            else if (rm.unlock_item) rq = '<div class="room-req">🔒 需要特定物品</div>';
+        }
+        c.innerHTML = lk + '<div class="room-icon">' + rm.icon + '</div><div class="room-name">' + rm.name + '</div><div class="room-eng">' + rm.eng + '</div>' + rq;
+        if (ul) c.onclick = function(){ openRoom(rm.id); };
+        else c.onclick = function(){ tryUnlock(rm); };
+        grid.appendChild(c);
+    });
+}
+
+function tryUnlock(rm) {
+    if (rm.unlock_puzzle && !G.done[rm.id + "_ul"]) {
+        showUnlockPuzzle(rm); return;
+    }
+    if (rm.unlock_item && G.inv.indexOf(rm.unlock_item) === -1) {
+        toast("🔒 " + (rm.unlock_msg || "你需要先找到进入这个房间的方法"));
+        return;
+    }
+    G.unlocked[rm.id] = true;
+    G.done[rm.id + "_ul"] = true;
+    rRooms();
+    toast("🔓 " + rm.name + " 已解锁！");
+    setTimeout(function(){ openRoom(rm.id); }, 500);
+}
+
+function showUnlockPuzzle(rm) {
+    var ol = document.getElementById("modal-overlay");
+    document.getElementById("modal-content").innerHTML =
+        '<div class="modal-header"><h3>' + rm.icon + ' ' + rm.name + '</h3></div>' +
+        '<div class="modal-desc">🔒 ' + rm.unlock_puzzle + '</div>' +
+        '<div class="puzzle-box active">' +
+        '<input type="text" class="puzzle-input" id="ul-input" placeholder="输入密码...">' +
+        '<button class="puzzle-submit" id="ul-submit">确认</button>' +
+        '<div class="puzzle-msg" id="ul-msg"></div></div>';
+    ol.classList.add("active");
+    document.getElementById("ul-submit").onclick = function() {
+        var a = document.getElementById("ul-input").value.trim().toUpperCase();
+        if (a === rm.unlock_answer.toUpperCase()) {
+            document.getElementById("ul-msg").textContent = "✅ 正确！门开了...";
+            G.unlocked[rm.id] = true;
+            G.done[rm.id + "_ul"] = true;
+            setTimeout(function(){ ol.classList.remove("active"); rRooms(); openRoom(rm.id); }, 800);
+        } else {
+            document.getElementById("ul-msg").textContent = "❌ 密码错误。仔细阅读线索再试。";
+        }
+    };
+}
+
+function openRoom(rid) {
+    var rm = ROOMS.find(function(r){ return r.id === rid; });
+    if (!rm) return;
+    G.curRoom = rm;
+    var ol = document.getElementById("modal-overlay");
+    var acts = ACTIONS[rid] || [];
+    var ah = "";
+    acts.forEach(function(a, i) {
+        var done = G.done[rid + "_" + a.item];
+        ah += '<button class="action-btn' + (done ? " done" : "") + '" id="act-' + rid + '-' + i + '">' + (done ? a.label + " ✓" : a.label) + '</button>';
+    });
+    document.getElementById("modal-content").innerHTML =
+        '<div class="modal-header"><h3>' + rm.icon + ' ' + rm.name + ' · ' + rm.eng + '</h3></div>' +
+        '<div class="modal-desc">' + rm.desc + '</div>' +
+        '<div class="modal-actions">' + ah + '</div>' +
+        '<div class="result-box" id="act-result"></div>' +
+        '<div class="puzzle-box" id="pz-box"><div class="puzzle-hint" id="pz-hint"></div>' +
+        '<input type="text" class="puzzle-input" id="pz-input" placeholder="输入答案...">' +
+        '<button class="puzzle-submit" id="pz-submit">确认</button>' +
+        '<div class="puzzle-msg" id="pz-msg"></div></div>';
+    ol.classList.add("active");
+    
+    acts.forEach(function(a, i) {
+        var btn = document.getElementById("act-" + rid + "-" + i);
+        if (!btn || G.done[rid + "_" + a.item]) return;
+        btn.onclick = function() {
+            if (a.type === "puzzle") showPuzzle(rm, a, i);
+            else doAction(rm, a, i);
+        };
+    });
+}
+
+function showPuzzle(rm, a, idx) {
+    var pb = document.getElementById("pz-box");
+    pb.classList.add("active");
+    document.getElementById("pz-hint").textContent = a.puzzle;
+    document.getElementById("pz-input").value = "";
+    document.getElementById("pz-msg").textContent = "";
+    document.getElementById("pz-submit").onclick = function() {
+        var ans = document.getElementById("pz-input").value.trim().toUpperCase();
+        if (ans === a.answer.toUpperCase()) {
+            document.getElementById("pz-msg").textContent = "✅ 正确！";
+            pb.classList.remove("active");
+            doAction(rm, a, idx);
+        } else {
+            document.getElementById("pz-msg").textContent = "❌ 答案不正确。仔细阅读线索。";
+        }
+    };
+}
+
+function doAction(rm, a, idx) {
+    var rb = document.getElementById("act-result");
+    rb.style.display = "block";
+    rb.textContent = a.result;
+    
+    if (a.item) {
+        G.done[rm.id + "_" + a.item] = true;
+        var btn = document.getElementById("act-" + rm.id + "-" + idx);
+        if (btn) { btn.classList.add("done"); btn.textContent = a.label + " ✓"; }
+    }
+    
+    // Rewards
+    if (a.reward === "key_fragment_1" || a.reward === "key_fragment_2") {
+        G.frags++;
+        G.inv.push("钥匙碎片 " + G.frags + "/3");
+        if (G.frags >= 2) { G.unlocked.hallway = true; G.unlocked.dining = true; }
+    }
+    if (a.reward === "attic_unlock") { G.unlocked.attic = true; G.done.attic_ul = true; }
+    if (a.item === "brass_key") { G.inv.push("黄铜小钥匙"); G.unlocked.kitchen = true; G.done.kitchen_ul = true; }
+    if (a.reward === "diary_clue") { G.inv.push("解剖图羊皮纸"); }
+    if (a.item === "family_crate" || a.item === "sewing") {
+        if (!G.done.got_frag3) { G.frags++; G.done.got_frag3 = true; }
+        G.inv.push("完整的暗门钥匙");
+        G.unlocked.basement = true;
+        G.done.basement_ul = true;
+    }
+    if (a.reward === "silver_key") { G.inv.push("银色小钥匙"); }
+    if (a.reward === "locket") { G.inv.push("小金盒吊坠"); }
+    
+    if (a.type === "ending") {
+        G.gameOver = true;
+        setTimeout(function(){ closeModal(); showEnding(a); }, 2000);
+        return;
+    }
+    
+    if (Math.random() < 0.12) setTimeout(function(){ doJS("👁️", "有什么东西在看着你..."); }, 1000);
+    
+    rRooms(); uInv();
+}
+
+function showEnding(a) {
+    var d = document.createElement("div");
+    d.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:8000;display:flex;justify-content:center;align-items:center;overflow-y:auto;padding:40px";
+    d.innerHTML = '<div style="background:linear-gradient(135deg,#0d0808,#150a0a);border:2px solid #992222;border-radius:8px;padding:40px;max-width:650px;text-align:center;box-shadow:0 0 80px rgba(139,0,0,0.3)"><h2 style="color:#cc4444;font-size:1.4em;letter-spacing:6px;margin-bottom:20px">' + a.label + '</h2><p style="color:#c4b090;font-size:0.88em;line-height:2;text-align:left;margin-bottom:16px;white-space:pre-line">' + a.result + '</p><button onclick="location.reload()" style="padding:12px 36px;background:#992222;color:#fff;border:none;border-radius:4px;cursor:pointer;letter-spacing:4px;font-family:inherit">重新开始</button></div>';
+    document.body.appendChild(d);
+}
+
+function doJS(face, text) {
+    document.getElementById("jumpscare-face").textContent = face || "👁️";
+    document.getElementById("jumpscare-text").textContent = text || "...";
+    document.getElementById("jumpscare-overlay").classList.add("active");
+    setTimeout(function(){ document.getElementById("jumpscare-overlay").classList.remove("active"); }, 1500);
+}
+
+function closeModal() {
+    document.getElementById("modal-overlay").classList.remove("active");
+    G.curRoom = null;
+    rRooms();
+}
+
+function uInv() {
+    var lst = document.getElementById("inv-list");
+    document.getElementById("inv-count").textContent = G.inv.length;
+    if (G.inv.length === 0) lst.innerHTML = '<span class="inv-pop-empty">空</span>';
+    else lst.innerHTML = G.inv.map(function(i){ return '<div class="inv-pop-item">📎 ' + i + '</div>'; }).join("");
+    var fg = document.getElementById("inv-frags");
+    if (G.frags > 0) { fg.style.display = "block"; document.getElementById("frag-count").textContent = G.frags; }
+}
+
+rRooms(); uInv();
 </script>
-
 </body>
 </html>
