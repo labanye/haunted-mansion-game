@@ -102,6 +102,15 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Serif SC","Georgia
 .prologue-inner .highlight-text{color:#cc8844;text-align:center;font-style:italic;padding:12px;border-left:2px solid var(--accent);background:rgba(139,0,0,0.08);margin:14px 0}
 .prologue-btn{display:block;margin:24px auto 0;padding:14px 40px;border:2px solid var(--accent);color:#cc8888;background:transparent;font-size:1em;letter-spacing:4px;cursor:pointer;border-radius:3px;transition:all 0.3s;font-family:inherit;text-align:center}
 .prologue-btn:hover{background:rgba(139,0,0,0.25);box-shadow:0 0 30px rgba(139,0,0,0.3)}
+
+/* Inventory hover popup */
+.inv-wrapper{position:relative;display:inline-block}
+.inv-popup{display:none;position:absolute;top:100%;right:0;margin-top:8px;background:linear-gradient(135deg,#120a05 0%,#1a0e08 100%);border:1px solid #4a2818;border-radius:6px;padding:16px;min-width:220px;max-width:320px;z-index:9000;box-shadow:0 8px 30px rgba(0,0,0,0.7)}
+.inv-wrapper:hover .inv-popup{display:block}
+.inv-popup h4{color:var(--accent);font-size:0.85em;letter-spacing:2px;margin-bottom:10px;border-bottom:1px solid #2a1515;padding-bottom:8px}
+.inv-popup .inv-pop-item{color:var(--gold);font-size:0.8em;padding:3px 0;border-bottom:1px solid #1a1515}
+.inv-popup .inv-pop-empty{color:#554433;font-size:0.8em;font-style:italic}
+.inv-popup .inv-pop-frags{color:#aa8855;font-size:0.8em;margin-top:8px;padding-top:8px;border-top:1px solid #2a1515}
 </style>
 </head>
 <body>
@@ -126,12 +135,12 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Serif SC","Georgia
     <li class="nav-item"><a href="#rooms">探索</a></li>
     <li class="nav-item"><a href="#" onclick="openJournalModal();return false;">日志</a></li>
     <li class="nav-item"><a href="#inventory">物品</a></li>
-    <li class="nav-item"><a href="#ending">结局</a></li>
+    <li class="nav-item"><a href="#" onclick="var em=document.getElementById('ending-modal');if(em)em.classList.add('open');return false;">结局</a></li>
   </ul>
   <div class="nav-hud">
     <span class="sanity-label">理智</span>
     <div class="sanity-bar"><div class="sanity-fill" id="sanity-fill" style="width:100%"></div></div>
-    <span class="inv-count" id="inv-count">物品: 0</span>
+    <div class="inv-wrapper"><span class="inv-count" id="inv-count">物品: 0</span><div class="inv-popup" id="inv-popup"><h4>🎒 已收集的物品</h4><div class="inv-pop-empty">尚未收集任何物品...</div></div></div>
   </div>
 </nav>
 
@@ -157,22 +166,9 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Serif SC","Georgia
 
 
 
-<section class="section section-darker" id="inventory">
-  <div class="container">
-    <h2 class="section-title">物 品 栏</h2>
-    <div class="inventory-panel" id="inventory-panel">
-      <h3>🎒 已收集的物品</h3>
-      <div id="inv-items"><span style="color:#554433">尚未收集任何物品...</span></div>
-    </div>
-  </div>
-</section>
 
-<section class="section section-dark" id="ending">
-  <div class="container">
-    <h2 class="section-title">结 局</h2>
-    <div id="ending-content"></div>
-  </div>
-</section>
+
+
 
 
 <div class="modal-overlay" id="story-modal">
@@ -214,12 +210,18 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Serif SC","Georgia
   </div>
 </div>
 
-<div class="jumpscare-overlay" id="jumpscare-overlay">
-  <div class="jumpscare-face" id="jumpscare-face"></div>
-  <div class="jumpscare-text" id="jumpscare-text"></div>
-</div>
 
-<script>
+<div class="modal-overlay" id="ending-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">⚰️ 结局</span>
+      <button class="modal-close" onclick="document.getElementById('ending-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="ending-modal-body"></div>
+  </div>
+</div>
+<div class="jumpscare-overlay" id="jumpscare-overlay">
+  <div class="jumpscare-face" id="
 (function(){
 "use strict";
 var actx=null;function ia(){if(actx)return;try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
@@ -378,6 +380,8 @@ window.openJournalModal=openJournalModal;
 
 window.openRoom=openRoom;window.closeModal=closeModal;window.doAction=doAction;window.doJumpScare=dJS;
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
+})();
+eadyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
 })();
 </script>
 
