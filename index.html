@@ -91,10 +91,27 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Serif SC","Georgia
 .ending-card{background:var(--card);border:2px solid var(--accent);padding:30px;border-radius:8px;text-align:center;margin-top:20px}
 .ending-title{font-size:1.4em;letter-spacing:4px;margin-bottom:16px}
 @media(max-width:768px){.rooms-grid{grid-template-columns:1fr}.main-nav{padding:0 12px}.nav-menu{gap:12px}}
+
+/* Prologue Modal */
+.prologue-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:8000;display:flex;align-items:center;justify-content:center}
+.prologue-overlay.hidden{display:none}
+.prologue-box{background:linear-gradient(135deg,#0a0505 0%,#120a08 100%);border:1px solid var(--accent);border-radius:8px;width:90%;max-width:650px;max-height:85vh;overflow-y:auto;padding:0;box-shadow:0 0 80px rgba(139,0,0,0.3)}
+.prologue-inner{padding:30px 28px}
+.prologue-inner h3{color:var(--accent);font-size:1.3em;letter-spacing:4px;margin-bottom:20px;text-align:center}
+.prologue-inner p{color:#b0a080;font-size:0.9em;line-height:2;margin-bottom:14px}
+.prologue-inner .highlight-text{color:#cc8844;text-align:center;font-style:italic;padding:12px;border-left:2px solid var(--accent);background:rgba(139,0,0,0.08);margin:14px 0}
+.prologue-btn{display:block;margin:24px auto 0;padding:14px 40px;border:2px solid var(--accent);color:#cc8888;background:transparent;font-size:1em;letter-spacing:4px;cursor:pointer;border-radius:3px;transition:all 0.3s;font-family:inherit;text-align:center}
+.prologue-btn:hover{background:rgba(139,0,0,0.25);box-shadow:0 0 30px rgba(139,0,0,0.3)}
 </style>
 </head>
 <body>
 
+
+<div class="prologue-overlay" id="prologue-overlay">
+  <div class="prologue-box">
+    <div class="prologue-inner" id="prologue-content"></div>
+  </div>
+</div>
 <div id="fog"></div>
 <div id="toast"></div>
 
@@ -105,9 +122,9 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Serif SC","Georgia
   </div>
   <ul class="nav-menu">
     <li class="nav-item"><a href="#hero">序章</a></li>
-    <li class="nav-item"><a href="#story">背景</a></li>
+    <li class="nav-item"><a href="#" onclick="openStoryModal();return false;">背景</a></li>
     <li class="nav-item"><a href="#rooms">探索</a></li>
-    <li class="nav-item"><a href="#journal">日志</a></li>
+    <li class="nav-item"><a href="#" onclick="openJournalModal();return false;">日志</a></li>
     <li class="nav-item"><a href="#inventory">物品</a></li>
     <li class="nav-item"><a href="#ending">结局</a></li>
   </ul>
@@ -129,12 +146,7 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Serif SC","Georgia
   <div class="hero-scroll">▼</div>
 </section>
 
-<section class="section section-dark" id="story">
-  <div class="container">
-    <h2 class="section-title">案 件 背 景</h2>
-    <div id="story-content"></div>
-  </div>
-</section>
+
 
 <section class="section section-darker" id="rooms">
   <div class="container">
@@ -143,12 +155,7 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Serif SC","Georgia
   </div>
 </section>
 
-<section class="section section-dark" id="journal">
-  <div class="container">
-    <h2 class="section-title">探 索 日 志</h2>
-    <div id="journal-content"></div>
-  </div>
-</section>
+
 
 <section class="section section-darker" id="inventory">
   <div class="container">
@@ -167,6 +174,16 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Serif SC","Georgia
   </div>
 </section>
 
+
+<div class="modal-overlay" id="story-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">📜 案件背景</span>
+      <button class="modal-close" onclick="document.getElementById('story-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="story-modal-body"></div>
+  </div>
+</div>
 <div class="modal-overlay" id="room-modal">
   <div class="modal-box">
     <div class="modal-header">
@@ -177,6 +194,16 @@ body{background:var(--bg);color:var(--text);font-family:"Noto Serif SC","Georgia
   </div>
 </div>
 
+
+<div class="modal-overlay" id="journal-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">📌 探索日志</span>
+      <button class="modal-close" onclick="document.getElementById('journal-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="journal-modal-body"></div>
+  </div>
+</div>
 <div class="pw-overlay" id="pw-modal">
   <div class="pw-box">
     <h3 id="pw-title">🔒 需要密码</h3>
@@ -300,7 +327,55 @@ function rS(){var sc=document.getElementById('story-content');if(!sc)return;var 
 function rI(){var iv=document.getElementById('inv-items');if(!iv)return;if(S.inventory.length===0){iv.innerHTML='<span style="color:#554433">尚未收集任何物品...</span>';return;}var h='';for(var i=0;i<S.inventory.length;i++){h+='<span class="inv-item">'+S.inventory[i]+'</span> ';}h+='<div style="margin-top:12px;color:#aa8855;font-size:0.85em">🔑 钥匙碎片：'+S.keyFragments+'/3</div>';iv.innerHTML=h;}
 var _origUH=uH;uH=function(){_origUH();rI();};
 function initEvents(){var hb=document.getElementById('hero-enter-btn');if(hb)hb.addEventListener('click',function(){ia();pc();document.getElementById('rooms').scrollIntoView({behavior:'smooth'});st('你踏入了暗影宅邸。耐心阅读每一个文本\u2014\u2014线索就藏在字里行间。从门厅和客厅开始探索吧。');setTimeout(function(){pwh();},2000);});var md=document.getElementById('room-modal');if(md)md.addEventListener('click',function(e){if(e.target===md)closeModal();});var pm=document.getElementById('pw-modal');if(pm)pm.addEventListener('click',function(e){if(e.target===pm)closePW();});document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(document.getElementById('pw-modal').classList.contains('open'))closePW();else closeModal();}});var nls=document.querySelectorAll('.nav-item a');for(var i=0;i<nls.length;i++){nls[i].addEventListener('click',function(e){e.preventDefault();var h=this.getAttribute('href');if(h&&h.startsWith('#')){var el=document.querySelector(h);if(el)el.scrollIntoView({behavior:'smooth'});}});}document.getElementById('pw-submit').addEventListener('click',submitPW);document.getElementById('pw-input').addEventListener('keypress',function(e){if(e.key==='Enter')submitPW();});document.getElementById('pw-input').addEventListener('input',function(){document.getElementById('pw-error').textContent='';});}
-function init(){var sc=document.getElementById('story-content');sc.innerHTML='<div class="story-card" style="border-left-color:#aa4422"><h3>🕯️ 序章：为何而来</h3><p>你叫<span class="clue-highlight">林远</span>，一名自由撰稿人，专攻未解悬案与都市传说。三个月前，你在整理阿卡姆镇旧报纸档案时，偶然翻到了一则1897年的报道——霍桑庄园惨案。一家三口，平安夜当晚，全部死亡。警方结论是谋杀-自杀。案件被匆匆了结，庄园被查封，此后再无人踏入。</p><p>但真正让你无法入睡的，是你在档案室深处找到的一份<span class="clue-highlight">未归档的手写报告</span>。撰写者是一名被派往现场的低级警员——约翰·布莱克伍德。报告前三页还很正常：现场勘查、遗体描述、弹道分析。翻到第四页，字迹突然变了——越来越潦草，越来越急促。最后一页只有一句话：</p><p style="color:#cc8844;text-align:center;font-style:italic;padding:10px">「地下室里有什么东西。它还在。它还在等着。不要派人来。不要——」</p><p>报告到此戛然而止。档案管理员告诉你，布莱克伍德警长在写完这份报告后的第三天，被发现在家中上吊自杀。没有遗书，没有任何解释。他的那份报告从未被正式归档——有人在试图掩盖什么。</p><p>你花了三个月追查霍桑庄园的一切——维克多的医学背景、埃莉诺的家族历史、莉莉安的病历、地下室的建筑图纸。每一个线索都像一只手，把你拽向同一个深渊。你给报社编辑留了一封信：如果三天后没有收到你的消息，就把所有材料公开。</p><p>今夜，你终于站在了庄园的大门前。雨开始下了。铁门的铰链已经锈蚀，推开时发出的尖叫声在空旷的黑夜中回荡了很久很久。宅邸的轮廓在雨幕中若隐若现——漆黑的窗户像无数只看不见底的眼睛，静默地、耐心地注视着你。</p><p style="color:#887766;font-style:italic">你深吸一口气，推开了那扇沉重的橡木大门。</p></div><div class="story-card"><h3>📜 任务简报</h3><p>1897年，著名外科医生<span class="clue-highlight">维克多·霍桑</span>在阿卡姆镇郊外建造了这座哥特式宅邸。他与妻子<span class="clue-highlight">埃莉诺</span>和七岁的女儿<span class="clue-highlight">莉莉安</span>一同搬入。起初一切如常——直到莉莉安患上了一种无法被常规医学解释的罕见疾病。维克多开始在地下室进行未经授权的实验性治疗，声称在古籍中找到了「永生」的方法。埃莉诺发现真相后，将完成仪式所需的关键钥匙拆成了<span class="clue-highlight">三片</span>，分别藏在宅邸各处，试图阻止丈夫的疯狂计划并带着女儿逃离。</p><p>她失败了。1897年12月24日，平安夜。邻居听到了枪声和尖叫。</p><p>如今一百二十多年过去了，宅邸依然矗立在这片被遗忘的土地上。布莱克伍德警长的遗言、地下室中尚未消散的黑暗、以及依然游荡在走廊中的三道灵魂——一切都在等待着一个足够勇敢——或足够愚蠢——的人来终结这段历史。</p><p>你需要<span class="clue-highlight">仔细阅读每一个文本、从字里行间推理出密码和真相</span>。每个房间都隐藏着文字线索。注意——在这座宅邸里，<span class="clue-highlight" style="color:#cc5555">答案永远藏在文本之中</span>，而非你的直觉。</p></div>';rRooms();rJ();rI();initEvents();uH();}
+function init(){
+// Populate prologue modal
+var pc=document.getElementById('prologue-content');
+pc.innerHTML='<h3>🕯️ 序章：为何而来</h3>'+
+'<p>你叫<span class="clue-highlight">林远</span>，一名自由撰稿人，专攻未解悬案与都市传说。三个月前，你在整理阿卡姆镇旧报纸档案时，偶然翻到了一则1897年的报道——霍桑庄园惨案。一家三口，平安夜当晚，全部死亡。警方结论是谋杀-自杀。案件被匆匆了结，庄园被查封，此后再无人踏入。</p>'+
+'<p>但真正让你无法入睡的，是你在档案室深处找到的一份<span class="clue-highlight">未归档的手写报告</span>。撰写者是一名被派往现场的低级警员——约翰·布莱克伍德。报告前三页还很正常：现场勘查、遗体描述、弹道分析。翻到第四页，字迹突然变了——越来越潦草，越来越急促。最后一页只有一句话：</p>'+
+'<p class="highlight-text">「地下室里有什么东西。它还在。它还在等着。不要派人来。不要——」</p>'+
+'<p>报告到此戛然而止。档案管理员告诉你，布莱克伍德警长在写完这份报告后的第三天，被发现在家中上吊自杀。没有遗书，没有任何解释。他的那份报告从未被正式归档——有人在试图掩盖什么。</p>'+
+'<p>你花了三个月追查霍桑庄园的一切——维克多的医学背景、埃莉诺的家族历史、莉莉安的病历、地下室的建筑图纸。每一个线索都像一只手，把你拽向同一个深渊。你给报社编辑留了一封信：如果三天后没有收到你的消息，就把所有材料公开。</p>'+
+'<p>今夜，你终于站在了庄园的大门前。雨开始下了。铁门的铰链已经锈蚀，推开时发出的尖叫声在空旷的黑夜中回荡了很久很久。宅邸的轮廓在雨幕中若隐若现——漆黑的窗户像无数只看不见底的眼睛，静默地、耐心地注视着你。</p>'+
+'<p style="color:#887766;font-style:italic;text-align:center">你深吸一口气，推开了那扇沉重的橡木大门。</p>'+
+'<center><button class="prologue-btn" onclick="startGame()">⚰️ 踏入宅邸，追寻真相</button></center>';
+
+// Populate story modal
+var sm=document.getElementById('story-modal-body');
+sm.innerHTML='<div class="story-card" style="border-left-color:#aa4422">'+
+'<h3>📜 任务简报</h3>'+
+'<p>1897年，著名外科医生<span class="clue-highlight">维克多·霍桑</span>在阿卡姆镇郊外建造了这座哥特式宅邸。他与妻子<span class="clue-highlight">埃莉诺</span>和七岁的女儿<span class="clue-highlight">莉莉安</span>一同搬入。起初一切如常——直到莉莉安患上了一种无法被常规医学解释的罕见疾病。维克多开始在地下室进行未经授权的实验性治疗，声称在古籍中找到了「永生」的方法。埃莉诺发现真相后，将完成仪式所需的关键钥匙拆成了<span class="clue-highlight">三片</span>，分别藏在宅邸各处，试图阻止丈夫的疯狂计划并带着女儿逃离。</p>'+
+'<p>她失败了。1897年12月24日，平安夜。邻居听到了枪声和尖叫。</p>'+
+'<p>如今一百二十多年过去了，宅邸依然矗立在这片被遗忘的土地上。布莱克伍德警长的遗言、地下室中尚未消散的黑暗、以及依然游荡在走廊中的三道灵魂——一切都在等待着一个足够勇敢——或足够愚蠢——的人来终结这段历史。</p>'+
+'<p>你需要<span class="clue-highlight">仔细阅读每一个文本、从字里行间推理出密码和真相</span>。每个房间都隐藏着文字线索。注意——在这座宅邸里，<span class="clue-highlight" style="color:#cc5555">答案永远藏在文本之中</span>，而非你的直觉。</p>'+
+'</div>';
+
+rRooms();rJ();rI();initEvents();uH();
+}
+function startGame(){
+  ia();pc();
+  document.getElementById('prologue-overlay').classList.add('hidden');
+  document.getElementById('rooms').scrollIntoView({behavior:'smooth'});
+  st('你踏入了暗影宅邸。耐心阅读每一个文本——线索就藏在字里行间。从门厅和客厅开始探索吧。');
+  setTimeout(function(){pwh();},2000);
+}
+function openStoryModal(){
+  document.getElementById('story-modal').classList.add('open');
+}
+function openJournalModal(){
+  var jm=document.getElementById('journal-modal-body');
+  var h='';
+  for(var i=S.journalEntries.length-1;i>=0;i--){
+    h+='<div class="journal-entry"><h4>📌 '+S.journalEntries[i].title+'</h4><p>'+S.journalEntries[i].content+'</p></div>';
+  }
+  if(!h)h='<p style="color:#554433">尚未发现任何线索... 去探索房间吧。</p>';
+  jm.innerHTML=h;
+  document.getElementById('journal-modal').classList.add('open');
+}
+window.startGame=startGame;
+window.openStoryModal=openStoryModal;
+window.openJournalModal=openJournalModal;
+
 window.openRoom=openRoom;window.closeModal=closeModal;window.doAction=doAction;window.doJumpScare=dJS;
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
 })();
