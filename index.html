@@ -178,7 +178,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(1
 
 <div class="jumpscare" id="jumpscare"><div class="js-face" id="js-face"></div></div>
 
-<script>(function(){
+<script>
 "use strict";
 var actx=null;function ia(){if(actx)return;try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
 function pc(){if(!actx)return;var o=actx.createOscillator(),g=actx.createGain();o.type="square";o.frequency.value=80+Math.random()*40;g.gain.setValueAtTime(0.03,actx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+0.35);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+0.35);}
@@ -278,7 +278,7 @@ else if(target==='s_shelf'){S.solvedPuzzles.s_shelf=true;S.unlockedRooms.hallway
 else if(target==='a_chest'){S.solvedPuzzles.a_chest=true;st('木箱的锁在831密码下弹开了。箱子里放着第三片钥匙碎片\u2014\u2014黑夜中最亮之星，还有一本莉莉安的画册。');aJ('阁楼解锁','木箱密码831\u2014\u2014星星(8)\u2192月亮(3)\u2192太阳(1)\u2014\u2014莉莉安最喜欢的顺序。');uH();uM();rRooms();}
 else if(target==='b_mirror'){S.unlockedRooms.attic=true;st('你对着镜子轻声说出了那个名字\u2014\u2014埃莉诺。镜面中紧闭的门缓缓打开了，镜子碎片重新拼合，变成了一道通往阁楼的光梯。');aJ('阁楼通道打开','你对着卧室梳妆镜说出了埃莉诺的名字\u2014\u2014那个选择了沉默的母亲。');uH();uM();rRooms();}
 }
-function doRitual(choice){if(S.endingTriggered||S.gameEnded)return;S.endingTriggered=true;S.gameEnded=true;var ed=document.getElementById("ending-modal-body");if(choice==='complete'){ed.innerHTML='<div class="ending-card"><div class="ending-title" style="color:#cc4444">⬛ 坏结局：永恒的囚禁</div><p style="color:#b0a080">你选择了完成仪式。三片钥匙碎片插入凹槽的瞬间，地下室开始颤抖。黑色的液体从祭坛裂缝中涌出，冰冷刺骨。维克多的狂笑回荡在墙壁之间。黑暗被释放了\u2014\u2014莉莉安的灵魂被永远束缚在仪式之中，而你的名字出现在了门厅登记簿的最末尾\u2014\u2014等待下一个闯入者。</p><p style="color:#aa5555;font-size:0.9em;margin-top:16px">真理的代价是永恒的囚禁。</p></div>';psc();dJS('💀','真理的代价...是永恒的囚禁...');}else{ed.innerHTML='<div class="ending-card"><div class="ending-title" style="color:#66cc66">✨ 好结局：灵魂的安息</div><p style="color:#b0a080">你举起铁锤，狠狠地砸向祭坛。石头碎裂的瞬间，一声悠长的叹息充满了整个地下室。裂缝从祭坛扩散到墙壁，又从墙壁扩散到整座宅邸。在崩塌的轰鸣中，你看到了三个模糊的身影：维克多跪倒在尘埃中，第一次流下了真正的泪水；埃莉诺伸手抱住了她的女儿；莉莉安回过头，对你露出了微笑\u2014\u2014她怀里的布娃娃，两只眼睛都完好无损。</p><p style="color:#66cc66;font-size:0.9em;margin-top:16px">他们终于自由了。就像莉莉安在走廊墙上写的那样\u2014\u2014妈妈说要勇敢。而你，做到了他们自己无法做到的事。</p></div>';pwh();}document.getElementById('ending').scrollIntoView({behavior:'smooth'});closeModal();uH();}
+function doRitual(choice){if(S.endingTriggered||S.gameEnded)return;S.endingTriggered=true;S.gameEnded=true;var ed=document.getElementById("ending-modal-body");if(choice==='complete'){ed.innerHTML='<div class="ending-card"><div class="ending-title" style="color:#cc4444">⬛ 坏结局：永恒的囚禁</div><p style="color:#b0a080">你选择了完成仪式。三片钥匙碎片插入凹槽的瞬间，地下室开始颤抖。黑色的液体从祭坛裂缝中涌出，冰冷刺骨。维克多的狂笑回荡在墙壁之间。黑暗被释放了\u2014\u2014莉莉安的灵魂被永远束缚在仪式之中，而你的名字出现在了门厅登记簿的最末尾\u2014\u2014等待下一个闯入者。</p><p style="color:#aa5555;font-size:0.9em;margin-top:16px">真理的代价是永恒的囚禁。</p></div>';psc();dJS('💀','真理的代价...是永恒的囚禁...');}else{ed.innerHTML='<div class="ending-card"><div class="ending-title" style="color:#66cc66">✨ 好结局：灵魂的安息</div><p style="color:#b0a080">你举起铁锤，狠狠地砸向祭坛。石头碎裂的瞬间，一声悠长的叹息充满了整个地下室。裂缝从祭坛扩散到墙壁，又从墙壁扩散到整座宅邸。在崩塌的轰鸣中，你看到了三个模糊的身影：维克多跪倒在尘埃中，第一次流下了真正的泪水；埃莉诺伸手抱住了她的女儿；莉莉安回过头，对你露出了微笑\u2014\u2014她怀里的布娃娃，两只眼睛都完好无损。</p><p style="color:#66cc66;font-size:0.9em;margin-top:16px">他们终于自由了。就像莉莉安在走廊墙上写的那样\u2014\u2014妈妈说要勇敢。而你，做到了他们自己无法做到的事。</p></div>';pwh();}document.getElementById("ending-modal").classList.add("open");closeModal();uH();}
 window.doRitual=doRitual;
 function rJ(){var jm=document.getElementById('journal-modal-body');if(!jm)return;var h='';for(var i=S.journalEntries.length-1;i>=0;i--){h+='<div class="journal-entry"><h4>📌 '+S.journalEntries[i].title+'</h4><p>'+S.journalEntries[i].content+'</p></div>';}if(!h)h='<p style="color:#554433">尚未发现任何线索...</p>';jm.innerHTML=h;}
 function rS(){var sb=document.getElementById('story-modal-body');if(!sb)return;var h=sb.innerHTML;for(var i=0;i<S.storyClues.length;i++){var c=S.storyClues[i];if(h.indexOf(c.title)>=0)continue;h+='<div class="story-card"><h3>'+c.title+'</h3><p>'+c.content+'</p></div>';}sb.innerHTML=h;}
@@ -308,29 +308,13 @@ sm.innerHTML='<div class="story-card" style="border-left-color:#aa4422"><h3>📜
 rRooms();rJ();rI();initEvents();uH();
 }
 
-function startGame(){
-  ia();pc();
-  document.getElementById("prologue-overlay").classList.add("hidden");
-  document.getElementById("rooms-section").scrollIntoView({behavior:"smooth"});
-  st("你踏入了暗影宅邸。耐心阅读每一个文本——线索就藏在字里行间。从门厅和客厅开始探索吧。");
-  setTimeout(function(){pwh();},2000);
-}
-
-function openStoryModal(){
-  document.getElementById("story-modal").classList.add("open");
-}
-
-function openJournalModal(){
-  rJ();
-  document.getElementById("journal-modal").classList.add("open");
-}
-
-window.startGame=startGame;
-window.openStoryModal=openStoryModal;
-window.openJournalModal=openJournalModal;
+function startGame(){ia();pc();document.getElementById("prologue-overlay").classList.add("hidden");document.getElementById("rooms-section").scrollIntoView({behavior:"smooth"});st("你踏入了暗影宅邸。从门厅和客厅开始探索吧。");setTimeout(function(){pwh();},2000);}
+function openStoryModal(){document.getElementById("story-modal").classList.add("open");}
+function openJournalModal(){rJ();document.getElementById("journal-modal").classList.add("open");}
 
 window.openRoom=openRoom;window.closeModal=closeModal;window.doAction=doAction;window.doJumpScare=dJS;
-window.rJ=rJ;window.rI=rI;window.rS=rS;window.initEvents=initEvents;window.uH=uH;window.init=init;window.doRitual=doRitual;window.dJS=dJS;window.startGame=startGame;window.openRoom=openRoom;window.closeModal=closeModal;window.doAction=doAction;window.submitPW=submitPW;window.showPW=showPW;window.closePW=closePW;window.rRM=rRM;window.aJ=aJ;window.st=st;window.ia=ia;window.pc=pc;window.pwh=pwh;window.phb=phb;window.psc=psc;;window.rRooms=rRooms;window.rJ=rJ;window.rI=rI;window.rS=rS;window.initEvents=initEvents;window.uH=uH;window.init=init;window.doRitual=doRitual;window.dJS=dJS;window.startGame=startGame;window.openStoryModal=openStoryModal;window.openJournalModal=openJournalModal;if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
-})();</script>
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}
+</script>
 </body>
 </html>
