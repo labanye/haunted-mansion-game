@@ -10,8 +10,6 @@
 html{scroll-behavior:smooth}
 body{font-family:"SimSun","Microsoft YaHei","Noto Serif SC",serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.8}
 body::before{content:"";position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 30%,rgba(30,10,5,0.3),transparent 70%);pointer-events:none;z-index:0}
-
-/* Navbar */
 nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(180deg,rgba(10,5,5,0.98),rgba(8,4,4,0.95));border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(8px)}
 .nav-brand{font-size:1em;letter-spacing:5px;color:var(--accent-light);font-weight:700}
 .nav-actions{display:flex;gap:18px;align-items:center}
@@ -28,16 +26,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(1
 .inv-pop-item:last-child{border-bottom:none}
 .inv-pop-empty{color:var(--text-dim);font-size:0.75em;font-style:italic}
 .inv-pop-frags{color:var(--gold);font-size:0.7em;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)}
-
-/* Hero */
 .hero{height:100vh;min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;z-index:1}
 .hero h1{font-size:clamp(2.5em,5vw,4em);letter-spacing:10px;color:var(--accent-light);text-shadow:0 0 50px rgba(139,0,0,0.4);margin-bottom:8px}
 .hero .subtitle{font-size:clamp(0.8em,1.5vw,1.1em);color:var(--text-dim);letter-spacing:8px;margin-bottom:8px}
 .hero .year{font-size:0.75em;color:var(--gold);letter-spacing:6px;margin-bottom:36px}
 .hero-btn{padding:16px 52px;border:2px solid var(--accent);background:transparent;color:var(--accent-light);font-size:1.05em;letter-spacing:8px;cursor:pointer;transition:all 0.4s;font-family:inherit;border-radius:4px}
 .hero-btn:hover{background:var(--accent);color:#fff;box-shadow:0 0 40px rgba(139,0,0,0.5);transform:scale(1.03)}
-
-/* Rooms */
 .rooms-section{padding:60px 32px 80px;max-width:1100px;margin:0 auto;position:relative;z-index:1}
 .rooms-section h2{text-align:center;color:var(--accent-light);letter-spacing:6px;margin-bottom:40px;font-size:1.3em}
 .rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
@@ -50,15 +44,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(1
 .room-eng{font-size:0.65em;color:var(--text-dim);letter-spacing:2px}
 .room-req{font-size:0.65em;color:var(--accent);margin-top:6px}
 .room-lock{position:absolute;top:10px;right:12px;font-size:0.9em;color:var(--accent)}
-
-/* Footer */
 .footer{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:0.72em;letter-spacing:2px;position:relative;z-index:1}
-
-/* Toast */
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(8,4,4,0.96);border:1px solid var(--accent);border-radius:6px;padding:14px 28px;color:var(--text);font-size:0.85em;opacity:0;transition:opacity 0.4s;pointer-events:none;max-width:500px;text-align:center;letter-spacing:1px;box-shadow:0 4px 24px rgba(0,0,0,0.6)}
 .toast.show{opacity:1}
-
-/* Modal base */
 .modal{position:fixed;top:0;left:0;width:100%;height:100%;z-index:5000;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s}
 .modal.open{opacity:1;pointer-events:all}
 .modal-box{background:linear-gradient(160deg,#0a0505,#110a08);border:1px solid var(--accent);border-radius:8px;width:92%;max-width:680px;max-height:82vh;overflow-y:auto;box-shadow:0 0 60px rgba(139,0,0,0.3)}
@@ -75,8 +63,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(1
 .modal-action-btn:hover{background:var(--accent);color:#fff}
 .modal-action-btn.danger{border-color:#772222;color:#cc6666}
 .modal-action-btn.danger:hover{background:#772222}
-
-/* Password modal */
 .pw-modal{position:fixed;top:0;left:0;width:100%;height:100%;z-index:6000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s}
 .pw-modal.open{opacity:1;pointer-events:all}
 .pw-box{background:linear-gradient(160deg,#0a0505,#120a08);border:2px solid var(--accent);border-radius:8px;padding:28px;width:92%;max-width:400px;text-align:center;box-shadow:0 0 50px rgba(139,0,0,0.3)}
@@ -90,14 +76,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(1
 .pw-btn{padding:10px 28px;border:1px solid var(--accent);background:transparent;color:var(--text);cursor:pointer;font-size:0.85em;letter-spacing:3px;border-radius:4px;transition:all 0.3s;font-family:inherit}
 .pw-btn:hover{background:var(--accent);color:#fff}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-
-/* Jumpscare */
 .jumpscare{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10000;background:#000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none}
 .jumpscare.active{animation:jumpFlash 0.7s ease-out}
 .js-face{font-size:8em;text-align:center;color:#cc2222}
 @keyframes jumpFlash{0%{opacity:0;transform:scale(0.4)}25%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(1)}}
-
-/* Prologue overlay */
 .prologue-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.94);z-index:8000;display:flex;align-items:center;justify-content:center}
 .prologue-overlay.hidden{display:none!important}
 .prologue-box{background:linear-gradient(160deg,#0a0505,#140c0a);border:1px solid var(--accent);border-radius:8px;width:92%;max-width:620px;max-height:85vh;overflow-y:auto;box-shadow:0 0 80px rgba(139,0,0,0.35)}
@@ -107,22 +89,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(1
 .prologue-inner .highlight-text{color:#cc8844;text-align:center;font-style:italic;padding:12px 16px;border-left:3px solid var(--accent);background:rgba(139,0,0,0.08);margin:12px 0;border-radius:0 4px 4px 0}
 .prologue-btn{display:block;margin:20px auto 0;padding:14px 44px;border:2px solid var(--accent);color:#cc8888;background:transparent;font-size:0.95em;letter-spacing:5px;cursor:pointer;border-radius:4px;transition:all 0.3s;font-family:inherit;text-align:center}
 .prologue-btn:hover{background:var(--accent);color:#fff;box-shadow:0 0 30px rgba(139,0,0,0.5)}
-
-/* Journal entries */
 .journal-entry{margin-bottom:14px;padding:12px 14px;border-left:2px solid var(--accent);background:rgba(139,0,0,0.04);border-radius:0 4px 4px 0}
 .journal-entry h4{color:var(--accent-light);font-size:0.85em;margin-bottom:3px}
 .journal-entry p{color:var(--text);font-size:0.78em;line-height:1.6}
-
-/* Story cards */
 .story-card{padding:16px 18px;margin-bottom:12px;background:rgba(139,0,0,0.03);border-left:3px solid var(--accent);border-radius:0 6px 6px 0}
 .story-card h3{color:var(--accent-light);margin-bottom:10px;font-size:0.95em}
-
-/* Ending */
 .ending-box{text-align:center;padding:10px 0}
 .ending-box h3{color:var(--accent-light);font-size:1.2em;margin-bottom:14px;letter-spacing:4px}
 .ending-box p{line-height:2;margin-bottom:8px;font-size:0.88em}
-
-/* Misc */
 .clue-highlight{color:var(--accent-light);font-weight:700}
 .highlight-text{color:#cc8844;text-align:center;font-style:italic;padding:12px 16px;border-left:3px solid var(--accent);background:rgba(139,0,0,0.08);margin:12px 0;border-radius:0 4px 4px 0}
 </style>
@@ -310,7 +284,7 @@ function rJ(){var jm=document.getElementById('journal-modal-body');if(!jm)return
 function rS(){var sc=document.getElementById('story-content');if(!sc)return;var h=sc.innerHTML;for(var i=0;i<S.storyClues.length;i++){var c=S.storyClues[i];if(h.indexOf(c.title)>=0)continue;h+='<div class="story-card"><h3>'+c.title+'</h3><p>'+c.content+'</p></div>';}sc.innerHTML=h;}
 function rI(){var ip=document.getElementById('inv-popup');if(!ip)return;if(S.inventory.length===0){ip.innerHTML='<h4>🎒 已收集的物品</h4><div class="inv-pop-empty">尚未收集任何物品...</div>';return;}var h='<h4>🎒 已收集的物品</h4>';for(var i=0;i<S.inventory.length;i++){h+='<div class="inv-pop-item">'+S.inventory[i]+'</div>';}h+='<div class="inv-pop-frags">🔑 钥匙碎片：'+S.keyFragments+'/3</div>';ip.innerHTML=h;}
 var _origUH=uH;uH=function(){_origUH();rI();};
-function initEvents(){var hb=document.getElementById('hero-enter-btn');if(hb)hb.addEventListener('click',function(){ia();pc();document.getElementById('rooms').scrollIntoView({behavior:'smooth'});st('你踏入了暗影宅邸。耐心阅读每一个文本\u2014\u2014线索就藏在字里行间。从门厅和客厅开始探索吧。');setTimeout(function(){pwh();},2000);});var md=document.getElementById('room-modal');if(md)md.addEventListener('click',function(e){if(e.target===md)closeModal();});var pm=document.getElementById('pw-modal');if(pm)pm.addEventListener('click',function(e){if(e.target===pm)closePW();});document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(document.getElementById('pw-modal').classList.contains('open'))closePW();else if(document.getElementById('story-modal').classList.contains('open'))document.getElementById('story-modal').classList.remove('open');else if(document.getElementById('journal-modal').classList.contains('open'))document.getElementById('journal-modal').classList.remove('open');else if(document.getElementById('ending-modal').classList.contains('open'))document.getElementById('ending-modal').classList.remove('open');else if(document.getElementById('room-modal').classList.contains('open'))closeModal();}});var nls=document.querySelectorAll('.nav-item a');for(var i=0;i<nls.length;i++){nls[i].addEventListener('click',function(e){e.preventDefault();var h=this.getAttribute('href');if(h&&h.startsWith('#')){var el=document.querySelector(h);if(el)el.scrollIntoView({behavior:'smooth'});}});}var smEl=document.getElementById('story-modal');if(smEl)smEl.addEventListener('click',function(e){if(e.target===smEl)smEl.classList.remove('open');});var jmEl=document.getElementById('journal-modal');if(jmEl)jmEl.addEventListener('click',function(e){if(e.target===jmEl)jmEl.classList.remove('open');});var emEl=document.getElementById('ending-modal');if(emEl)emEl.addEventListener('click',function(e){if(e.target===emEl)emEl.classList.remove('open');});document.getElementById('pw-submit').addEventListener('click',submitPW);document.getElementById('pw-input').addEventListener('keypress',function(e){if(e.key==='Enter')submitPW();});document.getElementById('pw-input').addEventListener('input',function(){document.getElementById('pw-error').textContent='';});}
+function initEvents(){var hb=document.getElementById('hero-enter-btn');if(hb)hb.addEventListener('click',function(){document.getElementById('prologue-overlay').classList.remove('hidden');});var md=document.getElementById('room-modal');if(md)md.addEventListener('click',function(e){if(e.target===md)closeModal();});var pm=document.getElementById('pw-modal');if(pm)pm.addEventListener('click',function(e){if(e.target===pm)closePW();});document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(document.getElementById('pw-modal').classList.contains('open'))closePW();else if(document.getElementById('story-modal').classList.contains('open'))document.getElementById('story-modal').classList.remove('open');else if(document.getElementById('journal-modal').classList.contains('open'))document.getElementById('journal-modal').classList.remove('open');else if(document.getElementById('ending-modal').classList.contains('open'))document.getElementById('ending-modal').classList.remove('open');else if(document.getElementById('room-modal').classList.contains('open'))closeModal();}});var nls=document.querySelectorAll('.nav-item a');for(var i=0;i<nls.length;i++){nls[i].addEventListener('click',function(e){e.preventDefault();var h=this.getAttribute('href');if(h&&h.startsWith('#')){var el=document.querySelector(h);if(el)el.scrollIntoView({behavior:'smooth'});}});}var smEl=document.getElementById('story-modal');if(smEl)smEl.addEventListener('click',function(e){if(e.target===smEl)smEl.classList.remove('open');});var jmEl=document.getElementById('journal-modal');if(jmEl)jmEl.addEventListener('click',function(e){if(e.target===jmEl)jmEl.classList.remove('open');});var emEl=document.getElementById('ending-modal');if(emEl)emEl.addEventListener('click',function(e){if(e.target===emEl)emEl.classList.remove('open');});document.getElementById('pw-submit').addEventListener('click',submitPW);document.getElementById('pw-input').addEventListener('keypress',function(e){if(e.key==='Enter')submitPW();});document.getElementById('pw-input').addEventListener('input',function(){document.getElementById('pw-error').textContent='';});}
 function init(){
 var pc=document.getElementById("prologue-content");
 pc.innerHTML='<h3>🕯️ 序章：为何而来</h3>'+
