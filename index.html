@@ -134,94 +134,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-serif);line-h
 .site-footer{background:#020102;border-top:1px solid #1a0a0a;padding:30px;text-align:center;margin-bottom:60px}
 .footer-text{color:#443322;font-size:0.8em;letter-spacing:3px}
 @media(max-width:768px){.nav-menu{display:none}.room-grid{grid-template-columns:1fr}.section{padding:50px 16px}.main-nav{padding:0 16px}}
-﻿
-/* ═══ ROOM SCENES (CSS Art) ═══ */
-.room-scene{position:relative;width:100%;height:200px;border-radius:8px;overflow:hidden}
-/* Foyer */
-.foyer-scene{background:linear-gradient(180deg,#2a1808 0%,#3a2010 30%,#1a0c04 60%,#0a0402 100%)}
-.foyer-scene .scene-light{position:absolute;top:10%;left:50%;transform:translateX(-50%);width:120px;height:80px;background:radial-gradient(ellipse,rgba(255,200,100,0.15) 0%,transparent 70%);border-radius:50%}
-.foyer-scene .scene-door{position:absolute;top:10%;left:50%;transform:translateX(-50%);width:100px;height:160px;background:linear-gradient(180deg,#4a2810,#3a1c08);border:3px solid #5a3020;border-radius:6px 6px 0 0}
-.foyer-scene .scene-door::after{content:"";position:absolute;top:40%;left:75%;width:6px;height:6px;background:#d4a060;border-radius:50%;box-shadow:0 0 8px #d4a060}
-.foyer-scene .scene-chandelier{position:absolute;top:0;left:50%;transform:translateX(-50%);width:4px;height:40px;background:#5a3820}
-.foyer-scene .scene-chandelier::after{content:"";position:absolute;bottom:0;left:-12px;width:28px;height:10px;background:linear-gradient(90deg,transparent,#d4a060,transparent);border-radius:50%;opacity:0.3}
-.foyer-scene .scene-table{position:absolute;bottom:20px;left:25%;width:120px;height:30px;background:linear-gradient(180deg,#4a2818,#3a1a0c);border-radius:4px}
-.foyer-scene .scene-letter{position:absolute;bottom:50px;left:30%;width:30px;height:20px;background:#d4c4a8;transform:rotate(-5deg);box-shadow:2px 2px 4px rgba(0,0,0,0.5)}
-/* Living */
-.living-scene{background:linear-gradient(180deg,#2a1808 0%,#3a2210 40%,#1a0c04 70%,#0a0402 100%)}
-.living-scene .scene-fireplace{position:absolute;bottom:10px;left:10%;width:100px;height:90px;background:linear-gradient(180deg,#3a2010,#2a1508);border:2px solid #4a2818;border-radius:4px}
-.living-scene .scene-fire-glow{position:absolute;bottom:5px;left:20px;width:60px;height:40px;background:radial-gradient(ellipse,rgba(255,140,40,0.2) 0%,transparent 70%);animation:flicker 3s ease-in-out infinite}
-@keyframes flicker{0%,100%{opacity:0.6}50%{opacity:1}}
-.living-scene .scene-piano{position:absolute;bottom:15px;right:15%;width:130px;height:50px;background:linear-gradient(180deg,#1a0e06,#0d0603);border:2px solid #3a2010;border-radius:4px}
-.living-scene .scene-piano::after{content:"";position:absolute;top:8px;left:10px;right:10px;height:3px;background:repeating-linear-gradient(90deg,#d4c0a0 0,#d4c0a0 8px,transparent 8px,transparent 12px)}
-.living-scene .scene-sofa{position:absolute;bottom:20px;left:45%;width:100px;height:35px;background:linear-gradient(180deg,#4a2010,#2a1008);border-radius:8px 8px 0 0}
-.living-scene .scene-window{position:absolute;top:10%;right:8%;width:50px;height:70px;background:linear-gradient(180deg,rgba(100,140,180,0.1),rgba(40,60,80,0.05));border:3px solid #3a2010}
-/* Kitchen */
-.kitchen-scene{background:linear-gradient(180deg,#2a1a0e 0%,#3a2414 40%,#1a0e06 70%,#0a0402 100%)}
-.kitchen-scene .scene-counter{position:absolute;bottom:20px;left:5%;width:55%;height:60px;background:linear-gradient(180deg,#4a2a18,#3a1e0e);border-radius:4px}
-.kitchen-scene .scene-fridge{position:absolute;bottom:15px;right:8%;width:50px;height:90px;background:linear-gradient(180deg,#5a3828,#3a2018);border:2px solid #4a2818;border-radius:3px}
-.kitchen-scene .scene-safe{position:absolute;top:30%;left:42%;width:35px;height:35px;background:#2a1508;border:2px solid #6a4020;border-radius:4px}
-.kitchen-scene .scene-safe::after{content:"";position:absolute;top:8px;left:8px;width:15px;height:4px;background:#8a6040;border-radius:2px}
-.kitchen-scene .scene-drip{position:absolute;top:25%;right:12%;width:3px;height:30px;background:rgba(180,150,120,0.3);animation:drip 2s ease-in-out infinite}
-@keyframes drip{0%,100%{height:30px;opacity:0.3}50%{height:15px;opacity:0.1}}
-.kitchen-scene .scene-knife{position:absolute;bottom:22px;left:48%;width:4px;height:20px;background:#aaa;transform:rotate(30deg);box-shadow:1px 1px 3px rgba(0,0,0,0.5)}
-/* Dining */
-.dining-scene{background:linear-gradient(180deg,#2a1808 0%,#3a2010 40%,#1a0e06 70%,#0a0402 100%)}
-.dining-scene .scene-long-table{position:absolute;bottom:30px;left:10%;width:80%;height:14px;background:linear-gradient(180deg,#4a2a18,#3a1c0e);border-radius:4px}
-.dining-scene .scene-long-table::after{content:"";position:absolute;bottom:-35px;left:15%;width:70%;height:3px;background:rgba(255,180,100,0.15);box-shadow:0 0 20px rgba(255,160,80,0.08)}
-.dining-scene .scene-portrait{position:absolute;top:8%;width:28px;height:42px;border:2px solid #4a2818;border-radius:3px}
-.dining-scene .scene-portrait.v{left:8%;background:linear-gradient(180deg,#331a08,#1a0a04)}
-.dining-scene .scene-portrait.e{left:22%;background:linear-gradient(180deg,#332210,#1a1006)}
-.dining-scene .scene-portrait.l{left:36%;background:linear-gradient(180deg,#332818,#1a1408)}
-.dining-scene .scene-candle-glow{position:absolute;bottom:44px;left:30%;width:80px;height:40px;background:radial-gradient(ellipse,rgba(255,180,80,0.12) 0%,transparent 70%)}
-/* Study */
-.study-scene{background:linear-gradient(180deg,#1a0e06 0%,#2a1808 30%,#140804 70%,#080202 100%)}
-.study-scene .scene-bookshelf{position:absolute;top:5%;width:80px;height:85%;background:linear-gradient(180deg,#3a2010,#2a1508);border:2px solid #4a2818;border-radius:3px}
-.study-scene .scene-bookshelf.left{left:5%}
-.study-scene .scene-bookshelf.right{right:5%}
-.study-scene .scene-bookshelf::after{content:"";position:absolute;top:15%;left:8px;right:8px;height:2px;background:#4a2818;box-shadow:0 20px 0 #4a2818,0 40px 0 #4a2818,0 60px 0 #4a2818,0 80px 0 #4a2818,0 100px 0 #4a2818}
-.study-scene .scene-desk{position:absolute;bottom:15px;left:30%;width:40%;height:35px;background:linear-gradient(180deg,#4a2a18,#3a1c0e);border-radius:4px}
-.study-scene .scene-lamp-glow{position:absolute;top:-20px;left:50%;width:40px;height:30px;background:radial-gradient(ellipse,rgba(255,200,100,0.15) 0%,transparent 70%)}
-.study-scene .scene-papers{position:absolute;bottom:50px;left:35%;width:25px;height:18px;background:#d4c4a8;transform:rotate(8deg);box-shadow:5px 3px 0 #c4b498}
-/* Hallway */
-.hallway-scene{background:linear-gradient(180deg,#1a0e06 0%,#3a1e10 35%,#2a1408 65%,#080202 100%)}
-.hallway-scene .scene-corridor{position:absolute;top:0;left:20%;width:60%;height:100%;background:linear-gradient(180deg,transparent,rgba(0,0,0,0.3),transparent)}
-.hallway-scene .scene-picture-frame{position:absolute;top:20%;left:15%;width:35px;height:45px;border:3px solid #3a2010;transform:rotate(-8deg);background:rgba(20,10,4,0.8)}
-.hallway-scene .scene-writing{position:absolute;top:50%;right:10%;width:60px;height:20px;color:rgba(180,50,30,0.6);font-size:10px;font-family:serif;letter-spacing:2px}
-.hallway-scene .scene-papers-scattered{position:absolute;bottom:20%;left:10%;width:15px;height:10px;background:rgba(200,180,150,0.3);transform:rotate(15deg);box-shadow:20px -5px 0 rgba(200,180,150,0.2),40px 3px 0 rgba(200,180,150,0.25)}
-/* Bedroom */
-.bedroom-scene{background:linear-gradient(180deg,#2a180c 0%,#3a2010 35%,#1a0c04 65%,#080202 100%)}
-.bedroom-scene .scene-bed{position:absolute;bottom:10px;left:5%;width:55%;height:70px;background:linear-gradient(180deg,#3a1e10,#2a1408);border-radius:10px 10px 0 0;border:2px solid #4a2818}
-.bedroom-scene .scene-bed::after{content:"";position:absolute;top:5px;left:15%;width:70%;height:25px;background:linear-gradient(180deg,#4a2a18,#3a1c0e);border-radius:4px}
-.bedroom-scene .scene-vanity{position:absolute;bottom:15px;right:10%;width:70px;height:55px;background:linear-gradient(180deg,#3a1e10,#2a1408);border:2px solid #4a2818;border-radius:3px}
-.bedroom-scene .scene-mirror-crack{position:absolute;top:10px;left:15px;width:40px;height:35px;background:linear-gradient(135deg,rgba(200,180,160,0.1),rgba(180,160,140,0.05));border:2px solid #5a3820}
-.bedroom-scene .scene-mirror-crack::after{content:"";position:absolute;top:0;left:50%;width:2px;height:100%;background:rgba(0,0,0,0.4);box-shadow:8px 0 0 rgba(0,0,0,0.2)}
-.bedroom-scene .scene-wardrobe{position:absolute;bottom:10px;right:2%;width:35px;height:85px;background:linear-gradient(180deg,#3a1e10,#2a1408);border:2px solid #4a2818;border-radius:3px}
-.bedroom-scene .scene-letter-pillow{position:absolute;bottom:25px;left:22%;width:18px;height:12px;background:rgba(200,180,150,0.4);transform:rotate(-10deg)}
-/* Bathroom */
-.bathroom-scene{background:linear-gradient(180deg,#282218 0%,#3a3028 35%,#1a1410 65%,#080604 100%)}
-.bathroom-scene .scene-tub{position:absolute;bottom:10px;left:5%;width:45%;height:55px;background:linear-gradient(180deg,#4a3a28,#2a1a10);border:2px solid #5a4030;border-radius:20px;overflow:hidden}
-.bathroom-scene .scene-tub::after{content:"";position:absolute;top:5px;left:10%;width:80%;height:15px;background:rgba(180,40,30,0.2);border-radius:50%}
-.bathroom-scene .scene-sink{position:absolute;bottom:20px;right:8%;width:55px;height:40px;background:linear-gradient(180deg,#3a2a18,#2a1a10);border:2px solid #5a4030;border-radius:5px}
-.bathroom-scene .scene-mirror-blood{position:absolute;top:15%;right:5%;width:50px;height:35px;background:linear-gradient(135deg,rgba(200,180,160,0.08),rgba(180,160,140,0.04));border:2px solid #5a4030}
-.bathroom-scene .scene-mirror-blood::after{content:"BLOOD";position:absolute;top:5px;left:5px;color:rgba(200,40,30,0.7);font-size:12px;font-family:serif;letter-spacing:2px}
-.bathroom-scene .scene-vial{position:absolute;bottom:60px;right:12%;width:8px;height:25px;background:linear-gradient(180deg,rgba(180,40,30,0.4),rgba(120,20,15,0.3));border:1px solid #5a3020;border-radius:4px 4px 2px 2px}
-/* Attic */
-.attic-scene{background:linear-gradient(180deg,#2a1808 0%,#3a2010 35%,#1a0c04 65%,#080202 100%)}
-.attic-scene .scene-roof-beams{position:absolute;top:0;left:0;width:100%;height:100%}
-.attic-scene .scene-roof-beams::before{content:"";position:absolute;top:0;left:50%;width:3px;height:100%;background:#3a2010}
-.attic-scene .scene-roof-beams::after{content:"";position:absolute;top:50%;left:0;width:100%;height:2px;background:#3a2010}
-.attic-scene .scene-chest{position:absolute;bottom:15px;left:10%;width:70px;height:45px;background:linear-gradient(180deg,#4a2a18,#3a1c0e);border:2px solid #6a4020;border-radius:4px}
-.attic-scene .scene-chest::after{content:"☀⭐🌙";position:absolute;top:5px;left:8px;color:rgba(200,160,100,0.5);font-size:14px;letter-spacing:2px}
-.attic-scene .scene-doll{position:absolute;bottom:20px;right:15%;width:20px;height:30px;background:linear-gradient(180deg,#3a5a3a,#2a4a2a);border-radius:5px 5px 2px 2px}
-.attic-scene .scene-doll::after{content:"";position:absolute;top:5px;left:3px;width:4px;height:4px;background:#111;border-radius:50%;box-shadow:8px 0 0 #111}
-.attic-scene .scene-cobweb{position:absolute;top:5%;right:10%;width:40px;height:40px;border:1px solid rgba(200,180,150,0.1);border-radius:50%;box-shadow:inset 0 0 20px rgba(200,180,150,0.05)}
-/* Basement */
-.basement-scene{background:linear-gradient(180deg,#0a0404 0%,#1a0808 30%,#2a0e08 60%,#000 100%)}
-.basement-scene .scene-stairs-down{position:absolute;top:0;left:10%;width:80%;height:60%;background:repeating-linear-gradient(180deg,transparent,transparent 20px,rgba(100,60,30,0.1) 20px,rgba(100,60,30,0.1) 21px)}
-.basement-scene .scene-altar{position:absolute;bottom:10px;left:30%;width:40%;height:60px;background:linear-gradient(180deg,#2a0e08,#1a0604);border:2px solid #4a1810;border-radius:50%;box-shadow:0 0 30px rgba(200,60,30,0.1)}
-.basement-scene .scene-altar-glow{position:absolute;top:10px;left:20%;width:60%;height:30px;background:radial-gradient(ellipse,rgba(255,80,30,0.15) 0%,transparent 70%);animation:flicker 2s ease-in-out infinite}
-.basement-scene .scene-candles{position:absolute;bottom:30px;left:15%;width:3px;height:15px;background:#d4a060;box-shadow:55px 0 0 #d4a060,0 -5px 6px rgba(255,180,80,0.2),55px -5px 6px rgba(255,180,80,0.2);animation:flicker 1.5s ease-in-out infinite}
-.basement-scene .scene-book{position:absolute;bottom:60px;left:43%;width:30px;height:20px;background:linear-gradient(90deg,#3a1a0e,#2a0e06);transform:rotate(-3deg)}
 
 .action-btn{flex:1;min-width:130px;padding:14px 18px;background:linear-gradient(180deg,rgba(90,55,30,0.45) 0%,rgba(45,25,12,0.45) 100%);border:1px solid #6a4830;color:#e0c8a0;border-radius:8px;cursor:pointer;font-family:inherit;font-size:0.85em;transition:all 0.3s;letter-spacing:2px;text-shadow:0 1px 2px rgba(0,0,0,0.4);box-shadow:0 2px 6px rgba(0,0,0,0.3)}
 .action-btn:hover{background:linear-gradient(180deg,rgba(130,80,35,0.55) 0%,rgba(70,35,18,0.55) 100%);border-color:#9a6840;color:#f8e0c0;transform:translateY(-2px);box-shadow:0 4px 14px rgba(110,55,25,0.35)}
@@ -266,7 +178,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-serif);line-h
 .ending-btn.good:hover{border-color:#44aa44;box-shadow:0 0 30px rgba(60,160,60,0.4)}
 .ending-btn.bad:hover{border-color:#cc4444;box-shadow:0 0 30px rgba(200,60,60,0.4)}
 .ending-btn small{display:block;font-size:0.65em;color:#8a6040;margin-top:5px;letter-spacing:1px}
-
+#modal-image{display:none}
 </style>
 </head>
 <body>
