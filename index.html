@@ -81,6 +81,21 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(1
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(8,4,4,0.96);border:1px solid var(--accent);border-radius:6px;padding:14px 28px;color:var(--text);font-size:0.85em;opacity:0;transition:opacity 0.4s;pointer-events:none;max-width:500px;text-align:center;letter-spacing:1px;box-shadow:0 4px 24px rgba(0,0,0,0.6)}
 .toast.show{opacity:1}
 .footer{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:0.72em;letter-spacing:2px;position:relative;z-index:1}
+
+.clues-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.88);z-index:6000;justify-content:center;align-items:flex-start;padding-top:60px}
+.clues-overlay.active{display:flex}
+.clues-box{background:linear-gradient(180deg,#0d0808,#120a08);border:2px solid var(--accent);border-radius:10px;width:90%;max-width:650px;max-height:75vh;overflow-y:auto;padding:28px 32px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.8)}
+.clues-close{position:absolute;top:14px;right:14px;font-size:1.3em;cursor:pointer;color:var(--text-dim);background:none;border:none;transition:0.3s;z-index:5}
+.clues-close:hover{color:var(--accent-light)}
+.clues-box h3{color:var(--accent-light);font-size:1.1em;letter-spacing:4px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);text-align:center}
+.clue-item{padding:14px 16px;margin-bottom:10px;background:rgba(0,0,0,0.25);border-left:3px solid var(--accent);border-radius:4px;cursor:pointer;transition:all 0.3s}
+.clue-item:hover{background:rgba(139,0,0,0.12);border-left-color:var(--accent-light)}
+.clue-item-title{color:var(--accent-light);font-size:0.82em;letter-spacing:2px;margin-bottom:4px}
+.clue-item-src{color:var(--text-dim);font-size:0.7em;letter-spacing:1px}
+.clue-detail{display:none;margin-top:8px;padding:12px 14px;background:rgba(0,0,0,0.4);border-radius:4px;color:var(--text);font-size:0.78em;line-height:2;white-space:pre-line}
+.clue-detail.show{display:block}
+.clue-empty{color:var(--text-dim);text-align:center;padding:30px;font-style:italic;letter-spacing:2px}
+
 </style>
 </head>
 <body>
@@ -104,6 +119,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(1
   <div class="nav-brand">⚰️ 霍桑庄园</div>
   <div class="nav-actions">
     <button class="nav-btn" onclick="scrollToRooms()">🏠 房间</button>
+    <button class="nav-btn" onclick="showClues()">📋 线索 <span class="inv-badge" id="clue-count" style="display:none">0</span></button>
     <div class="nav-inv">
       <button class="inv-trigger">🎒 物品栏 <span class="inv-badge" id="inv-count">0</span></button>
       <div class="inv-popup" id="inv-popup">
@@ -130,6 +146,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(1
   <div class="modal-box" id="modal-box">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div id="modal-content"></div>
+  </div>
+</div>
+
+
+<div class="clues-overlay" id="clues-overlay">
+  <div class="clues-box">
+    <button class="clues-close" onclick="closeClues()">✕</button>
+    <h3>📋 已发现的线索</h3>
+    <div id="clues-list"><div class="clue-empty">尚未发现任何线索</div></div>
   </div>
 </div>
 
@@ -206,6 +231,7 @@ var ACTIONS = {"foyer": [{"type": "read", "label": "阅读信件", "item": "lett
 
 var G = {
     inv: [],
+    clues: [],
     frags: 0,
     done: {},
     unlocked: {foyer:true,living:true,kitchen:false,dining:false,study:false,hallway:false,bedroom:true,bathroom:true,attic:false,basement:false},
@@ -357,7 +383,7 @@ function doAction(rm, a, idx) {
     rb.style.display = "block";
     rb.textContent = a.result;
     
-    ia();pc();if(a.type==="read"){setTimeout(function(){pwh();},400);}
+    ia();pc();if(a.type==="read"){setTimeout(function(){pwh();},400);addClue(a.label, rm.name, a.result);}
     if (a.item) {
         G.done[rm.id + "_" + a.item] = true;
         var btn = document.getElementById("act-" + rm.id + "-" + idx);
@@ -365,6 +391,7 @@ function doAction(rm, a, idx) {
     }
     
     // Rewards
+    if (a.type==="pickup" && a.item!=="brass_key"){addClue(a.label, rm.name, a.result);}
     if (a.reward === "key_fragment_1" || a.reward === "key_fragment_2") {
         G.frags++;
         G.inv.push("钥匙碎片 " + G.frags + "/3");
@@ -383,6 +410,7 @@ function doAction(rm, a, idx) {
     if (a.reward === "locket") { G.inv.push("小金盒吊坠"); }
     
     if (a.type === "ending") {
+        addClue("🎭 " + a.label, rm.name, a.result);
         setBGMTension(1.0);psd();
         G.gameOver = true;
         setTimeout(function(){ closeModal(); showEnding(a); }, 2000);
@@ -391,7 +419,7 @@ function doAction(rm, a, idx) {
     
     if (Math.random() < 0.12) setTimeout(function(){ doJS("👁️", "有什么东西在看着你..."); }, 1000);
     
-    rRooms(); uInv();
+    rRooms(); uInv(); uClues();
 }
 
 function showEnding(a) {
@@ -415,6 +443,38 @@ function closeModal() {
     rRooms();
 }
 
+
+function addClue(title, src, content) {
+    if (G.clues.find(function(c){ return c.title === title; })) return;
+    G.clues.push({title: title, src: src, content: content});
+    uClues();
+    toast("📋 新线索: " + title);
+}
+function showClues() {
+    var ol = document.getElementById("clues-overlay");
+    var lst = document.getElementById("clues-list");
+    if (G.clues.length === 0) {
+        lst.innerHTML = '<div class="clue-empty">尚未发现任何线索</div>';
+    } else {
+        lst.innerHTML = G.clues.map(function(c, i) {
+            return '<div class="clue-item" onclick="toggleClue(' + i + ')"><div class="clue-item-title">🔍 ' + c.title + '</div><div class="clue-item-src">来源: ' + c.src + '</div><div class="clue-detail" id="clue-detail-' + i + '">' + c.content + '</div></div>';
+        }).join("");
+    }
+    ol.classList.add("active");
+}
+function closeClues() { document.getElementById("clues-overlay").classList.remove("active"); }
+function toggleClue(i) {
+    var d = document.getElementById("clue-detail-" + i);
+    if (d) d.classList.toggle("show");
+}
+function uClues() {
+    var badge = document.getElementById("clue-count");
+    if (G.clues.length > 0) {
+        badge.style.display = "inline-block";
+        badge.textContent = G.clues.length;
+    }
+}
+
 function uInv() {
     var lst = document.getElementById("inv-list");
     document.getElementById("inv-count").textContent = G.inv.length;
@@ -424,7 +484,7 @@ function uInv() {
     if (G.frags > 0) { fg.style.display = "block"; document.getElementById("frag-count").textContent = G.frags; }
 }
 
-rRooms(); uInv();
+rRooms(); uInv(); uClues();
 document.addEventListener("click",function(){ia();if(!bgmPlaying)startBGM();},{once:true});
 
 </script>
