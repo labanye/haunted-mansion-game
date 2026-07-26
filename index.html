@@ -310,14 +310,14 @@ function openRoom(rid){
   }
   
   actDiv.innerHTML=actHtml;
-  modal.classList.add("show");
+  modal.classList.add("open");
 }
 
 // ═══════════════════════════════════════
 // CLOSE MODAL
 // ═══════════════════════════════════════
 function closeModal(){
-  document.getElementById("room-modal").classList.remove("show");
+  document.getElementById("room-modal").classList.remove("open");
   S.currentRoom=null;
 }
 
@@ -773,14 +773,14 @@ function openRoom(rid){
   }
   
   actDiv.innerHTML=actHtml;
-  modal.classList.add("show");
+  modal.classList.add("open");
 }
 
 // ═══════════════════════════════════════
 // CLOSE MODAL
 // ═══════════════════════════════════════
 function closeModal(){
-  document.getElementById("room-modal").classList.remove("show");
+  document.getElementById("room-modal").classList.remove("open");
   S.currentRoom=null;
 }
 
