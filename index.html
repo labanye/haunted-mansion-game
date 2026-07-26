@@ -307,7 +307,7 @@ function doAction(rm, a, idx) {
     if (a.reward === "attic_unlock") { G.unlocked.attic = true; G.done.attic_ul = true; }
     if (a.item === "brass_key") { G.inv.push("黄铜小钥匙"); G.unlocked.kitchen = true; G.done.kitchen_ul = true; }
     if (a.reward === "diary_clue") { G.inv.push("解剖图羊皮纸"); }
-    if (a.item === "family_crate" || a.item === "sewing") {
+    if (a.item === "family_crate") {
         if (!G.done.got_frag3) { G.frags++; G.done.got_frag3 = true; }
         G.inv.push("完整的暗门钥匙");
         G.unlocked.basement = true;
