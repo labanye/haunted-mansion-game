@@ -23,7 +23,7 @@ line-height:1.7;overflow-x:hidden;
 background-image:radial-gradient(ellipse at 50% 0%,#0d0d0d 0%,#030303 70%);
 }
 #fog{
-position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;
+position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;
 background:url("data:image/svg+xml,%3Csvg viewBox='0 0 800 600' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
 animation:fogMove 60s linear infinite;
 }
@@ -218,7 +218,7 @@ transition:opacity 0.5s
 <div class="hero-content">
 <h1 class="hero-title">暗 影 宅 邸</h1>
 <p class="hero-subtitle">SHADOW MANOR · 恐怖探索</p>
-<button class="hero-btn" onclick="startExplore()">进 入 宅 邸</button>
+<button class="hero-btn" id="hero-enter-btn">进 入 宅 邸</button>
 </div>
 <div class="hero-scroll">▼</div>
 </section><section id="rooms" class="section section-dark">
@@ -413,9 +413,13 @@ function ip(){ps=[];for(var i=0;i<25;i++){ps.push({x:Math.random()*cv.width,y:Ma
 function ap(){cx.clearRect(0,0,cv.width,cv.height);for(var i=0;i<ps.length;i++){var p=ps[i];p.x+=p.sx;p.y+=p.sy;p.l--;if(p.l<=0||p.y<-10||p.x<-10||p.x>cv.width+10){p.x=Math.random()*cv.width;p.y=cv.height+10;p.l=Math.random()*150+50;}cx.fillStyle="rgba(180,160,130,"+p.o+")";cx.beginPath();cx.arc(p.x,p.y,p.s,0,Math.PI*2);cx.fill();}requestAnimationFrame(ap);}
 rs();ip();ap();window.addEventListener("resize",function(){rs();ip();});
 })();
-function startExplore(){ia();drone();hb();document.getElementById("rooms").scrollIntoView({behavior:"smooth"});toast("你踏入了暗影宅邸...");renderRooms();}
+function startExploreHandler(){ia();drone();hb();document.getElementById("rooms").scrollIntoView({behavior:"smooth"});toast("你踏入了暗影宅邸...");renderRooms();}
 window.addEventListener("scroll",triggerAOS);
-window.addEventListener("load",function(){renderRooms();triggerAOS();});
+window.addEventListener("load",function(){
+renderRooms();triggerAOS();
+var b=document.getElementById("hero-enter-btn");
+if(b)b.addEventListener("click",function(){ia();drone();hb();document.getElementById("rooms").scrollIntoView({behavior:"smooth"});toast("你踏入了暗影宅邸...");renderRooms();});
+});
 document.getElementById("room-modal").addEventListener("click",function(e){if(e.target===this)closeModal();});
 document.addEventListener("keydown",function(e){if(e.key==="Escape")closeModal();});
 window.addEventListener("scroll",function(){
