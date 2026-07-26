@@ -198,146 +198,652 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-serif);line-h
 <script>
 ﻿(function(){
 "use strict";
-var actx=null;function ia(){if(actx)return;actx=new(window.AudioContext||window.webkitAudioContext)();}
+
+// ═══════════════════════════════════
+// AUDIO ENGINE
+// ═══════════════════════════════════
+var actx=null;
+function ia(){if(actx)return;actx=new(window.AudioContext||window.webkitAudioContext)();}
 function pt(f,d,t,v){if(!actx)return;var o=actx.createOscillator(),g=actx.createGain();o.type=t||"sine";o.frequency.value=f;g.gain.setValueAtTime(v||0.08,actx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+d);o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+d);}
-function playDrone(){if(!actx)return;var o=actx.createOscillator(),g=actx.createGain();o.type="sawtooth";o.frequency.value=55;g.gain.value=0.03;var l=actx.createOscillator(),lg=actx.createGain();l.frequency.value=0.3;lg.gain.value=5;l.connect(lg);lg.connect(o.frequency);o.connect(g);g.connect(actx.destination);o.start();l.start();setTimeout(function(){g.gain.linearRampToValueAtTime(0,actx.currentTime+2);setTimeout(function(){o.stop();l.stop();},2100);},3000);}
-function playHB(){if(!actx)return;for(var i=0;i<3;i++)(function(j){setTimeout(function(){pt(40,0.15,"sine",0.12);setTimeout(function(){pt(60,0.1,"sine",0.08);},150);},j*600);})(i);}
-function playWhisper(){if(!actx)return;for(var i=0;i<8;i++)(function(j){setTimeout(function(){pt(200+Math.random()*400,0.3,"sine",0.015);},j*120+Math.random()*200);})(i);}
 function playCreak(){if(!actx)return;pt(80+Math.random()*40,0.4,"square",0.04);setTimeout(function(){pt(60+Math.random()*30,0.3,"square",0.03);},150);}
-function playScream(){if(!actx)return;for(var i=0;i<20;i++)(function(j){setTimeout(function(){pt(300+Math.random()*800,0.15,"sawtooth",0.06);},j*60);})(i);}
-function playGlass(){if(!actx)return;for(var i=0;i<10;i++)(function(j){setTimeout(function(){pt(800+Math.random()*1200,0.2,"square",0.05);},j*50);})(i);}
+function playWhisper(){if(!actx)return;for(var i=0;i<8;i++){(function(j){setTimeout(function(){pt(200+Math.random()*400,0.3,"sine",0.015);},j*120+Math.random()*200);})(i);}}
+function playHB(){if(!actx)return;for(var i=0;i<3;i++){(function(j){setTimeout(function(){pt(40,0.15,"sine",0.12);setTimeout(function(){pt(60,0.1,"sine",0.08);},150);},j*600);})(i);}}
+function playScream(){if(!actx)return;for(var i=0;i<20;i++){(function(j){setTimeout(function(){pt(300+Math.random()*800,0.15,"sawtooth",0.06);},j*60);})(i);}}
+function playGlass(){if(!actx)return;for(var i=0;i<10;i++){(function(j){setTimeout(function(){pt(800+Math.random()*1200,0.2,"square",0.05);},j*50);})(i);}}
+function playDrone(){if(!actx)return;var o=actx.createOscillator(),g=actx.createGain();o.type="sawtooth";o.frequency.value=55;g.gain.value=0.03;var l=actx.createOscillator(),lg=actx.createGain();l.frequency.value=0.3;lg.gain.value=5;l.connect(lg);lg.connect(o.frequency);o.connect(g);g.connect(actx.destination);o.start();l.start();setTimeout(function(){g.gain.linearRampToValueAtTime(0,actx.currentTime+2);setTimeout(function(){o.stop();l.stop();},2100);},3000);}
 
-var S={sanity:100,inventory:[],visitedRooms:{},foundItems:{},keyFragments:0,journalE:[],gameEnded:false,ritualAttempted:false,currentRoom:null,unlockedRooms:{foyer:true,living:true,bedroom:true,bathroom:true},solvedPuzzles:{},notePieces:0,currentPW:null};
+// ═══════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════
+var S={
+  sanity:100,
+  inventory:[],
+  visitedRooms:{},
+  foundItems:{},
+  keyFragments:0,
+  journalEntries:[],
+  gameEnded:false,
+  ritualAttempted:false,
+  currentRoom:null,
+  unlockedRooms:{foyer:true,living:true,bedroom:true,bathroom:true},
+  solvedPuzzles:{},
+  notePieces:0,
+  currentPW:null,
+  scareReady:true
+};
 
+// ═══════════════════════════════════
+// ROOM DATA
+// ═══════════════════════════════════
 var rooms={
-foyer:{id:"foyer",name:"门厅",eng:"FOYER",icon:"🚪",unlockMsg:null,img:"door",desc:"你推开沉重的橡木大门，霉菌的气息扑面而来。门厅很大，一盏水晶吊灯在头顶微微晃动，发出咔嗒的声音。墙上挂着一幅巨大的宅邸地图——但很多区域被墨水涂黑了。一张落满灰尘的桌上放着一封信和一把小钥匙。"},
-living:{id:"living",name:"客厅",eng:"LIVING ROOM",icon:"🛋️",unlockMsg:null,img:"living",desc:"客厅里的壁炉早已熄灭。窗帘紧闭，微弱的光线从缝隙中渗入。一架落满灰尘的钢琴静静地立在角落——你注意到有三个琴键似乎最近被人按过：D、A、D。沙发上有一本封面模糊的日记，壁炉架上摆着一张全家福。"},
-kitchen:{id:"kitchen",name:"厨房",eng:"KITCHEN",icon:"🍳",unlockMsg:"需要客厅的铜钥匙来打开厨房门。",img:"kitchen",desc:"厨房散发着一股甜腻的腐败气味。橱柜的门半开半合，水龙头在滴水。桌上有一把生锈的切肉刀和一个上锁的小保险箱——保险箱上贴着标签：'3位数密码'。冰箱上贴着一张泛黄的食谱卡。"},
-dining:{id:"dining",name:"餐厅",eng:"DINING ROOM",icon:"🍽️",unlockMsg:"需要解开厨房保险箱获得银钥匙。",img:"dining",desc:"长桌上摆着六套餐具，盘子里的食物早已变成了黑色残渣。墙上挂着三幅家族肖像——维克多、埃莉诺和莉莉安。每幅肖像下都有一个按钮。烛台上刻着一行字：'按正确的顺序按下——父亲、母亲、女儿。'"},
-study:{id:"study",name:"书房",eng:"STUDY",icon:"📚",unlockMsg:"需要解开餐厅肖像谜题获得铜钥匙。",img:"study",desc:"书房四周是高大的书架，书籍乱七八糟地堆在地上。书桌上的油灯还亮着——但这座宅邸已经废弃了一个多世纪。墙上挂着人体解剖图，书桌上散落着维克多的手写笔记。角落里的书架上有一个四位数的密码锁。"},
-hallway:{id:"hallway",name:"走廊",eng:"HALLWAY",icon:"🪜",unlockMsg:"需要解开书房书架的密码锁。",img:"hallway",desc:"二楼的走廊狭窄而漫长，墙壁上的画框全部倾斜了。每走一步，地板都发出惨叫般的咔吱声。走廊尽头的窗户被木板钉死了，但有一缕光从缝隙中射入，照亮了墙上的一行字：\u201c她在看着你\u201d。地上散落着几片撕碎的纸片。"},
-bedroom:{id:"bedroom",name:"卧室",eng:"BEDROOM",icon:"🛏️",unlockMsg:null,img:"bedroom",desc:"这是维克多和埃莉诺的卧室。床上的被褥整齐地叠好。梳妆台上的镜子裂成了三块，但每一块都映出不同的画面。镜子右下角刻着一行小字：'说出那个词'。枕头下面有一封没有寄出的信。衣柜里传来轻微的沙沙声。"},
-bathroom:{id:"bathroom",name:"浴室",eng:"BATHROOM",icon:"🛁",unlockMsg:null,img:"bathroom",desc:"浴室的瓷砖上满是黄色的水渍。浴缸里的水是黑色的，面上漂着一缕头发。镜子被蒸汽模糊了——但渐渐地，镜面上浮现出了用血写成的字：BLOOD。洗手台旁边有一个小瓶子和一把旧牙刷。"},
-attic:{id:"attic",name:"阁楼",eng:"ATTIC",icon:"🏚️",unlockMsg:"需要解开卧室镜子谜题获得阁楼钥匙。",img:"attic",desc:"阁楼里堆满了旧家具和封存的箱子。这里曾经是莉莉安的玩耍室。一个绿色的布娃娃坐在角落里——它的一只眼睛已经掉了。墙上贴着儿童画，描绘着一个女孩和一个黑影。角落里有一个上锁的木箱，箱子上刻着奇怪的符号。"},
-basement:{id:"basement",name:"地下室",eng:"BASEMENT",icon:"🔮",unlockMsg:"需要收集3片钥匙碎片并解开阁楼木箱谜题。",img:"basement",desc:"石阶一直向下延伸，空气变得沉重而冰冷。地下室是一个巨大的圆形空间。中央有一个石制祭坛，表面上刻满了奇怪的符文。祭坛上放着一本古旧的书，书页在无风的情况下翻动着。周围的墙壁上插着熄灭的火把。墙上写着：\u201c唯有献祭才能开启真理之门\u201d。"}};
+foyer:{
+  id:"foyer",name:"门厅",eng:"FOYER",icon:String.fromCodePoint(0x1F6AA),
+  unlockMsg:null,
+  desc:"沉重的橡木大门在你身后缓缓关闭，发出一声低沉的闷响。门厅异常宽敞，一盏布满蛛网的水晶吊灯在头顶微微晃动——尽管没有风。你的脚步声在空旷的空间里回荡。一张落满灰尘的桃花心木桌上放着一封泛黄的信封和一把生锈的小钥匙。墙上挂着一幅巨大的宅邸地图，但很多区域被墨水涂黑了。空气中有股说不清的甜腻气味——像是枯萎的花，又像是更古老的东西。"
+},
+living:{
+  id:"living",name:"客厅",eng:"LIVING ROOM",icon:String.fromCodePoint(0x1F6CB,0xFE0F),
+  unlockMsg:null,
+  desc:"客厅比想象中更大，也更暗。厚重的天鹅绒窗帘紧闭着，只有缝隙中渗出几缕惨白的光。壁炉里的灰烬已经冰冷了一个多世纪。一架落满灰尘的三角钢琴静静立在角落——奇怪的是，有三个琴键看起来最近被按过：D、A、D。琴凳上放着一本皮质封面的日记。壁炉架上摆着一张褪色的全家福。茶几上有一把铜钥匙——但它太过厚重，似乎不是用来开普通门的。"
+},
+kitchen:{
+  id:"kitchen",name:"厨房",eng:"KITCHEN",icon:String.fromCodePoint(0x1F373),
+  unlockMsg:"客厅的铜钥匙似乎能打开厨房的门。先去客厅寻找线索吧。",
+  desc:"厨房弥漫着一股甜腻的腐败气味。橱柜的门半开半合，里面的餐具早已生锈。水龙头在有节奏地滴水——滴答，滴答，滴答——像某种令人不安的倒计时。桌上有一把沾着暗色污渍的切肉刀，旁边是一个小小的保险箱，上面贴着泛黄的标签：\u2018密码是三个数字\u2019。冰箱上贴着一张食谱卡，冰箱门上用磁铁拼出了几个模糊的数字。"
+},
+dining:{
+  id:"dining",name:"餐厅",eng:"DINING ROOM",icon:String.fromCodePoint(0x1F37D,0xFE0F),
+  unlockMsg:"厨房的保险箱里藏着餐厅的银钥匙。先解开保险箱的密码吧。",
+  desc:"长桌可容纳十二人，但只摆了六套餐具。盘子里的食物已经变成了一堆黑色的、无法辨认的残渣。墙上挂着三幅等身大的家族肖像——从左到右依次是维克多、埃莉诺和莉莉安。每幅肖像下面都有一个黄铜按钮。银质烛台上刻着一行小字：'只有按正确的顺序——父亲、母亲、女儿——才能打开通往知识的门。'"
+},
+study:{
+  id:"study",name:"书房",eng:"STUDY",icon:String.fromCodePoint(0x1F4DA),
+  unlockMsg:"餐厅的铜钥匙上刻着书房的标记。去餐厅解开肖像之谜吧。",
+  desc:"书房四壁都是直达天花板的书架，但书籍乱七八糟地散落一地，仿佛有人匆忙翻找过什么。书桌上的油灯不可思议地还亮着——但这座宅邸已经废弃了一百多年。墙上挂着人体解剖图，每一张都标注着医学术语。角落里有一个带四位密码锁的红木书架。桌上摊开着一本日记，上面是维克多潦草的笔迹。"
+},
+hallway:{
+  id:"hallway",name:"二楼走廊",eng:"HALLWAY",icon:String.fromCodePoint(0x1FAA9),
+  unlockMsg:"书房书架的四位密码锁保护着通往二楼的钥匙。解开它吧。",
+  desc:"二楼的走廊狭窄而漫长。每走一步，地板都会发出惨叫般的吱呀声，仿佛在抗议你的闯入。墙壁上的画框全部倾斜了，画中人物的眼睛似乎都在追随着你。走廊尽头的窗户被木板钉死了，但有一缕光从缝隙中射入，照亮了墙上的一行字：\u2018她在看着你\u2019。地上散落着几片撕碎的纸片——它们似乎能拼出一个完整的单词。"
+},
+bedroom:{
+  id:"bedroom",name:"主卧室",eng:"BEDROOM",icon:String.fromCodePoint(0x1F6CF,0xFE0F),
+  unlockMsg:null,
+  desc:"这是维克多和埃莉诺的卧室。床上被褥整齐地叠好，仿佛主人刚刚离开。梳妆台上的镜子裂成了三块——但奇怪的是，每一块碎片都映出了不同的画面：左边是哭泣的女人，右边是尖叫的男人，中间是一扇紧闭的门。镜子右下角刻着一行小字：\u2018对着镜子说出你找到的那个词\u2019。枕头下面露出一封没有寄出的信。衣柜里传来轻微的沙沙声——令人不安。"
+},
+bathroom:{
+  id:"bathroom",name:"浴室",eng:"BATHROOM",icon:String.fromCodePoint(0x1F6C1),
+  unlockMsg:null,
+  desc:"浴室的瓷砖上布满了发黄的污渍，有些看起来像干涸的血迹。浴缸里积着一层浑浊的、暗红色的水。洗手台的镜面上不知何时浮现出了一行用类似血液的暗红色液体写成的字：BLOOD。空气湿冷而沉重。洗手台旁边有一个装着暗红色粘稠液体的小瓶子——不，不是液体，是某种更浓稠的东西。"
+},
+attic:{
+  id:"attic",name:"阁楼",eng:"ATTIC",icon:String.fromCodePoint(0x1FAA8),
+  unlockMsg:"卧室的镜子暗格中藏着阁楼的钥匙。去卧室看看镜子吧。",
+  desc:"阁楼的天花板很低，你必须弯着腰行走。灰尘呛得你几乎无法呼吸。这里堆满了被遗忘的物品：旧行李箱、褪色的衣物、破损的玩具。角落里有一个上锁的木箱，箱面上雕刻着三个符号：月亮、星辰、太阳。旁边有一张纸条：\u2018正确的顺序藏在维克多的秘密之中\u2019。另一个角落里，你看到了一个绿色的布娃娃——它只有一只眼睛。"
+},
+basement:{
+  id:"basement",name:"地下室",eng:"BASEMENT · THE ALTAR",icon:String.fromCodePoint(0x26B0,0xFE0F),
+  unlockMsg:"需要三片钥匙碎片才能打开地下室的石门。继续探索其他房间吧。",
+  desc:"石阶向下延伸，每一步都让你感觉温度在下降。空气变得潮湿而沉重，带着泥土和铁锈的味道。地下室的中央是一个由黑色石头砌成的圆形祭坛。祭坛上有三个凹槽——正好对应三片钥匙碎片。烛光在祭坛周围自动燃起，在墙壁上投下了扭曲的影子。一本封面由人皮制成的书静静地躺在祭坛上，书页在你走近时开始自动翻动。"
+}
+};
 
 var roomOrder=["foyer","living","kitchen","dining","study","hallway","bedroom","bathroom","attic","basement"];
 
+// ═══════════════════════════════════
+// ITEMS
+// ═══════════════════════════════════
 var items={
 // Foyer items
-foyer_letter:{id:"foyer_letter",name:"桌上的信",icon:"✉️",desc:"埃莉诺写给莉莉安的信。信中提到了钢琴和一把钥匙。",aLabel:"阅读信件",act:function(){if(S.foundItems.foyer_letter)return;S.foundItems.foyer_letter=true;showToast("信中写道：\u201c莉莉安，记得爸爸教你的那首曲子吗？D-A-D是开始的音符。厨房的钥匙我放在了琴键下面。\u201d");addJ("埃莉诺的信","在门厅的桌上发现了一封信。埃莉诺在信中暗示了钢琴的秘密——三个音符D-A-D，以及藏在琴键下的厨房钥匙。");addStory("clue","线索发现：埃莉诺的信","信中提到了\u201cD-A-D\u201d三个音符和藏在琴键下的厨房钥匙。这是进入厨房的关键。");updateModal();}},
-foyer_key:{id:"foyer_key",name:"小钥匙",icon:"🔑",desc:"一把小巧的铁钥匙，标签上写着\u201c客厅柜子\u201d。",aLabel:"拾起钥匙",act:function(){if(S.inventory.indexOf("foyer_key")>=0)return;S.inventory.push("foyer_key");showToast("获得：小钥匙（可打开客厅的柜子）");addJ("铁钥匙","在门厅的桌上发现了一把铁钥匙，标签上写着\u201c客厅柜子\u201d。");updateHUD();updateModal();}},
+foyer_letter:{id:"foyer_letter",name:"霍桑家的信",icon:String.fromCodePoint(0x2709,0xFE0F),desc:"一封泛黄的信件，收件人是维克多·霍桑。信封上有红色的蜡封——看起来像是后来重新封上的。",aLabel:"阅读信件",act:function(){if(S.foundItems.foyer_letter)return;S.foundItems.foyer_letter=true;showToast("信上写着：\u2018维克多，不要再继续了。你在地下室做的事情已经传遍了整个城镇。理事会要求你立即停止\u2014\u2014否则后果自负。埃莉诺带着莉莉安离开了，她说她永远不会原谅你。\u2019信末尾的署名被墨水湮没了。");addJ("霍桑家的信","在门厅发现了写给维克多的警告信。信中暗示维克多在地下室进行了某种被禁止的实验。埃莉诺带着女儿莉莉安离开了——但她们似乎没能走远。");addStory("clue","家族信件","这封信揭示了三件事：维克多在地下室进行秘密实验、埃莉诺和莉莉安曾试图逃离、以及外界机构知晓并试图阻止他。但信上的蜡封显示这封信从未被寄出——它被拦截了。");updateModal();}},
+foyer_key:{id:"foyer_key",name:"生锈的小钥匙",icon:String.fromCodePoint(0x1F511),desc:"一把锈迹斑斑的小钥匙。虽然旧了，但看起来还能用。钥匙上系着一张小标签：'客厅钢琴凳'。",aLabel:"拾起钥匙",act:function(){if(S.inventory.indexOf("foyer_key")>=0)return;S.inventory.push("foyer_key");showToast("你拾起了钥匙。标签上写着'客厅钢琴凳'——也许那里藏着什么。");updateHUD();renderRooms();updateModal();}},
 // Living room items
-living_piano:{id:"living_piano",name:"钢琴",icon:"🎹",desc:"一架落满灰尘的钢琴。有三个琴键似乎最近被人按过：D、A、D。",aLabel:"弹奏琴键",act:function(){if(S.solvedPuzzles.piano)return showToast("你已经获得了琴键下的钥匙。");openPW("puzzle","🎹 钢琴之谜","请按照正确的顺序按下琴键","提示：门厅的信中提到了三个音符",function(val){if(val.toUpperCase()==="DAD"){S.solvedPuzzles.piano=true;S.unlockedRooms.kitchen=true;showToast("琴键发出清脆的音响！一个暗格打开了——里面有一把铜钥匙和一张纸条！");S.inventory.push("living_key");addJ("钢琴之谜","在客厅的钢琴上按下了正确的琴键D-A-D。暗格中出现了厨房的铜钥匙和一张写有数字\u201c7-3-9\u201d的纸条。");addStory("clue","钢琴暗格中的纸条","纸条上写着三个数字：7-3-9。这应该是厨房保险箱的密码。");updateHUD();renderRooms();updateModal();}else{showToast("琴键发出不和谐的声音——顺序不对。");return false;}});}},
-living_diary:{id:"living_diary",name:"埃莉诺的日记",icon:"📖",desc:"一本封面模糊的日记本，页角卷曲。",aLabel:"翻阅日记",act:function(){if(S.foundItems.living_diary)return;S.foundItems.living_diary=true;showToast("日记摘录：1897年10月3日——维克多又在地下室呆了整个晚上。他说他听到了\u2018他们\u2019的声音。11月15日——我偷偷跟着维克多去了地下室。他在对着一面墙说话。那面墙竟然回答了他。我要带着莉莉安逃走。");addJ("埃莉诺的日记","日记记录了维克多逐渐疯狂的过程。她写道维克多在地下室与\u201c墙壁\u201d对话，而那面墙回应了他。最后她决定带着莉莉安逃跑。");addStory("clue","埃莉诺日记的发现","维克多在地下室与\u201c他们\u201d对话——这些\u201c他们\u201d究竟是什么？日记的最后一页提到了\u201c1897\u201d年，这个数字似乎很重要。");updateModal();}},
-living_photo:{id:"living_photo",name:"全家福照片",icon:"📷",desc:"一张泛黄的全家福。维克多、埃莉诺和莉莉安微笑着——但照片背景的阴影中似乎还有第四个人。",aLabel:"查看照片",act:function(){if(S.foundItems.living_photo)return;S.foundItems.living_photo=true;showToast("照片上写着日期：1897年3月15日。背面有一行字：\u201c我们是一家人——V.H.\u201d。背景阴影中的第四个人影让你感到不安。");addJ("全家福照片","照片拍摄于1897年3月15日。背面写着\u201c我们是一家人\u201d。但背景中的第四个人影令人不安。");addStory("clue","全家福的秘密","照片拍摄于1897年——记住这个年份。背景中的第四个人影...会不会就是维克多召唤出来的\u201c他们\u201d之一？");updateModal();}},
-living_cabinet:{id:"living_cabinet",name:"上锁的柜子",icon:"🗄️",desc:"一个上锁的小柜子，锁孔与门厅找到的铁钥匙吻合。",aLabel:"用钥匙打开",act:function(){if(S.solvedPuzzles.cabinet)return showToast("柜子已经打开了。");if(S.inventory.indexOf("foyer_key")<0)return showToast("需要门厅的铁钥匙来打开这个柜子。");S.solvedPuzzles.cabinet=true;S.inventory.splice(S.inventory.indexOf("foyer_key"),1);showToast("柜子打开了！里面有一张泛黄的地图，标记了宅邸的各个房间，还在厨房位置画了一个圈。");addJ("客厅柜子","用门厅找到的铁钥匙打开了客厅的柜子。里面有一张宅邸地图，厨房位置被圈了出来。");addStory("clue","宅邸地图","地图上标注了宅邸各房间的位置。厨房被特别圈出——那里一定藏着重要的东西。");updateHUD();updateModal();}},
+living_piano:{id:"living_piano",name:"三角钢琴",icon:String.fromCodePoint(0x1F3B9),desc:"一架布满灰尘的三角钢琴。三个琴键被按下了：D、A、D。琴凳上有一句话：\u2018音乐是打开厨房之门的钥匙\u2019。",aLabel:"弹奏钢琴",act:function(){if(S.solvedPuzzles.piano)return showToast("钢琴的暗格已经打开了。");if(S.inventory.indexOf("foyer_key")<0){showToast("琴凳上锁了。需要一把小钥匙——也许在门厅能找到。");return;}
+openPW("puzzle","钢琴之谜","请按顺序输入三个音符","提示：注意哪些琴键被按下了。三个字母，全部大写，不要空格。",function(val){if(val.toUpperCase()==="DAD"){S.solvedPuzzles.piano=true;S.unlockedRooms.kitchen=true;S.inventory.push("living_key");showToast("琴凳的锁咔嚓一声打开了！里面有一把厚重的铜钥匙——上面刻着厨房的标记。");addJ("钢琴之谜","弹奏了正确的音符D-A-D，打开了琴凳的暗格。获得了一把可以打开厨房的铜钥匙。");addStory("clue","钢琴与铜钥匙","用门厅找到的小钥匙打开了琴凳。弹奏了被标记的三个音符D-A-D后，暗格打开了，里面有一把厚重的铜钥匙——这是进入厨房的钥匙。");renderRooms();updateHUD();updateModal();}else{showToast("音符不对。再仔细看看琴键——哪些键被按下了？");return false;}});}},
+living_diary:{id:"living_diary",name:"埃莉诺的日记",icon:String.fromCodePoint(0x1F4D4),desc:"一本皮质封面的日记，内页写满了细密的字迹。封面内侧写着：埃莉诺·霍桑。",aLabel:"翻阅日记",act:function(){if(S.foundItems.living_diary)return;S.foundItems.living_diary=true;showToast("日记的最后几页写着：'维克多已经不是那个我嫁给的男人了。手术事故后他就变了。深夜在地下室传来的声音让我无法入睡。今天我偷偷进去看了一下——祭坛，符号，还有那张人皮……上帝啊。我决定带着莉莉安离开。我把仪式需要的钥匙分成三片藏了起来。维克多绝不能完成那个仪式。'");addJ("埃莉诺的日记","埃莉诺在日记中记录了她如何将仪式钥匙分成三片藏在宅邸各处。她在试图保护女儿莉莉安时，与维克多发生了激烈的对抗。");addStory("clue","钥匙碎片之谜","埃莉诺将仪式钥匙分成了三片，分别藏在宅邸的不同位置。日记中隐晦地提到：第一片在'反射真相之处'，第二片在'流血之处'，第三片在'被遗忘的童年角落'。");updateModal();}},
+living_photo:{id:"living_photo",name:"全家福照片",icon:String.fromCodePoint(0x1F5BC,0xFE0F),desc:"一张褪色的全家福。维克多、埃莉诺和年幼的莉莉安。照片背面写着：1897年摄于霍桑庄园。",aLabel:"仔细查看",act:function(){if(S.foundItems.living_photo)return;S.foundItems.living_photo=true;showToast("照片看起来很温馨——但仔细看，埃莉诺的眼睛里充满了恐惧。她的手紧紧抓着莉莉安的肩膀，指甲似乎陷进了衣服里。维克多的微笑僵硬而不自然。照片的一角被什么东西烧焦了。");addJ("家庭照片","仔细查看了霍桑家的全家福。照片中埃莉诺明显处于恐惧之中，而维克多的笑容令人不安。这个家庭从内部就已经崩塌了。");addStory("clue","家庭裂痕","这张看似温馨的全家福揭示了家庭的真实状况：埃莉诺的恐惧、维克多的偏执、以及被夹在中间的莉莉安。拍摄日期是1897年——正是宅邸建成的同一年，也是悲剧开始的那一年。");updateModal();}},
+living_cabinet:{id:"living_cabinet",name:"壁炉架",icon:String.fromCodePoint(0x1F525),desc:"壁炉架上除了全家福，还有一张手写的食谱。食谱的背面潦草地画着一些数字和箭头。",aLabel:"查看食谱",act:function(){if(S.foundItems.living_cabinet)return;S.foundItems.living_cabinet=true;showToast("食谱的背面写着：'7个鸡蛋 + 3勺糖 - 9分钟 = ？'。下面画着一个箭头指向'冰箱'两个字。旁边还有一行小字：'莉莉安说她最喜欢这个——至少在她还能吃固体食物的时候。'");addJ("壁炉架上的线索","在壁炉架上发现了一张带有奇怪算式和数字的食谱卡。背面提到了7、3、9以及冰箱——需要去厨房才能继续调查。");addStory("clue","数字线索","食谱背面写着'7+3-9'和一个箭头指向冰箱。这组数字似乎与厨房的某个密码有关。另外提到了莉莉安'还能吃固体食物的时候'——暗示她后来发生了什么事。");updateModal();}},
 // Kitchen items
-kitchen_safe:{id:"kitchen_safe",name:"保险箱",icon:"🔐",desc:"一个上锁的小保险箱，需要3位数字密码。",aLabel:"输入密码",act:function(){if(S.solvedPuzzles.kitchenSafe)return showToast("保险箱已经打开了。");openPW("puzzle","🔐 厨房保险箱","请输入3位数字密码","提示：客厅钢琴暗格中的纸条上写了三个数字",function(val){if(val==="739"){S.solvedPuzzles.kitchenSafe=true;showToast("咔嗒——保险箱打开了！里面有一把银钥匙和一张写着\u201c餐厅\u201d的标签。");S.inventory.push("dining_key");addJ("厨房保险箱","使用密码7-3-9打开了厨房的保险箱。获得了餐厅的银钥匙。");S.unlockedRooms.dining=true;updateHUD();renderRooms();updateModal();}else{showToast("密码错误。尝试从客厅的线索中推理。");return false;}});}},
-kitchen_knife:{id:"kitchen_knife",name:"生锈的切肉刀",icon:"🔪",desc:"一把沉甸甸的切肉刀，刀柄上刻着V.H.。刀刃上有暗红色污渍。",aLabel:"拾起切肉刀",act:function(){if(S.inventory.indexOf("kitchen_knife")>=0)return;S.inventory.push("kitchen_knife");showToast("获得：生锈的切肉刀。这是维克多的手术刀。");addJ("切肉刀","在厨房桌上发现了维克多的手术刀。刀柄上刻着他的缩写V.H.，刀刃上有可疑的暗红色污渍。");updateHUD();updateModal();}},
-kitchen_recipe:{id:"kitchen_recipe",name:"食谱卡",icon:"📋",desc:"一张泛黄的食谱卡，上面写着菜谱和一些奇怪的数字。",aLabel:"查看食谱",act:function(){if(S.foundItems.kitchen_recipe)return;S.foundItems.kitchen_recipe=true;showToast("食谱上写着\u201c霍桑家族秘方\u201d。食材清单的旁边用红色墨水写着：\u201c记住——维克多、埃莉诺、莉莉安。正确的顺序就是家庭的顺序。\u201d");addJ("食谱卡","冰箱上的食谱卡不仅记录了菜谱，还用红墨水写了一条重要信息：\u201c记住——维克多、埃莉诺、莉莉安。正确的顺序就是家庭的顺序。\u201d");addStory("clue","食谱上的秘密","食谱卡用红墨水写着：维克多、埃莉诺、莉莉安——正确的顺序就是家庭的顺序。这显然是餐厅肖像谜题的提示。");updateModal();}},
+kitchen_safe:{id:"kitchen_safe",name:"保险箱",icon:String.fromCodePoint(0x1F510),desc:"一个锈迹斑斑的小保险箱，上面贴着标签：\u2018密码是三个数字\u2019。需要三位数字的密码。",aLabel:"输入密码",act:function(){if(S.solvedPuzzles.kitchenSafe)return showToast("保险箱已经打开了。");openPW("puzzle","保险箱密码","请输入三位数字密码","提示：客厅壁炉架上的食谱背面有数字线索——7、3、9。试试把它们组合起来。",function(val){if(val==="739"){S.solvedPuzzles.kitchenSafe=true;S.unlockedRooms.dining=true;S.inventory.push("dining_key");showToast("保险箱咔嗒一声打开了！里面有一把银钥匙——上面刻着餐厅的房号。");addJ("厨房保险箱","用密码739打开了保险箱，获得了餐厅的银钥匙。密码来自客厅食谱背面的算式。");addStory("clue","银钥匙","厨房的保险箱密码是739——来源于客厅食谱背面的算式'7+3-9'。里面藏着通往餐厅的银钥匙。");renderRooms();updateHUD();updateModal();}else{showToast("密码不对。回忆一下在客厅发现的数字线索——7、3、9。");return false;}});}},
+kitchen_knife:{id:"kitchen_knife",name:"切肉刀",icon:String.fromCodePoint(0x1F52A),desc:"一把沾着暗色污渍的切肉刀。刀刃上刻着一个名字：埃莉诺。",aLabel:"检查刀具",act:function(){if(S.foundItems.kitchen_knife)return;S.foundItems.kitchen_knife=true;showToast("刀刃上刻着埃莉诺的名字。污渍已经干涸了很久——但当你触碰它时，指尖传来一阵刺骨的寒意。一个声音在你脑海中回响：\u2018她没有用刀\u2026\u2026她没有用刀\u2026\u2026\u2019");addJ("厨房的切肉刀","在厨房发现了一把刻有埃莉诺名字的切肉刀。刀上的污渍暗示着暴力事件，但脑中的声音坚持说埃莉诺并非死于刀伤。");updateModal();}},
+kitchen_recipe:{id:"kitchen_recipe",name:"冰箱上的食谱卡",icon:String.fromCodePoint(0x1F4CB),desc:"冰箱门上用磁铁贴着一张手写食谱卡。磁铁摆成了几个数字的形状。旁边有更详细的烹饪说明。",aLabel:"阅读食谱",act:function(){if(S.foundItems.kitchen_recipe)return;S.foundItems.kitchen_recipe=true;showToast("食谱上写着莉莉安最喜欢的蛋糕配方。但在配料表的最后，有人用潦草的笔迹加了一行：'7个鸡蛋、3勺糖、烤9分钟——这是她最后一次吃到的食物。从那以后，她只能\u2018喝\u2019东西了。'冰箱门上的磁铁恰好排列成7、3、9三个数字。");addJ("冰箱食谱","冰箱上的食谱卡暗示莉莉安最后一次吃固体食物就是按照这份食谱做的蛋糕。磁铁拼出的数字7-3-9应该就是保险箱的密码。");updateModal();}},
 // Dining room items
-dining_portraits:{id:"dining_portraits",name:"家族肖像",icon:"🖼️",desc:"墙上挂着三幅肖像——维克多、埃莉诺和莉莉安。每幅肖像下有一个按钮。",aLabel:"按动按钮",act:function(){if(S.solvedPuzzles.portraits)return showToast("已经解开了肖像谜题。");showToast("你需要按正确的顺序按下肖像按钮。提示来自厨房的食谱卡。请依次点击：",2000);
-// Show the portrait puzzle
-var html='<div class="deduction-panel"><div class="ded-title">🖼️ 家族肖像谜题</div><div class="ded-question">按正确的顺序点击肖像按钮：<br><span style="color:#887766;font-size:0.85em">（提示：食谱卡上写着\u201c维克多、埃莉诺、莉莉安\u201d）</span></div>';
-html+='<div class="ded-options" id="portrait-buttons">';
-html+='<button class="ded-option" onclick="portraitClick(\x27victor\x27)">👨‍⚕️ 维克多（父亲）</button>';
-html+='<button class="ded-option" onclick="portraitClick(\x27eleanor\x27)">👩 埃莉诺（母亲）</button>';
-html+='<button class="ded-option" onclick="portraitClick(\x27lillian\x27)">👧 莉莉安（女儿）</button>';
-html+='</div><div id="portrait-seq" style="color:#d4a574;margin-top:10px;letter-spacing:4px;min-height:20px"></div></div>';
-document.getElementById("modal-puzzle").innerHTML=html;
-window._portraitSeq=[];window._portraitAnswer=["victor","eleanor","lillian"];}},
-
-// Study items
-study_notes:{id:"study_notes",name:"维克多的笔记",icon:"📝",desc:"一叠散乱的手写笔记，字迹潦草而癫狂。",aLabel:"阅读笔记",act:function(){if(S.foundItems.study_notes)return;S.foundItems.study_notes=true;showToast("笔记内容：\u201c仪式需要四个条件：血缘、灵媒、钥匙、意志。莉莉安有天赋。我只需要一次成功的仪式，就能打开那扇门。建造宅邸的那一年，一切就已经注定了。\u201d");addJ("维克多的笔记","维克多的笔记详细记录了通灵仪式的条件。他提到了莉莉安的\u201c天赋\u201d，以及建造宅邸的那一年——1897年。");addStory("clue","维克多的笔记","笔记中两次提到了\u201c那一年\u201d——宅邸建造的年份1897。这个四位数似乎可以用来打开什么东西。");updateModal();}},
-study_bookshelf:{id:"study_bookshelf",name:"书架密码锁",icon:"🔒",desc:"书架上有一个四位数的密码锁，刻着\u201c宅邸诞生之年\u201d。",aLabel:"输入密码",act:function(){if(S.solvedPuzzles.bookshelf)return showToast("书架密码锁已经打开了。");openPW("puzzle","📚 书架密码锁","请输入四位数字密码","提示：维克多笔记中多次提到了宅邸建造的年份。日记和照片中也出现了这个数字。",function(val){if(val==="1897"){S.solvedPuzzles.bookshelf=true;showToast("书架缓缓移开，露出了藏在后面的一把铁钥匙和一本日记！");S.inventory.push("hallway_key");addJ("书架密码","输入密码1897（宅邸建造之年）打开了书架的密码锁。获得了走廊钥匙和维克多的秘密日记。");S.unlockedRooms.hallway=true;addStory("clue","维克多的秘密日记","日记中记录了地下室仪式的详细步骤，以及\u201c三片钥匙碎片\u201d的藏匿位置。日记中还有一个符号——一个圆圈内画着三个交错的三角形。");updateHUD();renderRooms();updateModal();}else{showToast("密码错误。想想——这座宅邸是在哪一年建造的？");return false;}});}},
-// Hallway items
-hallway_notes:{id:"hallway_notes",name:"撕碎的纸片",icon:"🧩",desc:"地上散落着几片撕碎的纸片。如果能全部找到，也许可以拼出重要的信息。碎片分散在门厅、客厅、厨房和走廊。",aLabel:"收集碎片",act:function(){var found=S.notePieces||0;var total=4;var locations=["门厅的信封背面","客厅日记的夹页中","厨房食谱卡的背面","走廊的地板上"];var foundLocs=[];if(S.foundItems.foyer_letter)foundLocs.push(locations[0]);if(S.foundItems.living_diary)foundLocs.push(locations[1]);if(S.foundItems.kitchen_recipe)foundLocs.push(locations[2]);foundLocs.push(locations[3]);S.notePieces=foundLocs.length;if(S.notePieces>=3){if(S.solvedPuzzles.notes)return showToast("你已经拼合了所有纸片。");S.solvedPuzzles.notes=true;showToast("你收集了所有3片碎纸！拼合后出现了单词：MIRROR。镜子里藏着秘密。");addJ("碎纸拼合","收集了全部3片碎纸，拼合后出现了\u201cMIRROR\u201d这个词——这是卧室镜子的密码。");addStory("clue","碎纸片拼合","三片碎纸拼出了\u201cMIRROR\u201d——卧室的镜子。试试在镜子前\u201c说出那个词\u201d。");updateModal();}else{showToast("已收集 "+S.notePieces+"/4 片碎纸。继续探索其他房间吧。找到的碎片来自："+foundLocs.join("、"));updateModal();}}},
-hallway_scare:{id:"hallway_scare",name:"墙上的字",icon:"👁️",desc:"墙上写着：\u201c她在看着你\u201d。字迹似乎是最近才写上去的。",aLabel:"仔细查看",act:function(){if(S.foundItems.hallway_scare)return;S.foundItems.hallway_scare=true;doJumpScare("👁️","她 就 在 你 身 后");addJ("走廊惊魂","在走廊的墙上看到了\u201c她在看着你\u201d的字迹。当你凑近查看时，发生了可怕的事...");updateModal();}},
-// Bedroom items
-bedroom_mirror:{id:"bedroom_mirror",name:"裂开的镜子",icon:"🪞",desc:"梳妆台上的镜子裂成了三块。镜框上刻着：'说出那个词'。",aLabel:"对镜子说话",act:function(){if(S.solvedPuzzles.mirror)return showToast("镜子里的暗格已经打开了。");openPW("puzzle","🪞 镜子之谜","请说出正确的词语","提示：拼合走廊的碎纸片会告诉你这个词。",function(val){if(val.toUpperCase()==="MIRROR"){S.solvedPuzzles.mirror=true;S.unlockedRooms.attic=true;showToast("镜子发出嗡嗡的声响，然后从中间裂开——露出了藏在后面的第一片钥匙碎片！");S.keyFragments++;S.inventory.push("key_frag1");addJ("镜子暗格","对着卧室的镜子说出了正确的词语\u201cMIRROR\u201d。镜子裂开后露出了第一片钥匙碎片。");addStory("clue","第一片钥匙碎片","从卧室镜子后获得了第一片钥匙碎片。还剩下三片。根据维克多的日记，其他碎片分别藏在\u201c流血之处\u201d、\u201c童年的角落\u201d和\u201c祭坛之下\u201d。");updateHUD();renderRooms();updateModal();}else{showToast("镜子没有反应。再想想——碎纸片拼出了什么词？");return false;}});}},
-bedroom_letter:{id:"bedroom_letter",name:"未寄出的信",icon:"✉️",desc:"枕头下的一封信，信封上没有地址，笔迹颤抖而不安。",aLabel:"阅读信件",act:function(){if(S.foundItems.bedroom_letter)return;S.foundItems.bedroom_letter=true;showToast("这是维克多写给埃莉诺的信：\u201c埃莉诺，我知道你拿走了钥匙。你不明白——我不是在伤害莉莉安，我是在救她。他们告诉我，只有通过仪式才能让她永生。你以为你在保护她，但你只是在延迟不可避免的命运。\u201d");addJ("维克多的信","维克多在信中声称他是在\u201c拯救\u201d莉莉安——通过仪式让她永生。他认为是埃莉诺在\u201c延迟不可避免的命运\u201d。");updateModal();}},
-bedroom_closet:{id:"bedroom_closet",name:"衣柜",icon:"🚪",desc:"衣柜里传来轻微的沙沙声。你不敢打开它。",aLabel:"打开衣柜",act:function(){if(S.foundItems.bedroom_closet)return;S.foundItems.bedroom_closet=true;doJumpScare("💀","找 到 你 了");addJ("衣柜惊魂","打开了卧室的衣柜..."+String.fromCharCode(10)+"不该打开的。");updateModal();}},
-// Bathroom items
-bathroom_mirror_text:{id:"bathroom_mirror_text",name:"镜面上的血字",icon:"🩸",desc:"镜面上浮现出用血写成的字：BLOOD。",aLabel:"解读血字",act:function(){if(S.foundItems.bathroom_mirror_text)return;S.foundItems.bathroom_mirror_text=true;showToast("血字\u201cBLOOD\u201d指向了什么？也许浴室的某个物品与此有关。维克多的日记中提到第二片碎片藏在\u201c流血之处\u201d。");addJ("镜面血字","浴室镜面上浮现出了\u201cBLOOD\u201d这个词。这应该与第二片钥匙碎片的藏匿处有关。");addStory("clue","血字BLOOD","浴室镜子上的血字和维克多日记中\u201c流血之处\u201d的描述吻合。第二片钥匙碎片应该就在这里。");updateModal();}},
-bathroom_bottle:{id:"bathroom_bottle",name:"小瓶子",icon:"🧪",desc:"洗手台旁边的小瓶子，里面装着暗红色的粘稠液体——看起来像血。",aLabel:"检查瓶子",act:function(){if(S.keyFragments>=2&&S.inventory.indexOf("key_frag2")>=0)return showToast("已经获得了第二片碎片。");if(S.inventory.indexOf("bathroom_bottle")>=0)return showToast("你已经拿起了瓶子。");S.inventory.push("bathroom_bottle");S.keyFragments++;S.inventory.push("key_frag2");showToast("你拿起了瓶子。瓶底的暗格里藏着第二片钥匙碎片！维克多的日记中提到\u201c流血之处\u201d——原来是指这个血瓶。");addJ("第二片钥匙碎片","在浴室的血瓶底部发现了第二片钥匙碎片。维克多日记中提到的\u201c流血之处\u201d指的就是这个藏着血液的瓶子。");addStory("clue","第二片钥匙碎片","在浴室的血瓶中获得了第二片钥匙碎片。还剩两片——分别藏在\u201c童年的角落\u201d和\u201c祭坛之下\u201d。");updateHUD();renderRooms();updateModal();}},
-// Attic items
-attic_chest:{id:"attic_chest",name:"符号木箱",icon:"🎁",desc:"一个上锁的木箱，上面刻着三个符号：🌙⭐☀️。箱子旁有张纸条：\u201c正确的顺序藏在维克多的秘密日记中。\u201d",aLabel:"解开符号谜题",act:function(){if(S.solvedPuzzles.atticChest)return showToast("木箱已经打开了。");var html='<div class="deduction-panel"><div class="ded-title">🎁 木箱符号谜题</div><div class="ded-question">木箱上有三个符号：🌙 ⭐ ☀️<br>维克多的日记中写道：<br><span style="color:#cc8844">\u201c一生二，二生三——月亮引领星辰，星辰迎接太阳。\u201d</span><br>请按正确顺序点击符号：</div>';
+dining_portraits:{id:"dining_portraits",name:"三幅家族肖像",icon:String.fromCodePoint(0x1F5BC,0xFE0F),desc:"墙上挂着三幅肖像：维克多（父亲）、埃莉诺（母亲）和莉莉安（女儿）。每幅下面都有一个按钮。烛台上写着：\u2018父亲、母亲、女儿\u2019。",aLabel:"按动按钮",act:function(){if(S.solvedPuzzles.portraits)return showToast("肖像后面的暗门已经打开了。");var html= '<div class="deduction-panel">';
+html+='<div class="ded-title">家族肖像谜题</div>';
+html+='<div class="ded-question">按正确的顺序按下肖像下的按钮。<br>烛台上写着：<span style="color:#cc8844">父亲、母亲、女儿</span><br>从左到右：维克多（父亲）、埃莉诺（母亲）、莉莉安（女儿）</div>';
 html+='<div class="ded-options">';
-html+='<button class="ded-option" onclick="symbolClick(\x27moon\x27)">🌙 月亮</button>';
-html+='<button class="ded-option" onclick="symbolClick(\x27star\x27)">⭐ 星辰</button>';
-html+='<button class="ded-option" onclick="symbolClick(\x27sun\x27)">☀️ 太阳</button>';
-html+='</div><div id="symbol-seq" style="color:#d4a574;margin-top:10px;letter-spacing:4px;min-height:20px"></div></div>';
-document.getElementById("modal-puzzle").innerHTML=html;window._symbolSeq=[];window._symbolAnswer=["moon","star","sun"];}},
-attic_doll:{id:"attic_doll",name:"莉莉安的娃娃",icon:"🧸",desc:"一个绿色的布娃娃，一只眼睛掉了。娃娃的衣服里似乎藏着什么东西。",aLabel:"检查娃娃",act:function(){if(S.foundItems.attic_doll)return;S.foundItems.attic_doll=true;showToast("在娃娃的衣服里发现了一张小纸条：\u201c妈妈说要勇敢。我把这个藏在娃娃里，这样爸爸就找不到了。\u201d背面画着地下室祭坛的简单草图。");addJ("莉莉安的娃娃","在阁楼的布娃娃里发现了莉莉安藏的小纸条。她写下了\u201c妈妈说要勇敢\u201d，并在背面画了地下室祭坛的草图。");addStory("clue","莉莉安的秘密","莉莉安在娃娃里藏了纸条和祭坛草图——这个七岁的小女孩似乎比任何人都更清楚宅邸的秘密。她画的祭坛位置与地下室的实际布局完全吻合。");updateModal();}},
+html+='<button class="ded-option" onclick="portraitClick(\u0027victor\u0027)">维克多 · 父亲</button>';
+html+='<button class="ded-option" onclick="portraitClick(\u0027eleanor\u0027)">埃莉诺 · 母亲</button>';
+html+='<button class="ded-option" onclick="portraitClick(\u0027lillian\u0027)">莉莉安 · 女儿</button>';
+html+='</div>';
+html+='<div id="portrait-seq" style="color:#d4a574;margin-top:10px;letter-spacing:4px;min-height:20px"></div>';
+html+='</div>';
+document.getElementById("modal-puzzle").innerHTML=html;
+window._portraitSeq=[];
+window._portraitAnswer=["victor","eleanor","lillian"];
+}},
+// Study items
+study_notes:{id:"study_notes",name:"维克多的手写笔记",icon:String.fromCodePoint(0x1F4DD),desc:"维克多桌上散落的笔记。字迹潦草而急促，充满了医学术语和神秘的符号。",aLabel:"翻阅笔记",act:function(){if(S.foundItems.study_notes)return;S.foundItems.study_notes=true;showToast("笔记中详细记录了维克多的实验过程：\u2018我已经接近了。通过仪式可以将灵魂从肉体中分离\u2014\u2014就像手术刀将肿瘤从健康组织中剥离一样。但埃莉诺不理解。她拿走了钥匙。没关系，我会找到其他的方法。莉莉安是最完美的容器\u2014\u2014她是我的女儿，我的血液，我的生命。\u2019");addJ("维克多的实验笔记","维克多将灵异仪式比作外科手术，认为可以\u2018分离灵魂与肉体\u2019。他声称莉莉安是\u2018完美的容器\u2019——这个发现令人不寒而栗。");addStory("clue","疯狂科学家的笔记","维克多的笔记揭示了他将外科医学与通灵术结合的疯狂实验。他的目标是将莉莉安的灵魂从身体中分离——一种变相的'永生'。埃莉诺发现后带着钥匙逃走，但似乎没有成功。");updateModal();}},
+study_bookshelf:{id:"study_bookshelf",name:"带锁的书架",icon:String.fromCodePoint(0x1F4D5),desc:"一个红木书架，上面有一个四位数的密码锁。书架标签上写着：\u2018霍桑家族档案\u2019。",aLabel:"输入密码",act:function(){if(S.solvedPuzzles.bookshelf)return showToast("书架已经打开了。");openPW("puzzle","书架密码锁","请输入四位数字密码","提示：维克多的笔记中反复提到一个年份——也是宅邸建成的年份。",function(val){if(val==="1897"){S.solvedPuzzles.bookshelf=true;S.unlockedRooms.hallway=true;S.inventory.push("hallway_key");showToast("书架缓缓旋转打开，露出了通往二楼的楼梯！你找到了走廊的钥匙。");addJ("书架密码","输入了正确的年份1897，书架后的暗门打开了。获得了通往二楼走廊的钥匙。");addStory("clue","通往二楼","书架密码是1897——宅邸建成的年份，也是全家福拍摄的年份。这个数字似乎与霍桑家族的一切都紧密相连。二楼走廊里有什么在等待着你？");renderRooms();updateHUD();updateModal();}else{showToast("密码不对。提示：维克多反复提到一个重要的年份——宅邸什么时候建成的？");return false;}});}},
+// Hallway items
+hallway_notes:{id:"hallway_notes",name:"散落的碎纸片",icon:String.fromCodePoint(0x1F4C4),desc:"走廊地上散落着几片碎纸。如果能收集所有碎片，也许能拼出一个有意义的单词。",aLabel:"收集碎纸",act:function(){if(S.notePieces>=4)return showToast("你已经收集了所有4片碎纸。拼出来的单词是：MIRROR。");S.notePieces++;var foundLocs=[];if(S.notePieces>=1)foundLocs.push("走廊");if(S.notePieces>=2)foundLocs.push("卧室");if(S.notePieces>=3)foundLocs.push("浴室");if(S.notePieces>=4)foundLocs.push("阁楼");if(S.notePieces>=4){showToast("你已经收集了所有4片碎纸！它们拼出了一个单词：MIRROR。这个线索指向卧室的镜子——去那里面'说出那个词'。");addJ("碎纸拼图","集齐了从各个房间找到的四片碎纸。它们拼出了'MIRROR'。卧室的镜子在等待这个词语。");addStory("clue","完整的单词：MIRROR","四片碎纸来自走廊、卧室、浴室和阁楼，拼在一起形成了单词MIRROR。卧室梳妆台上的那面裂镜上刻着'说出那个词'——这就是你需要对镜子说的词。");updateModal();}else{showToast("已收集 "+S.notePieces+"/4 片碎纸。继续探索其他房间寻找剩余的碎片。");updateModal();}}},
+hallway_scare:{id:"hallway_scare",name:"墙上的字迹",icon:String.fromCodePoint(0x1F441,0xFE0F),desc:"墙上写着：\u2018她在看着你\u2019。字迹似乎是最近才写上去的——墨水还没有完全干透。",aLabel:"仔细查看",act:function(){if(S.foundItems.hallway_scare)return;S.foundItems.hallway_scare=true;doJumpScare(String.fromCodePoint(0x1F441,0xFE0F),"她 就 在 你 身 后");addJ("走廊惊魂","在走廊的墙上看到了\u2018她在看着你\u2019。当你凑近查看时，一阵寒意从背后袭来看到了不该看到的东西。");updateModal();}},
+// Bedroom items
+bedroom_mirror:{id:"bedroom_mirror",name:"裂成三块的镜子",icon:String.fromCodePoint(0x1FA9E),desc:"梳妆台上的镜子裂成了三块。镜框上刻着：\u2018对着镜子说出你找到的那个词\u2019。每一块碎片都映出不同的画面。",aLabel:"对镜子说话",act:function(){if(S.solvedPuzzles.mirror)return showToast("镜子里的暗格已经打开了。获得了第一片钥匙碎片。");if(S.notePieces<4){showToast("镜子没有反应。镜框上刻着\u2018说出你找到的那个词\u2019——你需要先找出正确的词语。继续探索其他房间收集碎纸片吧。");return;}
+openPW("puzzle","镜子之谜","请说出正确的词语","提示：集齐走廊和各个房间的碎纸片，它们会拼出一个英文单词。",function(val){if(val.toUpperCase()==="MIRROR"){S.solvedPuzzles.mirror=true;S.unlockedRooms.attic=true;S.keyFragments++;S.inventory.push("key_frag1");showToast("镜子发出嗡嗡的声响，然后从中间裂开一道完美的缝隙——露出了藏在后面的第一片钥匙碎片和阁楼的钥匙！");addJ("镜子暗格","对着卧室的镜子说出了正确的词语'MIRROR'。镜子裂开露出了第一片钥匙碎片。埃莉诺果然是按照日记中的线索藏匿了它们。");addStory("clue","第一片钥匙碎片","在卧室的镜子后获得了第一片钥匙碎片。埃莉诺在日记中写道三片碎片分别藏在：'反射真相之处'（镜子）、'流血之处'（浴室）和'被遗忘的童年角落'（阁楼）。");updateHUD();renderRooms();updateModal();}else{showToast("镜子没有反应。再想想——碎纸片拼出了什么单词？全部用大写字母试试。");return false;}});}},
+bedroom_letter:{id:"bedroom_letter",name:"未寄出的信",icon:String.fromCodePoint(0x2709,0xFE0F),desc:"枕头下的一封信，信封上没有地址，笔迹颤抖而不安。收件人写着：致埃莉诺。",aLabel:"阅读信件",act:function(){if(S.foundItems.bedroom_letter)return;S.foundItems.bedroom_letter=true;showToast("维克多写给埃莉诺的信：'埃莉诺，我知道你拿走了钥匙。你不明白——我不是在伤害莉莉安，我是在拯救她。那些声音告诉我，只有通过仪式才能让她永生。你以为你在保护她，但你只是在延迟不可避免的命运。她会回来的——无论你有没有钥匙，她都会回来。'");addJ("维克多的信","维克多在信中声称他是在'拯救'莉莉安——通过仪式让她永生。他提到'那些声音'在指引他，暗示他的精神状态已经严重失常。");updateModal();}},
+bedroom_closet:{id:"bedroom_closet",name:"沙沙作响的衣柜",icon:String.fromCodePoint(0x1F6AA),desc:"衣柜里传来轻微的沙沙声。像是什么东西在里面移动。你注意到衣柜门把手上还挂着一把带有干涸血迹的剪刀。",aLabel:"打开衣柜",act:function(){if(S.foundItems.bedroom_closet)return;S.foundItems.bedroom_closet=true;doJumpScare(String.fromCodePoint(0x1F480),"找 到 你 了");addJ("衣柜惊魂","打开了卧室的衣柜——里面是一片深邃的黑暗和一个令人毛骨悚然的笑声。最好不要再去想里面是什么。");updateModal();}},
+// Bathroom items
+bathroom_mirror_text:{id:"bathroom_mirror_text",name:"镜面上的血字",icon:String.fromCodePoint(0x1FA78),desc:"镜面上浮现出用类似血液的暗红色液体写成的字：BLOOD。字迹在你注视它的时候似乎越来越清晰。",aLabel:"解读血字",act:function(){if(S.foundItems.bathroom_mirror_text)return;S.foundItems.bathroom_mirror_text=true;showToast("血字'BLOOD'清晰地指向了浴室的某个物品。埃莉诺的日记中提到第二片碎片藏在'流血之处'。浴室洗手台上那个装着暗红色液体的小瓶子……");addJ("镜面血字","浴室镜面上浮现出了'BLOOD'。这指向了第二片钥匙碎片的藏匿处——浴室的某个'流血'物品。");addStory("clue","血字的指引","埃莉诺在日记中描述的第二片碎片位置是'流血之处'——浴室镜面上的血字BLOOD证实了这个线索。需要找到浴室里与'血液'相关的物品。");updateModal();}},
+bathroom_bottle:{id:"bathroom_bottle",name:"装着暗红液体的小瓶子",icon:String.fromCodePoint(0x1F9EA),desc:"洗手台旁边的小瓶子，里面装着暗红色的粘稠液体。瓶塞密封得很紧——瓶底好像有个夹层。",aLabel:"检查瓶子",act:function(){if(S.keyFragments>=2&&S.inventory.indexOf("key_frag2")>=0)return showToast("已经获得了第二片钥匙碎片。");if(S.inventory.indexOf("bathroom_bottle")>=0)return showToast("你已经检查过这个瓶子了。");S.inventory.push("bathroom_bottle");S.keyFragments++;S.inventory.push("key_frag2");showToast("你小心翼翼地打开瓶塞——里面装的不是血，而是某种保存液。在瓶底的夹层中，你发现了第二片钥匙碎片！埃莉诺真是太聪明了。");addJ("第二片钥匙碎片","在浴室的血瓶中发现了第二片钥匙碎片。瓶子里装的液体只是红色的保存液——但藏在夹层里的确实是真正的钥匙碎片。");addStory("clue","第二片碎片：流血之处","在浴室的血瓶底部获得了第二片钥匙碎片。埃莉诺的藏匿方法十分巧妙——将碎片藏在看似血腥的瓶子里，只有敢于触碰的人才能发现真相。还剩最后一片，藏在'被遗忘的童年角落'——阁楼。");updateHUD();renderRooms();updateModal();}},
+// Attic items
+attic_chest:{id:"attic_chest",name:"符号木箱",icon:String.fromCodePoint(0x1F381),desc:"一个上锁的木箱，箱面上刻着三个符号：月亮、星星、太阳。旁边有张纸条：'正确的顺序藏在维克多的秘密之中。'",aLabel:"解开符号谜题",act:function(){if(S.solvedPuzzles.atticChest)return showToast("木箱已经打开了。");var html= '<div class="deduction-panel">';
+html+='<div class="ded-title">木箱符号谜题</div>';
+html+='<div class="ded-question">木箱上有三个符号。<br>维克多的笔记中写道：<br><span style="color:#cc8844">\u2018一生二，二生三——月亮引领星辰，星辰迎接太阳。\u2019</span><br>请按正确顺序点击符号：</div>';
+html+='<div class="ded-options">';
+html+='<button class="ded-option" onclick="symbolClick(\u0027moon\u0027)">月亮</button>';
+html+='<button class="ded-option" onclick="symbolClick(\u0027star\u0027)">星辰</button>';
+html+='<button class="ded-option" onclick="symbolClick(\u0027sun\u0027)">太阳</button>';
+html+='</div>';
+html+='<div id="symbol-seq" style="color:#d4a574;margin-top:10px;letter-spacing:4px;min-height:20px"></div>';
+html+='</div>';
+document.getElementById("modal-puzzle").innerHTML=html;
+window._symbolSeq=[];
+window._symbolAnswer=["moon","star","sun"];
+}},
+attic_doll:{id:"attic_doll",name:"莉莉安的布娃娃",icon:String.fromCodePoint(0x1F9F8),desc:"一只绿色的布娃娃，左眼掉了，留下一个空洞的眼窝。娃娃的衣服里硬硬的——好像藏着什么东西。",aLabel:"检查娃娃",act:function(){if(S.foundItems.attic_doll)return;S.foundItems.attic_doll=true;S.keyFragments++;S.inventory.push("key_frag3");showToast("在娃娃缝补的肚子里发现了一张小纸条和第三片钥匙碎片！纸条上歪歪扭扭地写着：'妈妈说要勇敢。我把钥匙藏在娃娃里，这样爸爸就找不到了。莉莉安。'背面画着地下室祭坛的简单草图。");addJ("莉莉安的娃娃","在阁楼的布娃娃里发现了第三片钥匙碎片和莉莉安亲手写的纸条。这个七岁的小女孩比任何人都更清楚宅邸的秘密。");addStory("clue","第三片碎片与莉莉安的勇敢","莉莉安将第三片钥匙碎片藏在了自己最心爱的娃娃里。这个七岁女孩的纸条揭示了惊人的真相：她不仅知道父亲的仪式，还主动参与了埃莉诺的计划——用自己最珍视的东西来保护钥匙。她的画作精确地描绘了地下室祭坛的位置。");updateHUD();renderRooms();updateModal();}},
 // Basement items
-basement_book:{id:"basement_book",name:"仪式之书",icon:"📕",desc:"这本书的封面是人皮制成的。书页在你面前翻动着，停在最后一页。",aLabel:"阅读仪式之书",act:function(){if(S.foundItems.basement_book)return;S.foundItems.basement_book=true;showToast("书中描述了完整的仪式：将三片钥匙组合放在祭坛中央。然后做出最终选择——完成仪式打开真理之门，或者摧毁祭坛终结一切。书的最后一行写着：\u201c选择即是献祭。\u201d");addJ("仪式之书","在地下室祭坛上发现了人皮书。书中记载了完整的通灵仪式——以及一个无法回头的选择。");S.unlockedRooms.basement=true;updateModal();}}};
+basement_book:{id:"basement_book",name:"仪式之书",icon:String.fromCodePoint(0x1F4D5),desc:"这本书的封面是令人不安的质地。书页在你走近时自动翻开，停在标记了最后一页的位置。",aLabel:"阅读仪式之书",act:function(){if(S.foundItems.basement_book)return;S.foundItems.basement_book=true;showToast("书中描述了完整的仪式：将三片钥匙碎片放置于祭坛的三个凹槽中。然后你面临最终的选择——完成仪式将打开真理之门，或者摧毁祭坛终结这无尽的黑夜。书的最后一页用暗红色的墨水写着：'选择即是献祭。无论选择哪条路，都必须有东西被牺牲。真理，还是安宁？'");addJ("仪式之书","在地下室的祭坛上发现了人皮封面的仪式之书。书中记载了完成或摧毁仪式的具体步骤——以及一个令人不安的选择。");updateModal();}}
+};
 
-var roomItems={foyer:["foyer_letter","foyer_key"],living:["living_piano","living_diary","living_photo","living_cabinet"],kitchen:["kitchen_safe","kitchen_knife","kitchen_recipe"],dining:["dining_portraits"],study:["study_notes","study_bookshelf"],hallway:["hallway_notes","hallway_scare"],bedroom:["bedroom_mirror","bedroom_letter","bedroom_closet"],bathroom:["bathroom_mirror_text","bathroom_bottle"],attic:["attic_chest","attic_doll"],basement:["basement_book"]};
+var roomItems={
+foyer:["foyer_letter","foyer_key"],
+living:["living_piano","living_diary","living_photo","living_cabinet"],
+kitchen:["kitchen_safe","kitchen_knife","kitchen_recipe"],
+dining:["dining_portraits"],
+study:["study_notes","study_bookshelf"],
+hallway:["hallway_notes","hallway_scare"],
+bedroom:["bedroom_mirror","bedroom_letter","bedroom_closet"],
+bathroom:["bathroom_mirror_text","bathroom_bottle"],
+attic:["attic_chest","attic_doll"],
+basement:["basement_book"]
+};
 
-// ═══ UTILITY FUNCTIONS ═══
+// Expose portraitClick and symbolClick globally
+function portraitClick(who){
+  window._portraitSeq.push(who);
+  var seqDiv=document.getElementById("portrait-seq");
+  if(seqDiv){
+    var names={victor:"维克多",eleanor:"埃莉诺",lillian:"莉莉安"};
+    seqDiv.textContent="已选："+window._portraitSeq.map(function(w){return names[w];}).join(" ");
+  }
+  if(window._portraitSeq.length===3){
+    if(window._portraitSeq.join(",")===window._portraitAnswer.join(",")){
+      S.solvedPuzzles.portraits=true;
+      S.unlockedRooms.study=true;
+      S.inventory.push("study_key");
+      showToast("肖像后面的墙壁轰然打开！露出了一扇暗门——上面刻着书房的标记。你获得了书房的钥匙。");
+      addJ("肖像谜题","按正确顺序（维克多-埃莉诺-莉莉安）按下了肖像下的按钮。暗门打开了。");
+      addStory("clue","书房钥匙","解开餐厅的肖像谜题后获得。正确的顺序——父亲、母亲、女儿——揭示了这个家庭内部的权力结构。");
+      renderRooms();updateHUD();updateModal();
+    }else{
+      showToast("顺序不对。烛台上已经给了提示：\u2018父亲、母亲、女儿\u2019。");
+      window._portraitSeq=[];
+      if(seqDiv)seqDiv.textContent="";
+    }
+  }
+}
+function symbolClick(who){
+  window._symbolSeq.push(who);
+  var seqDiv=document.getElementById("symbol-seq");
+  if(seqDiv){
+    var names={moon:"月亮",star:"星辰",sun:"太阳"};
+    seqDiv.textContent="已选："+window._symbolSeq.map(function(w){return names[w];}).join(" ");
+  }
+  if(window._symbolSeq.length===3){
+    if(window._symbolSeq.join(",")===window._symbolAnswer.join(",")){
+      S.solvedPuzzles.atticChest=true;
+      S.keyFragments++;
+      S.inventory.push("key_frag4");
+      showToast("木箱的锁咔嗒一声弹开了！里面是第四片钥匙碎片。现在你已经集齐了所有碎片！");
+      addJ("符号谜题","按正确顺序解开了阁楼木箱的符号谜题。获得了最后一片钥匙碎片。");
+      updateHUD();renderRooms();updateModal();
+    }else{
+      showToast("顺序不对。维克多的笔记中写道：\u2018一生二，二生三——月亮引领星辰，星辰迎接太阳。\u2019");
+      window._symbolSeq=[];
+      if(seqDiv)seqDiv.textContent="";
+    }
+  }
+}
+window.portraitClick=portraitClick;
+window.symbolClick=symbolClick;
+
+// ═══════════════════════════════════
+// UTILITY FUNCTIONS
+// ═══════════════════════════════════
 var toastTimer=null;
-function showToast(msg,dur){var t=document.getElementById("toast");if(!t)return;t.textContent=msg;t.classList.add("show");if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove("show");},dur||3500);}
+function showToast(msg,dur){
+  var t=document.getElementById("toast");
+  if(!t)return;
+  t.textContent=msg;
+  t.classList.add("show");
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove("show");},dur||4000);
+}
 
-function updateHUD(){var sf=document.getElementById("sanity-fill");if(sf){sf.style.width=S.sanity+"%";sf.classList.toggle("low",S.sanity<40);sf.classList.toggle("crit",S.sanity<20);}var ic=document.getElementById("inv-count");if(ic){ic.textContent="物品 "+S.inventory.length;}renderInvBar();}
+function updateHUD(){
+  var sf=document.getElementById("sanity-fill");
+  if(sf){
+    sf.style.width=S.sanity+"%";
+    sf.classList.toggle("low",S.sanity<40);
+    sf.classList.toggle("crit",S.sanity<20);
+  }
+  var ic=document.getElementById("inv-count");
+  if(ic){ic.textContent=S.inventory.length;}
+  renderInvBar();
+}
 
-function addJ(title,text){var now=new Date();var ds=now.getFullYear()+"."+(now.getMonth()+1)+"."+now.getDate();S.journalE.push({title:title,date:ds,text:text});renderJ();}
+function addJ(title,text){
+  var now=new Date();
+  var ds=now.getFullYear()+"."+(now.getMonth()+1)+"."+now.getDate();
+  S.journalEntries.push({title:title,date:ds,text:text});
+  renderJ();
+}
 
-function renderJ(){var je=document.getElementById("journal-entries");if(!je)return;var html="";if(S.journalE.length===0){html='<div class="journal-entry" style="text-align:center;font-style:italic;color:#443322;border-left-color:#1a1512"><div class="j-title">空白日志</div><div class="j-date">探索宅邸并解开谜题以发现线索...</div></div>';}else{for(var i=0;i<S.journalE.length;i++){var e=S.journalE[i];html+='<div class="journal-entry"><div class="j-title">'+e.title+'</div><div class="j-date">'+e.date+'</div><p style="line-height:1.8;margin-top:6px">'+e.text+'</p></div>';}}je.innerHTML=html;}
+function renderJ(){
+  var je=document.getElementById("journal-entries");
+  if(!je)return;
+  var html="";
+  if(S.journalEntries.length===0){
+    html='<div class="journal-entry" style="text-align:center;font-style:italic;color:#443322;border-left-color:#1a1512"><div class="j-title">空白日志</div><div class="j-date">探索宅邸并解开谜题以发现线索...</div></div>';
+  }else{
+    for(var i=0;i<S.journalEntries.length;i++){
+      var e=S.journalEntries[i];
+      html+='<div class="journal-entry"><div class="j-title">'+e.title+'</div><div class="j-date">'+e.date+'</div><p style="line-height:1.8;margin-top:6px">'+e.text+'</p></div>';
+    }
+  }
+  je.innerHTML=html;
+}
 
-function addStory(type,title,text){var sc=document.getElementById("story-content");if(!sc)return;var existing=sc.innerHTML;var icon=type==="clue"?"🔍":"📜";existing+='<div class="story-card"><h3>'+icon+' '+title+'</h3><p>'+text+'</p></div>';sc.innerHTML=existing;}
+function addStory(type,title,text){
+  var sc=document.getElementById("story-content");
+  if(!sc)return;
+  var existing=sc.innerHTML;
+  var icon=type==="clue"?"线索":"发现";
+  var card='<div class="story-card"><h3>'+icon+'：'+title+'</h3><p>'+text+'</p></div>';
+  sc.innerHTML+=card;
+}
 
-function renderInvBar(){var slots=document.getElementById("inv-slots");if(!slots)return;var html="";for(var i=0;i<S.inventory.length;i++){var itemId=S.inventory[i];var found=null;for(var k in items){if(items[k].id===itemId||k===itemId){found=items[k];break;}}var name=found?found.name:itemId;var icon=found?found.icon:"📦";html+='<div class="inv-slot" title="'+name+'"><span>'+icon+'</span><span class="inv-tip">'+name+'</span></div>';}slots.innerHTML=html;}
+function renderInvBar(){
+  var slots=document.getElementById("inv-slots");
+  if(!slots)return;
+  if(S.inventory.length===0){
+    slots.innerHTML='<span class="inv-empty">物品栏为空 · 探索房间以获取道具</span>';
+    return;
+  }
+  var html="";
+  for(var i=0;i<S.inventory.length;i++){
+    var itemId=S.inventory[i];
+    var item=items[itemId];
+    if(item){
+      html+='<span class="inv-item" title="'+item.name+'">'+item.icon+'</span>';
+    }
+  }
+  slots.innerHTML=html;
+}
 
-// ═══ ROOM RENDERING ═══
-function renderRooms(){var grid=document.getElementById("room-grid");if(!grid)return;var html="";for(var i=0;i<roomOrder.length;i++){var rid=roomOrder[i];var r=rooms[rid];var unlocked=S.unlockedRooms[rid]||!r.unlockMsg;var visited=S.visitedRooms[rid];var cls="room-card";if(!unlocked)cls+=" locked";if(visited)cls+=" visited";html+='<div class="'+cls+'" onclick="openRoom(\x27'+rid+'\x27)">';html+='<span class="room-icon">'+r.icon+'</span>';html+='<div class="room-name">'+r.name+'</div>';html+='<div class="room-eng">'+r.eng+'</div>';if(!unlocked){html+='<div class="room-status locked-status">🔒 未解锁</div>';html+='<div class="room-hint">'+r.unlockMsg+'</div>';}else if(visited){html+='<div class="room-status visited-status">✓ 已探索</div>';}else{html+='<div class="room-status open-status">▶ 可进入</div>';}html+='</div>';}grid.innerHTML=html;}
+// ═══════════════════════════════════
+// RENDER ROOMS
+// ═══════════════════════════════════
+function renderRooms(){
+  var grid=document.getElementById("room-grid");
+  if(!grid)return;
+  var html="";
+  for(var i=0;i<roomOrder.length;i++){
+    var rid=roomOrder[i];
+    var r=rooms[rid];
+    var unlocked=S.unlockedRooms[rid]||!r.unlockMsg;
+    var visited=S.visitedRooms[rid];
+    var cls="room-card";
+    if(!unlocked)cls+=" locked";
+    if(visited)cls+=" visited";
+    html+='<div class="'+cls+'" onclick="openRoom(\u0027'+rid+'\u0027)">';
+    html+='<span class="room-icon">'+r.icon+'</span>';
+    html+='<div class="room-name">'+r.name+'</div>';
+    html+='<div class="room-eng">'+r.eng+'</div>';
+    if(!unlocked){
+      html+='<div class="room-status locked-status">未解锁</div>';
+      html+='<div class="room-hint">'+r.unlockMsg+'</div>';
+    }else if(visited){
+      html+='<div class="room-status visited-status">已探索</div>';
+    }else{
+      html+='<div class="room-status open-status">可探索</div>';
+    }
+    html+='</div>';
+  }
+  grid.innerHTML=html;
+}
 
-// ═══ MODAL ═══
-function openRoom(rid){ia();if(S.gameEnded)return;var r=rooms[rid];if(!r)return;if(!S.unlockedRooms[rid]){showToast(r.unlockMsg||"这个房间尚未解锁。");return;}S.currentRoom=rid;playCreak();if(!S.visitedRooms[rid]){S.visitedRooms[rid]=true;var dm={foyer:2,living:3,kitchen:4,dining:4,study:5,hallway:8,bedroom:6,bathroom:7,attic:7,basement:12};S.sanity=Math.max(0,S.sanity-(dm[rid]||5));updateHUD();if(S.sanity<20)playHB();else if(Math.random()<0.3)playWhisper();// Random jump scare chance in certain rooms
-if(["hallway","attic","basement"].indexOf(rid)>=0&&Math.random()<0.25&&!S.visitedRooms[rid]){setTimeout(function(){doJumpScare("👁️","不 要 回 头");},800);}renderRooms();}var modal=document.getElementById("room-modal");document.getElementById("modal-image").innerHTML=getRoomImage(rid);document.getElementById("modal-title").textContent=r.icon+" "+r.name;document.getElementById("modal-subtitle").textContent=r.eng+(S.visitedRooms[rid]?" (已探索)":"");document.getElementById("modal-desc").textContent=r.desc;document.getElementById("modal-puzzle").innerHTML="";var actDiv=document.getElementById("modal-actions");var actHtml="";if(roomItems[rid]){for(var i=0;i<roomItems[rid].length;i++){var itemId=roomItems[rid][i];var item=items[itemId];if(!item)continue;var found=S.foundItems[itemId]||S.solvedPuzzles[itemId];var taken=S.inventory.indexOf(itemId)>=0;if((found||taken)&&itemId.indexOf("_scare")<0&&itemId.indexOf("_closet")<0){actHtml+='<button class="modal-btn success" disabled>✓ '+item.name+'</button>';}else{actHtml+='<button class="modal-btn" onclick="doAction(\x27'+itemId+'\x27)">'+item.icon+' '+item.aLabel+'</button>';}}}if(rid==="basement"&&S.keyFragments>=3&&!S.ritualAttempted){actHtml+='<button class="modal-btn danger" onclick="doRitual(\x27complete\x27)">🔮 完成仪式</button>';actHtml+='<button class="modal-btn" style="border-color:#44ff44;color:#66ff66" onclick="doRitual(\x27destroy\x27)">💥 摧毁祭坛</button>';}if(rid==="basement"&&S.gameEnded){actHtml='<p style="color:#887766;text-align:center;width:100%">故事已经结束...</p>';}actDiv.innerHTML=actHtml;modal.classList.add("open");}
+// ═══════════════════════════════════
+// MODAL SYSTEM
+// ═══════════════════════════════════
+function openRoom(rid){
+  ia();
+  if(S.gameEnded)return;
+  var r=rooms[rid];
+  if(!r)return;
+  if(!S.unlockedRooms[rid]&&r.unlockMsg){
+    showToast(r.unlockMsg);
+    return;
+  }
+  S.currentRoom=rid;
+  playCreak();
+  if(!S.visitedRooms[rid]){
+    S.visitedRooms[rid]=true;
+    var dm={foyer:2,living:3,kitchen:4,dining:4,study:5,hallway:8,bedroom:6,bathroom:7,attic:7,basement:12};
+    S.sanity=Math.max(0,S.sanity-(dm[rid]||5));
+    updateHUD();
+    if(S.sanity<20)playHB();
+    else if(Math.random()<0.3)playWhisper();
+    if(["hallway","attic","basement"].indexOf(rid)>=0&&Math.random()<0.3&&S.scareReady){
+      S.scareReady=false;
+      setTimeout(function(){
+        doJumpScare("不 要 回 头");
+        S.scareReady=true;
+      },2000);
+    }
+  }
+  updateModal();
+}
 
-function updateModal(){if(S.currentRoom)openRoom(S.currentRoom);}
+function updateModal(){
+  var r=rooms[S.currentRoom];
+  if(!r)return;
+  document.getElementById("modal-title").textContent=r.icon+" "+r.name;
+  document.getElementById("modal-subtitle").textContent=r.eng+(S.visitedRooms[S.currentRoom]?" (已探索)":"");
+  document.getElementById("modal-desc").textContent=r.desc;
+  document.getElementById("modal-puzzle").innerHTML="";
+  document.getElementById("modal-image").innerHTML=getRoomImage(S.currentRoom);
+  // Action buttons
+  var actHtml="";
+  var itemIds=roomItems[S.currentRoom];
+  if(itemIds){
+    for(var i=0;i<itemIds.length;i++){
+      var item=items[itemIds[i]];
+      if(!item)continue;
+      var found=S.foundItems[itemIds[i]];
+      actHtml+='<button class="action-btn'+(found?' found':'')+'" onclick="doAction(\u0027'+itemIds[i]+'\u0027)">'+item.icon+' '+item.aLabel+'</button>';
+    }
+  }
+  // Basement ritual button
+  if(S.currentRoom==="basement"&&S.keyFragments>=3&&!S.ritualAttempted){
+    actHtml+='<button class="action-btn ritual-btn" onclick="doRitual()">进行仪式</button>';
+  }
+  document.getElementById("modal-actions").innerHTML=actHtml;
+  // Show modal
+  var modal=document.getElementById("room-modal");
+  modal.classList.add("open");
+  modal.style.display="flex";
+}
 
-function closeModal(){document.getElementById("room-modal").classList.remove("open");S.currentRoom=null;document.getElementById("modal-puzzle").innerHTML="";}
+function closeModal(){
+  var modal=document.getElementById("room-modal");
+  modal.classList.remove("open");
+  modal.style.display="none";
+  S.currentRoom=null;
+}
 
-function getRoomImage(rid){var imgs={foyer:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="200"><defs><radialGradient id="f1"><stop offset="0%" stop-color="#3a2020"/><stop offset="100%" stop-color="#050302"/></radialGradient><filter id="fb1"><feGaussianBlur stdDeviation="3"/></filter></defs><rect width="600" height="300" fill="#0a0505"/><rect width="600" height="300" fill="url(#f1)" opacity="0.6"/><rect x="200" y="20" width="200" height="260" rx="8" fill="#0d0503" stroke="#3a2018" stroke-width="3"/><rect x="220" y="40" width="80" height="220" rx="4" fill="#070302" stroke="#2a1510" stroke-width="2"/><rect x="300" y="40" width="80" height="220" rx="4" fill="#070302" stroke="#2a1510" stroke-width="2"/><ellipse cx="300" cy="100" rx="20" ry="35" fill="#331515" opacity="0.4" filter="url(#fb1)"/><rect x="260" y="210" width="80" height="50" rx="4" fill="#1a0a08" stroke="#2a1510" stroke-width="2"/><text x="300" y="290" text-anchor="middle" fill="#3a2018" font-size="9" font-family="serif" letter-spacing="4">HAWTHORNE ESTATE</text></svg>`,living:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="200"><defs><radialGradient id="flg"><stop offset="0%" stop-color="#3a2015"/><stop offset="100%" stop-color="#080404"/></radialGradient><filter id="fgl"><feGaussianBlur stdDeviation="5"/></filter></defs><rect width="600" height="300" fill="#0c0806"/><rect width="600" height="300" fill="url(#flg)" opacity="0.5"/><rect x="380" y="80" width="120" height="180" rx="8" fill="#1a0e08" stroke="#3a2015" stroke-width="2"/><rect x="395" y="95" width="90" height="50" rx="4" fill="#0a0402"/><ellipse cx="440" cy="120" rx="18" ry="25" fill="#cc6622" opacity="0.35" filter="url(#fgl)"/><rect x="100" y="100" width="200" height="130" rx="8" fill="#1a0e08" stroke="#332015" stroke-width="2"/><rect x="120" y="120" width="160" height="90" rx="4" fill="#0d0604"/><ellipse cx="200" cy="165" rx="40" ry="8" fill="#221008" opacity="0.5"/><rect x="180" y="140" width="30" height="80" fill="#1a0e08" stroke="#2a1810" stroke-width="1"/><rect x="140" y="150" width="25" height="60" fill="#1a0e08" stroke="#2a1810" stroke-width="1"/><text x="300" y="290" text-anchor="middle" fill="#3a2018" font-size="9" font-family="serif" letter-spacing="4">LIVING ROOM</text></svg>`,kitchen:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="200"><defs><linearGradient id="kgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a0806"/><stop offset="100%" stop-color="#060404"/></linearGradient></defs><rect width="600" height="300" fill="url(#kgrad)"/><rect x="30" y="70" width="220" height="200" rx="5" fill="#1a1210" stroke="#2a1a15" stroke-width="2"/><rect x="50" y="88" width="180" height="45" fill="#0d0806"/><rect x="320" y="170" width="220" height="100" rx="4" fill="#1a1210" stroke="#2a1a15" stroke-width="2"/><rect x="460" y="90" width="90" height="180" rx="3" fill="#151010" stroke="#2a1a15" stroke-width="2"/><line x1="410" y1="155" x2="440" y2="155" stroke="#3a2520" stroke-width="3"/><circle cx="420" cy="148" r="6" fill="#553025"/><ellipse cx="420" cy="142" rx="10" ry="14" fill="none" stroke="#442015" stroke-width="2"/><rect x="350" y="195" width="40" height="4" rx="2" fill="#442015"/><rect x="90" y="160" width="50" height="3" fill="#331515"/><text x="300" y="290" text-anchor="middle" fill="#3a2018" font-size="9" font-family="serif" letter-spacing="3">KITCHEN</text></svg>`,dining:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="200"><defs><radialGradient id="dgrad"><stop offset="0%" stop-color="#2a1a10"/><stop offset="100%" stop-color="#060404"/></radialGradient><filter id="dglow"><feGaussianBlur stdDeviation="3"/></filter></defs><rect width="600" height="300" fill="#0d0806"/><rect width="600" height="300" fill="url(#dgrad)" opacity="0.5"/><rect x="80" y="100" width="440" height="16" rx="8" fill="#1a0e08" stroke="#3a2015" stroke-width="2"/><rect x="90" y="180" width="420" height="8" rx="4" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><circle cx="180" cy="130" r="4" fill="#cc6622" opacity="0.5" filter="url(#dglow)"/><circle cx="300" cy="130" r="4" fill="#cc6622" opacity="0.5" filter="url(#dglow)"/><circle cx="420" cy="130" r="4" fill="#cc6622" opacity="0.5" filter="url(#dglow)"/><rect x="140" y="60" width="50" height="70" rx="4" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><rect x="280" y="50" width="50" height="80" rx="4" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><rect x="420" y="60" width="50" height="70" rx="4" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><text x="300" y="290" text-anchor="middle" fill="#3a2018" font-size="9" font-family="serif" letter-spacing="4">DINING ROOM</text></svg>`,study:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="200"><defs><radialGradient id="sgrad"><stop offset="0%" stop-color="#2a1510"/><stop offset="100%" stop-color="#040202"/></radialGradient><filter id="sglow"><feGaussianBlur stdDeviation="4"/></filter></defs><rect width="600" height="300" fill="#0a0604"/><rect width="600" height="300" fill="url(#sgrad)" opacity="0.5"/><rect x="40" y="50" width="30" height="220" rx="2" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><rect x="75" y="50" width="30" height="220" rx="2" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><rect x="110" y="50" width="30" height="220" rx="2" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><rect x="440" y="50" width="30" height="220" rx="2" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><rect x="475" y="50" width="30" height="220" rx="2" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><rect x="510" y="50" width="30" height="220" rx="2" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><rect x="220" y="120" width="160" height="80" rx="6" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><rect x="240" y="140" width="120" height="40" rx="3" fill="#0d0604"/><ellipse cx="300" cy="100" rx="15" ry="20" fill="#cc8822" opacity="0.3" filter="url(#sglow)"/><circle cx="300" cy="90" r="6" fill="#dd9933" opacity="0.4"/><rect x="270" y="210" width="60" height="40" rx="3" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><text x="300" y="290" text-anchor="middle" fill="#3a2018" font-size="9" font-family="serif" letter-spacing="3">DR. HAWTHORNE STUDIO</text></svg>`,hallway:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="200"><defs><linearGradient id="hgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a0606"/><stop offset="100%" stop-color="#020101"/></linearGradient><filter id="hblur"><feGaussianBlur stdDeviation="2"/></filter></defs><rect width="600" height="300" fill="url(#hgrad)"/><rect x="0" y="0" width="600" height="300" fill="url(#hgrad)"/><rect x="0" y="60" width="600" height="180" fill="#080404"/><rect x="0" y="100" width="600" height="6" fill="#1a0e08"/><rect x="0" y="200" width="600" height="6" fill="#1a0e08"/><rect x="100" y="40" width="60" height="80" rx="3" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><rect x="250" y="40" width="60" height="80" rx="3" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><rect x="400" y="40" width="60" height="80" rx="3" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><rect x="500" y="220" width="80" height="60" rx="3" fill="#0d0604" stroke="#3a1510" stroke-width="3"/><line x1="0" y1="140" x2="600" y2="140" stroke="#1a0e08" stroke-width="1" stroke-dasharray="30,15"/><ellipse cx="540" cy="250" rx="12" ry="18" fill="#330f0f" opacity="0.6" filter="url(#hblur)"/><text x="300" y="290" text-anchor="middle" fill="#3a2018" font-size="9" font-family="serif" letter-spacing="4">HALLWAY</text></svg>`,bedroom:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="200"><defs><radialGradient id="bdgrad"><stop offset="0%" stop-color="#2a1815"/><stop offset="100%" stop-color="#060404"/></radialGradient><filter id="bdglow"><feGaussianBlur stdDeviation="3"/></filter></defs><rect width="600" height="300" fill="#0c0808"/><rect width="600" height="300" fill="url(#bdgrad)" opacity="0.4"/><rect x="100" y="120" width="250" height="100" rx="10" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><rect x="115" y="135" width="220" height="70" rx="6" fill="#0d0604"/><ellipse cx="225" cy="170" rx="40" ry="12" fill="#1a0e08" opacity="0.5"/><rect x="420" y="80" width="120" height="160" rx="8" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><rect x="440" y="100" width="80" height="120" rx="4" fill="#080404"/><line x1="460" y1="120" x2="460" y2="200" stroke="#2a1510" stroke-width="2"/><circle cx="430" cy="90" r="8" fill="#331515" opacity="0.5" filter="url(#bdglow)"/><text x="300" y="290" text-anchor="middle" fill="#3a2018" font-size="9" font-family="serif" letter-spacing="4">BEDROOM</text></svg>`,bathroom:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="200"><defs><linearGradient id="bagrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080a0a"/><stop offset="100%" stop-color="#040606"/></linearGradient><filter id="baglow"><feGaussianBlur stdDeviation="2"/></filter></defs><rect width="600" height="300" fill="url(#bagrad)"/><rect x="400" y="80" width="130" height="170" rx="10" fill="#0d0a0a" stroke="#2a1515" stroke-width="2"/><ellipse cx="465" cy="165" rx="50" ry="70" fill="#050303" stroke="#1a0a0a" stroke-width="2"/><ellipse cx="465" cy="165" rx="40" ry="55" fill="#0a0202" opacity="0.8"/><rect x="180" y="90" width="140" height="140" rx="8" fill="#0d0a0a" stroke="#2a1515" stroke-width="2"/><rect x="200" y="110" width="100" height="100" rx="4" fill="#080505"/><line x1="220" y1="140" x2="220" y2="190" stroke="#2a1515" stroke-width="1.5"/><line x1="280" y1="140" x2="280" y2="190" stroke="#2a1515" stroke-width="1.5"/><line x1="220" y1="140" x2="280" y2="140" stroke="#2a1515" stroke-width="1.5"/><circle cx="250" cy="140" r="3" fill="#441010" filter="url(#baglow)"/><text x="300" y="290" text-anchor="middle" fill="#3a2018" font-size="9" font-family="serif" letter-spacing="4">BATHROOM</text></svg>`,attic:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="200"><defs><linearGradient id="agrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a0806"/><stop offset="100%" stop-color="#060504"/></linearGradient><filter id="aglow"><feGaussianBlur stdDeviation="2"/></filter></defs><rect width="600" height="300" fill="url(#agrad)"/><polygon points="0,100 300,10 600,100" fill="#0d0a06" stroke="#2a1a10" stroke-width="2"/><polygon points="0,100 300,10 300,100" fill="#0f0c08" stroke="none"/><rect x="40" y="140" width="80" height="80" rx="4" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><rect x="150" y="160" width="60" height="60" rx="4" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><rect x="350" y="130" width="90" height="90" rx="4" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><rect x="470" y="150" width="70" height="70" rx="4" fill="#1a0e08" stroke="#2a1510" stroke-width="2"/><circle cx="520" cy="178" r="12" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><circle cx="516" cy="176" r="4" fill="#331515"/><circle cx="524" cy="176" r="4" fill="#331515"/><path d="M514 182 Q520 186 526 182" fill="none" stroke="#331515" stroke-width="1.5"/><text x="300" y="290" text-anchor="middle" fill="#3a2018" font-size="9" font-family="serif" letter-spacing="4">ATTIC</text></svg>`,basement:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="200"><defs><radialGradient id="bsgrad"><stop offset="0%" stop-color="#1a0808"/><stop offset="100%" stop-color="#000000"/></radialGradient><filter id="bsglow"><feGaussianBlur stdDeviation="6"/></filter></defs><rect width="600" height="300" fill="#020102"/><rect width="600" height="300" fill="url(#bsgrad)" opacity="0.7"/><ellipse cx="300" cy="180" rx="120" ry="60" fill="#0d0404" stroke="#3a1515" stroke-width="3"/><ellipse cx="300" cy="180" rx="90" ry="40" fill="#0a0202" stroke="#2a1010" stroke-width="2"/><circle cx="300" cy="180" r="20" fill="#1a0505" stroke="#441010" stroke-width="2"/><circle cx="300" cy="180" r="8" fill="#220808" opacity="0.8"/><ellipse cx="300" cy="175" rx="6" ry="4" fill="#661010" opacity="0.5" filter="url(#bsglow)"/><rect x="80" y="40" width="30" height="100" rx="2" fill="#1a0a0a" opacity="0.3"/><rect x="490" y="40" width="30" height="100" rx="2" fill="#1a0a0a" opacity="0.3"/><ellipse cx="140" cy="70" rx="6" ry="10" fill="#661515" opacity="0.4" filter="url(#bsglow)"/><ellipse cx="460" cy="70" rx="6" ry="10" fill="#661515" opacity="0.4" filter="url(#bsglow)"/><ellipse cx="140" cy="200" rx="6" ry="10" fill="#661515" opacity="0.4" filter="url(#bsglow)"/><ellipse cx="460" cy="200" rx="6" ry="10" fill="#661515" opacity="0.4" filter="url(#bsglow)"/><text x="300" y="290" text-anchor="middle" fill="#441515" font-size="9" font-family="serif" letter-spacing="4">BASEMENT · THE ALTAR</text></svg>`};return '<div class="room-image-container">'+imgs[rid]+'</div>';}function doAction(itemId){ia();var item=items[itemId];if(!item)return;playCreak();if(item.act)item.act();renderRooms();}
+function getRoomImage(rid){
+  var svgs={
+foyer:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" width="100%" height="200"><defs><radialGradient id="fg1"><stop offset="0%" stop-color="#3a2020"/><stop offset="100%" stop-color="#050302"/></radialGradient></defs><rect width="600" height="280" fill="#0a0505"/><rect width="600" height="280" fill="url(#fg1)" opacity="0.6"/><rect x="200" y="20" width="200" height="240" rx="8" fill="#1a0d06" stroke="#3a2018" stroke-width="2"/><rect x="220" y="40" width="80" height="200" rx="4" fill="#0d0503" stroke="#2a1510" stroke-width="1.5"/><rect x="300" y="40" width="80" height="200" rx="4" fill="#0d0503" stroke="#2a1510" stroke-width="1.5"/><ellipse cx="300" cy="90" rx="15" ry="25" fill="#441515" opacity="0.3"/><rect x="260" y="200" width="80" height="40" rx="4" fill="#1a0a08" stroke="#2a1510" stroke-width="1.5"/><text x="300" y="270" text-anchor="middle" fill="#4a2820" font-size="8" font-family="serif" letter-spacing="3">HAWTHORNE ESTATE</text></svg>',
+living:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" width="100%" height="200"><defs><radialGradient id="lg1"><stop offset="0%" stop-color="#2a1510"/><stop offset="100%" stop-color="#080404"/></radialGradient><filter id="lglow"><feGaussianBlur stdDeviation="4"/></filter></defs><rect width="600" height="280" fill="#0c0604"/><rect width="600" height="280" fill="url(#lg1)" opacity="0.5"/><rect x="380" y="80" width="140" height="160" rx="8" fill="#1a0e08" stroke="#3a2015" stroke-width="1.5"/><rect x="395" y="95" width="110" height="50" rx="4" fill="#0d0503"/><ellipse cx="450" cy="120" rx="18" ry="25" fill="#cc6622" opacity="0.3" filter="url(#lglow)"/><rect x="80" y="100" width="220" height="120" rx="8" fill="#1a0e08" stroke="#332015" stroke-width="1.5"/><rect x="100" y="120" width="180" height="80" rx="4" fill="#0d0604"/><ellipse cx="190" cy="160" rx="45" ry="10" fill="#221008" opacity="0.4"/><rect x="170" y="130" width="5" height="70" fill="#2a1510"/><rect x="200" y="130" width="40" height="70" fill="#2a1510"/><text x="300" y="270" text-anchor="middle" fill="#4a2820" font-size="8" font-family="serif" letter-spacing="3">LIVING ROOM</text></svg>',
+kitchen:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" width="100%" height="200"><defs><linearGradient id="kgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a0806"/><stop offset="100%" stop-color="#050303"/></linearGradient></defs><rect width="600" height="280" fill="url(#kgrad)"/><rect x="20" y="60" width="230" height="190" rx="5" fill="#1a1210" stroke="#2a1a15" stroke-width="1.5"/><rect x="40" y="78" width="190" height="40" fill="#0d0806"/><rect x="300" y="155" width="250" height="95" rx="4" fill="#1a1210" stroke="#2a1a15" stroke-width="1.5"/><rect x="470" y="70" width="80" height="180" rx="3" fill="#151010" stroke="#2a1a15" stroke-width="1.5"/><rect x="330" y="175" width="45" height="4" rx="2" fill="#442015"/><circle cx="420" cy="135" r="5" fill="#553025"/><rect x="410" y="140" width="20" height="20" rx="2" fill="#151010" stroke="#2a1a15" stroke-width="1"/><rect x="100" y="150" width="40" height="3" fill="#331515"/><text x="300" y="270" text-anchor="middle" fill="#4a2820" font-size="8" font-family="serif" letter-spacing="3">KITCHEN</text></svg>',
+dining:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" width="100%" height="200"><defs><radialGradient id="dgrad"><stop offset="0%" stop-color="#2a1a10"/><stop offset="100%" stop-color="#060404"/></radialGradient></defs><rect width="600" height="280" fill="#0d0806"/><rect width="600" height="280" fill="url(#dgrad)" opacity="0.5"/><rect x="60" y="90" width="480" height="14" rx="7" fill="#1a0e08" stroke="#3a2015" stroke-width="1.5"/><rect x="70" y="170" width="460" height="6" rx="3" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><circle cx="150" cy="120" r="3" fill="#cc6622" opacity="0.4"/><circle cx="300" cy="120" r="3" fill="#cc6622" opacity="0.4"/><circle cx="450" cy="120" r="3" fill="#cc6622" opacity="0.4"/><rect x="120" y="50" width="40" height="60" rx="3" fill="#1a0e08" stroke="#2a1510" stroke-width="1.5"/><rect x="260" y="40" width="40" height="70" rx="3" fill="#1a0e08" stroke="#2a1510" stroke-width="1.5"/><rect x="400" y="50" width="40" height="60" rx="3" fill="#1a0e08" stroke="#2a1510" stroke-width="1.5"/><text x="300" y="270" text-anchor="middle" fill="#4a2820" font-size="8" font-family="serif" letter-spacing="3">DINING ROOM</text></svg>',
+study:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" width="100%" height="200"><defs><radialGradient id="sgrad"><stop offset="0%" stop-color="#2a1510"/><stop offset="100%" stop-color="#040202"/></radialGradient><filter id="sglow"><feGaussianBlur stdDeviation="3"/></filter></defs><rect width="600" height="280" fill="#070303"/><rect width="600" height="280" fill="url(#sgrad)" opacity="0.5"/><rect x="20" y="40" width="120" height="220" rx="4" fill="#1a0e08" stroke="#2a1510" stroke-width="1.5"/><rect x="30" y="50" width="100" height="200" rx="2" fill="#0d0504"/><line x1="30" y1="90" x2="130" y2="90" stroke="#2a1510" stroke-width="2"/><line x1="30" y1="140" x2="130" y2="140" stroke="#2a1510" stroke-width="2"/><rect x="170" y="50" width="120" height="210" rx="4" fill="#1a0e08" stroke="#2a1510" stroke-width="1.5"/><rect x="180" y="60" width="100" height="190" rx="2" fill="#0d0504"/><line x1="180" y1="100" x2="280" y2="100" stroke="#2a1510" stroke-width="2"/><line x1="180" y1="150" x2="280" y2="150" stroke="#2a1510" stroke-width="2"/><rect x="320" y="40" width="250" height="210" rx="4" fill="#1a0e08" stroke="#2a1510" stroke-width="1.5"/><rect x="330" y="50" width="230" height="190" rx="2" fill="#0d0504"/><line x1="330" y1="90" x2="550" y2="90" stroke="#2a1510" stroke-width="2"/><line x1="330" y1="140" x2="550" y2="140" stroke="#2a1510" stroke-width="2"/><rect x="240" y="200" width="120" height="30" rx="4" fill="#1a0e08" stroke="#3a2015" stroke-width="2"/><circle cx="335" cy="220" r="6" fill="#cc6622" opacity="0.4" filter="url(#sglow)"/><text x="300" y="270" text-anchor="middle" fill="#4a2820" font-size="8" font-family="serif" letter-spacing="3">STUDY</text></svg>',
+hallway:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" width="100%" height="200"><defs><linearGradient id="hgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#060404"/><stop offset="100%" stop-color="#020202"/></linearGradient><filter id="hglow"><feGaussianBlur stdDeviation="2"/></filter></defs><rect width="600" height="280" fill="url(#hgrad)"/><polygon points="150,10 450,10 600,280 0,280" fill="#080505" stroke="#1a0a0a" stroke-width="1"/><polygon points="200,10 400,10 500,280 100,280" fill="#0c0707" stroke="none"/><line x1="300" y1="10" x2="300" y2="280" stroke="#1a0a0a" stroke-width="0.5" stroke-dasharray="20,10"/><rect x="60" y="140" width="40" height="60" rx="2" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><rect x="500" y="140" width="40" height="60" rx="2" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><circle cx="300" cy="200" r="8" fill="#1a0505" stroke="#2a0a0a" stroke-width="1"/><circle cx="300" cy="200" r="3" fill="#441515" opacity="0.6" filter="url(#hglow)"/><ellipse cx="300" cy="60" rx="5" ry="20" fill="#331515" opacity="0.3" filter="url(#hglow)"/><text x="300" y="270" text-anchor="middle" fill="#4a2820" font-size="8" font-family="serif" letter-spacing="3">HALLWAY</text></svg>',
+bedroom:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" width="100%" height="200"><defs><radialGradient id="bdgrad"><stop offset="0%" stop-color="#1a1010"/><stop offset="100%" stop-color="#060404"/></radialGradient><filter id="bdglow"><feGaussianBlur stdDeviation="4"/></filter></defs><rect width="600" height="280" fill="#0a0606"/><rect width="600" height="280" fill="url(#bdgrad)" opacity="0.4"/><rect x="60" y="120" width="280" height="90" rx="10" fill="#1a0e08" stroke="#2a1510" stroke-width="1.5"/><rect x="75" y="135" width="250" height="60" rx="6" fill="#0d0604"/><ellipse cx="200" cy="165" rx="50" ry="12" fill="#1a0e08" opacity="0.5"/><rect x="420" y="70" width="120" height="160" rx="6" fill="#1a0e08" stroke="#2a1510" stroke-width="1.5"/><rect x="435" y="85" width="90" height="130" rx="3" fill="#080404"/><line x1="480" y1="85" x2="480" y2="215" stroke="#2a1510" stroke-width="1.5"/><circle cx="460" cy="50" r="6" fill="#331515" opacity="0.4" filter="url(#bdglow)"/><text x="300" y="270" text-anchor="middle" fill="#4a2820" font-size="8" font-family="serif" letter-spacing="3">BEDROOM</text></svg>',
+bathroom:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" width="100%" height="200"><defs><linearGradient id="bagrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#060808"/><stop offset="100%" stop-color="#020404"/></linearGradient></defs><rect width="600" height="280" fill="url(#bagrad)"/><rect x="420" y="70" width="120" height="160" rx="10" fill="#0c0a0a" stroke="#2a1515" stroke-width="1.5"/><ellipse cx="480" cy="150" rx="45" ry="65" fill="#040303" stroke="#1a0a0a" stroke-width="1.5"/><ellipse cx="480" cy="150" rx="35" ry="48" fill="#0a0202" opacity="0.6"/><rect x="150" y="80" width="150" height="130" rx="6" fill="#0c0a0a" stroke="#2a1515" stroke-width="1.5"/><rect x="165" y="95" width="120" height="100" rx="3" fill="#070404"/><circle cx="225" cy="145" r="2" fill="#441010"/><text x="300" y="270" text-anchor="middle" fill="#4a2820" font-size="8" font-family="serif" letter-spacing="3">BATHROOM</text></svg>',
+attic:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" width="100%" height="200"><defs><linearGradient id="agrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a0806"/><stop offset="100%" stop-color="#040303"/></linearGradient></defs><rect width="600" height="280" fill="url(#agrad)"/><polygon points="0,90 300,5 600,90" fill="#0c0906" stroke="#2a1a10" stroke-width="1.5"/><polygon points="0,90 300,5 300,90" fill="#0e0b08" stroke="none"/><rect x="30" y="120" width="80" height="80" rx="3" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><rect x="140" y="140" width="60" height="60" rx="3" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><rect x="350" y="110" width="90" height="90" rx="3" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><rect x="470" y="130" width="70" height="70" rx="3" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><circle cx="520" cy="158" r="10" fill="#1a0e08" stroke="#2a1510" stroke-width="1"/><circle cx="517" cy="156" r="3" fill="#331515"/><circle cx="523" cy="156" r="3" fill="#331515"/><path d="M515 161 Q519 165 525 161" fill="none" stroke="#331515" stroke-width="1.5"/><text x="300" y="270" text-anchor="middle" fill="#4a2820" font-size="8" font-family="serif" letter-spacing="3">ATTIC</text></svg>',
+basement:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 280" width="100%" height="200"><defs><radialGradient id="bsgrad"><stop offset="0%" stop-color="#1a0808"/><stop offset="100%" stop-color="#000000"/></radialGradient><filter id="bsglow"><feGaussianBlur stdDeviation="5"/></filter></defs><rect width="600" height="280" fill="#010101"/><rect width="600" height="280" fill="url(#bsgrad)" opacity="0.7"/><ellipse cx="300" cy="170" rx="130" ry="50" fill="#0c0404" stroke="#3a1515" stroke-width="2"/><ellipse cx="300" cy="170" rx="100" ry="35" fill="#090202" stroke="#2a1010" stroke-width="1.5"/><circle cx="300" cy="170" r="18" fill="#1a0505" stroke="#441010" stroke-width="1.5"/><circle cx="300" cy="170" r="6" fill="#220808" opacity="0.7"/><ellipse cx="300" cy="166" rx="4" ry="3" fill="#661010" opacity="0.4" filter="url(#bsglow)"/><rect x="60" y="30" width="20" height="100" rx="1" fill="#1a0a0a" opacity="0.2"/><rect x="520" y="30" width="20" height="100" rx="1" fill="#1a0a0a" opacity="0.2"/><ellipse cx="130" cy="60" rx="4" ry="8" fill="#661515" opacity="0.3" filter="url(#bsglow)"/><ellipse cx="470" cy="60" rx="4" ry="8" fill="#661515" opacity="0.3" filter="url(#bsglow)"/><text x="300" y="270" text-anchor="middle" fill="#4a2020" font-size="8" font-family="serif" letter-spacing="3">BASEMENT</text></svg>'
+  };
+  return '<div class="room-image-container">'+svgs[rid]+'</div>';
+}
 
-// ═══ PASSWORD MODAL ═══
-function openPW(type,title,subtitle,hint,callback){S.currentPW=callback;document.getElementById("pw-title").textContent=title;document.getElementById("pw-subtitle").textContent=subtitle||"";document.getElementById("pw-hint").textContent=hint||"";document.getElementById("pw-input").value="";document.getElementById("pw-error").textContent="";document.getElementById("pw-input").classList.remove("error");document.getElementById("pw-modal").classList.add("open");document.getElementById("pw-input").focus();}
+function doAction(itemId){
+  ia();
+  var item=items[itemId];
+  if(!item)return;
+  playCreak();
+  if(item.act)item.act();
+  renderRooms();
+}
 
-function closePW(){document.getElementById("pw-modal").classList.remove("open");S.currentPW=null;}
+// ═══════════════════════════════════
+// PASSWORD MODAL
+// ═══════════════════════════════════
+function openPW(type,title,question,hint,callback){
+  document.getElementById("pw-title").textContent=title;
+  document.getElementById("pw-subtitle").textContent=question;
+  document.getElementById("pw-hint").textContent=hint||"";
+  document.getElementById("pw-input").value="";
+  document.getElementById("pw-error").textContent="";
+  document.getElementById("pw-modal").classList.add("open");
+  document.getElementById("pw-modal").style.display="flex";
+  S.currentPW={type:type,callback:callback};
+  setTimeout(function(){
+    document.getElementById("pw-input").focus();
+  },100);
+}
 
-function submitPW(){var input=document.getElementById("pw-input");var val=input.value.trim();var errEl=document.getElementById("pw-error");if(!val){errEl.textContent="请输入密码";return;}if(S.currentPW){var result=S.currentPW(val);if(result===false){input.classList.add("error");errEl.textContent="密码错误，请重新尝试";setTimeout(function(){input.classList.remove("error");},500);input.value="";input.focus();}else{closePW();}}}
+function closePW(){
+  document.getElementById("pw-modal").classList.remove("open");
+  document.getElementById("pw-modal").style.display="none";
+  S.currentPW=null;
+}
 
-// ═══ JUMP SCARE ═══
-function doJumpScare(face,text){ia();playScream();document.getElementById("red-flash").classList.add("flash");setTimeout(function(){document.getElementById("red-flash").classList.remove("flash");},200);var js=document.getElementById("jumpscare");js.querySelector(".js-face").textContent=face||"👁️";js.querySelector(".js-text").textContent=text||"你 不 该 来 这 里";js.classList.add("active");setTimeout(function(){js.classList.remove("active");},1500);S.sanity=Math.max(0,S.sanity-8);updateHUD();if(S.sanity<20)playHB();}
+function submitPW(){
+  var val=document.getElementById("pw-input").value.trim();
+  if(!val){
+    document.getElementById("pw-error").textContent="请输入密码。";
+    return;
+  }
+  if(!S.currentPW||!S.currentPW.callback){
+    closePW();
+    return;
+  }
+  var result=S.currentPW.callback(val);
+  if(result!==false){
+    closePW();
+  }else{
+    document.getElementById("pw-error").textContent="密码错误，请重试。";
+    document.getElementById("pw-input").value="";
+    document.getElementById("pw-input").focus();
+  }
+}
 
-// ═══ PORTRAIT PUZZLE ═══
-window.portraitClick=function(name){if(!window._portraitSeq)return;window._portraitSeq.push(name);var seqDiv=document.getElementById("portrait-seq");seqDiv.textContent=window._portraitSeq.map(function(n){return n==="victor"?"维克多":n==="eleanor"?"埃莉诺":"莉莉安";}).join(" → ");if(window._portraitSeq.length===3){var correct=JSON.stringify(window._portraitSeq)===JSON.stringify(window._portraitAnswer);if(correct){S.solvedPuzzles.portraits=true;showToast("肖像谜题解开！三幅肖像依次亮起，露出了藏在后面的一个暗格——里面有一把铜钥匙！");S.inventory.push("study_key");S.unlockedRooms.study=true;addJ("肖像谜题","按照正确的家族顺序按下了肖像按钮——维克多、埃莉诺、莉莉安。获得了书房的铜钥匙。");addStory("clue","肖像谜题解开","餐厅的肖像暗格中获得了书房的铜钥匙。谜题的答案是家族的正确顺序：父亲、母亲、女儿。");updateHUD();renderRooms();updateModal();}else{showToast("顺序错误！三幅肖像恢复了原位。请重新尝试。提示：食谱卡上写了正确的顺序。");window._portraitSeq=[];seqDiv.textContent="";document.querySelectorAll("#portrait-buttons .ded-option").forEach(function(b){b.classList.remove("wrong");setTimeout(function(){b.classList.add("wrong");},10);setTimeout(function(){b.classList.remove("wrong");},600);});}}};
+// ═══════════════════════════════════
+// JUMP SCARE
+// ═══════════════════════════════════
+function doJumpScare(text){
+  var scare=document.getElementById("jumpscare");
+  if(!scare)return;
+  playScream();
+  scare.querySelector(".scare-text").textContent=text||"";
+  scare.classList.add("active");
+  document.body.style.animation="shake 0.5s ease-in-out";
+  setTimeout(function(){
+    scare.classList.remove("active");
+    document.body.style.animation="";
+  },1500);
+  // Flash effect
+  var flash=document.createElement("div");
+  flash.style.cssText="position:fixed;top:0;left:0;width:100%;height:100%;background:red;opacity:0.3;z-index:10001;pointer-events:none;transition:opacity 0.5s";
+  document.body.appendChild(flash);
+  setTimeout(function(){flash.style.opacity="0";},100);
+  setTimeout(function(){flash.remove();},700);
+}
 
-// ═══ SYMBOL PUZZLE ═══
-window.symbolClick=function(name){if(!window._symbolSeq)return;window._symbolSeq.push(name);var seqDiv=document.getElementById("symbol-seq");seqDiv.textContent=window._symbolSeq.map(function(n){return n==="moon"?"🌙":n==="star"?"⭐":"☀️";}).join(" → ");if(window._symbolSeq.length===3){var correct=JSON.stringify(window._symbolSeq)===JSON.stringify(window._symbolAnswer);if(correct){S.solvedPuzzles.atticChest=true;S.keyFragments++;S.inventory.push("key_frag3");S.unlockedRooms.basement=true;showToast("木箱打开了！里面是第三片钥匙碎片和莉莉安小时候画的全家福。");addJ("符号木箱","解开了阁楼木箱的符号谜题。正确的顺序是月亮→星辰→太阳。获得了第三片钥匙碎片。");addStory("clue","第三片钥匙碎片","在阁楼的符号木箱中获得了第三片钥匙碎片。还剩最后一片——藏在\u201c祭坛之下\u201d。维克多的日记暗示最后一片就在地下室。");updateHUD();renderRooms();updateModal();}else{showToast("符号顺序不对。想一想日记中的提示：\u201c月亮引领星辰，星辰迎接太阳\u201d。");window._symbolSeq=[];seqDiv.textContent="";document.querySelectorAll(".ded-option").forEach(function(b){b.classList.add("wrong");setTimeout(function(){b.classList.remove("wrong");},600);});}}};
+// ═══════════════════════════════════
+// RITUAL ENDINGS
+// ═══════════════════════════════════
+function doRitual(){
+  if(S.ritualAttempted)return;
+  S.ritualAttempted=true;
+  playDrone();
+  var html='<div class="ending-panel">';
+  html+='<div class="ending-title">最终的抉择</div>';
+  html+='<div class="ending-question">祭坛在你面前发出低沉的嗡鸣。三片钥匙碎片已经安置完毕。仪式之书在你手中翻开到了最后一页。</div>';
+  html+='<div class="ending-options">';
+  html+='<button class="ending-btn good" onclick="doEnding(\u0027good\u0027)">摧毁祭坛<br><small>终结这场噩梦</small></button>';
+  html+='<button class="ending-btn bad" onclick="doEnding(\u0027bad\u0027)">完成仪式<br><small>揭开真理</small></button>';
+  html+='</div></div>';
+  document.getElementById("modal-puzzle").innerHTML=html;
+  document.getElementById("modal-actions").innerHTML="";
+}
 
-// ═══ RITUAL ENDINGS ═══
-window.doRitual=function(choice){if(S.ritualAttempted||S.gameEnded)return;S.ritualAttempted=true;S.gameEnded=true;var endDiv=document.getElementById("ending-content");var modal=document.getElementById("room-modal");if(choice==="complete"){playDrone();setTimeout(function(){playGlass();},2000);var bad='<div style="color:#cc4444;font-size:1.1em;line-height:2.2;padding:20px;text-align:left">';bad+='<div style="font-size:2em;letter-spacing:6px;margin-bottom:20px;text-align:center">⬛ 黑暗降临 ⬛</div>';bad+='<p>你将三片钥匙组合在一起，放在了祭坛中央。</p>';bad+='<p>地面开始震动。墙壁上的符文发出了血红色的光芒。那本书疯狂地翻动着，最后停在空白的一页——然后文字开始自己浮现。</p>';bad+='<p>你感到一股不可抗拒的力量将你拉向祭坛。意识开始模糊时，你听到了一个声音——那是莉莉安的声音，从很远很远的地方传来：</p>';bad+='<p style="color:#ff6666;font-style:italic;text-align:center">\u201c谢谢你...现在...你是新的守门人了。\u201d</p>';bad+='<p>世界碎裂成了无数片。当你再次睁开眼睛时，你站在宅邸的门厅里。但这次——你是以幽灵的身份。你看到另一个\u201c你\u201d正在推开大门...</p>';bad+='<p style="color:#ff4444;text-align:center;font-size:0.9em">坏结局：永恒的守望者<br>你代替了维克多，成为了宅邸新的\u201c守门人\u201d。<br>下一个踏入这座宅邸的人，将重复你的命运。</p></div>';endDiv.innerHTML=bad;document.getElementById("modal-desc").textContent="仪式完成了。黑暗的力量被释放。你成为了宅邸的一部分，永远无法离开。";document.getElementById("modal-actions").innerHTML='<p style="color:#887766;text-align:center;width:100%">故事已经结束。刷新页面可重新开始。</p>';}else{var good='<div style="color:#88cc88;font-size:1.1em;line-height:2.2;padding:20px;text-align:left">';good+='<div style="font-size:2em;letter-spacing:6px;margin-bottom:20px;text-align:center">✨ 黎明破晓 ✨</div>';good+='<p>你高高举起切肉刀，用尽全力砸向祭坛。</p>';good+='<p>一声刺耳的尖叫划破了空气。祭坛裂成两半。那本人皮书燃起蓝色火焰，书页在火焰中化为灰烬。地下室里的符文逐一熄灭。</p>';good+='<p>一道温暖的阳光从墙上裂开的缝隙中射入——这是这座宅邸一百多年来见到的第一缕阳光。在阳光中，你看到了三个半透明的身影：</p>';good+='<p style="color:#aacc88;text-align:center;font-style:italic">\u201c谢谢你...终于...结束了。\u201d</p>';good+='<p>埃莉诺牵着莉莉安的手，她们对你微笑。维克多站在她们身后，低着头——他的表情不再疯狂，只剩下深深的悔恨。</p>';good+='<p>三人化为光点，缓缓升向天空。宅邸开始崩塌——但你已经安全地站在了门外。</p>';good+='<p style="color:#66cc66;text-align:center;font-size:0.9em">好结局：灵魂的安息<br>霍桑家族的灵魂终于获得了自由。<br>你做到了他们自己无法做到的事。</p></div>';endDiv.innerHTML=good;document.getElementById("modal-desc").textContent="祭坛被摧毁了。黑暗的力量消散了。霍桑家族终于获得了安息。阳光重新照进了这座百年老宅。";document.getElementById("modal-actions").innerHTML='<p style="color:#887766;text-align:center;width:100%">故事已经结束。刷新页面可重新开始。</p>';}setTimeout(function(){document.getElementById("ending").scrollIntoView({behavior:"smooth"});closeModal();},600);};
+function doEnding(type){
+  S.gameEnded=true;
+  var endDiv=document.getElementById("ending-content");
+  if(type==="bad"){
+    document.getElementById("modal-desc").textContent="你完成了仪式。真理之门在你面前打开——但那不是你想看到的。莉莉安的灵魂没有安息，她与黑暗融为了一体。宅邸成为了永恒的牢笼。而现在，你也是它的一部分了。";
+    var bad='<div class="story-card" style="border-left-color:#880000"><div class="ending-title" style="color:#cc4444">坏结局：永恒的宅邸</div><p>你选择了完成仪式。黑暗的力量被释放了。莉莉安的灵魂被永远束缚在了宅邸中——与无数误入此地的灵魂一起。你的名字被添加到了门厅那封未寄出的信的末尾。霍桑庄园将永远矗立，等待着下一个闯入者。</p><p style="color:#884444;text-align:center;font-size:0.9em;margin-top:15px">真理的代价是永恒的囚禁。<br>但至少，你再也不会孤独了。</p></div>';
+    endDiv.innerHTML=bad;
+  }else{
+    document.getElementById("modal-desc").textContent="你举起了埃莉诺藏在门厅的那把旧铁锤，用尽全力砸向了祭坛。当石头碎裂的瞬间，你听到了一声悠长的叹息——仿佛解脱了。宅邸开始颤抖。墙壁在崩塌。但阳光开始从不存在的缝隙中渗入。在彻底坍塌之前，你看到了三个模糊的身影：维克多拥抱了埃莉诺，莉莉安的手里还拿着那个只有一只眼睛的娃娃。";
+    var good='<div class="story-card" style="border-left-color:#006600"><div class="ending-title" style="color:#66cc66">好结局：灵魂的安息</div><p>你选择了摧毁祭坛。裂缝从祭坛的中心扩散开来，整座宅邸开始崩塌。在黑暗中，你看到了埃莉诺牵起了莉莉安的手，维克多跪在地上——他终于意识到了自己的罪孽。阳光穿透了宅邸的墙壁，驱散了百年来的阴影。当你爬出废墟时，发现废墟上开着一朵花——一朵不知名的、蓝色的花。那是埃莉诺生前最喜欢的颜色。</p><p style="color:#66cc66;text-align:center;font-size:0.9em;margin-top:15px">他们终于自由了。<br>就像莉莉安在纸条上写的那样——\u2018妈妈说要勇敢\u2019。<br>而你，做到了他们无法做到的事。</p></div>';
+    endDiv.innerHTML=good;
+  }
+  closeModal();
+  document.getElementById("ending").scrollIntoView({behavior:"smooth"});
+}
 
-// ═══ PARTICLES ═══
-function initParticles(){var canvas=document.getElementById("particles");if(!canvas)return;var ctx=canvas.getContext("2d");var particles=[];var maxP=60;function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}resize();window.addEventListener("resize",resize);for(var i=0;i<maxP;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3-0.1,size:Math.random()*2+0.5,opacity:Math.random()*0.4+0.1,life:Math.random()*200+100,age:Math.floor(Math.random()*200)});}function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);for(var i=0;i<particles.length;i++){var p=particles[i];p.age++;p.x+=p.vx;p.y+=p.vy;if(p.age>p.life){p.x=Math.random()*canvas.width;p.y=canvas.height+10;p.age=0;}if(p.x<0)p.x=canvas.width;if(p.x>canvas.width)p.x=0;var alpha=p.opacity*(1-p.age/p.life);ctx.fillStyle="rgba(180,160,140,"+alpha+")";ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();}requestAnimationFrame(animate);}animate();}
+window.doEnding=doEnding;
 
-// ═══ SCROLL ═══
-function initScroll(){var navLinks=document.querySelectorAll(".nav-item a");var sections=[];navLinks.forEach(function(a){var href=a.getAttribute("href");if(href&&href.startsWith("#")){var el=document.querySelector(href);if(el)sections.push({el:el,link:a});}});window.addEventListener("scroll",function(){var scrollY=window.scrollY+100;sections.forEach(function(s){var top=s.el.offsetTop;var bottom=top+s.el.offsetHeight;if(scrollY>=top&&scrollY<bottom){navLinks.forEach(function(l){l.classList.remove("active");});s.link.classList.add("active");}});});}
+// ═══════════════════════════════════
+// PARTICLES
+// ═══════════════════════════════════
+function initParticles(){
+  var canvas=document.getElementById("particles");
+  if(!canvas)return;
+  var ctx=canvas.getContext("2d");
+  var particles=[];
+  var maxP=50;
+  function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+  resize();window.addEventListener("resize",resize);
+  for(var i=0;i<maxP;i++){
+    particles.push({
+      x:Math.random()*canvas.width,
+      y:Math.random()*canvas.height,
+      vx:(Math.random()-0.5)*0.2,
+      vy:(Math.random()-0.5)*0.2-Math.random()*0.3,
+      size:Math.random()*1.5+0.5,
+      opacity:Math.random()*0.3+0.05,
+      life:Math.random()*150+80,
+      age:Math.floor(Math.random()*150)
+    });
+  }
+  function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(var i=0;i<particles.length;i++){
+      var p=particles[i];
+      p.age++;p.x+=p.vx;p.y+=p.vy;
+      if(p.age>p.life){p.x=Math.random()*canvas.width;p.y=canvas.height+5;p.age=0;}
+      if(p.x<0)p.x=canvas.width;if(p.x>canvas.width)p.x=0;
+      var alpha=p.opacity*(1-p.age/p.life);
+      ctx.fillStyle="rgba(180,150,120,"+alpha+")";
+      ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
 
-// ═══ EVENT LISTENERS ═══
-function initEvents(){var heroBtn=document.getElementById("hero-enter-btn");if(heroBtn){heroBtn.addEventListener("click",function(){ia();playCreak();document.getElementById("rooms").scrollIntoView({behavior:"smooth"});showToast("你踏入了暗影宅邸的大门...");setTimeout(function(){playWhisper();},1500);});}var modal=document.getElementById("room-modal");if(modal){modal.addEventListener("click",function(e){if(e.target===modal)closeModal();});}document.addEventListener("keydown",function(e){if(e.key==="Escape"){if(document.getElementById("pw-modal").classList.contains("open")){closePW();}else{closeModal();}}});document.querySelectorAll(".nav-item a").forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();var href=this.getAttribute("href");if(href&&href.startsWith("#")){var el=document.querySelector(href);if(el)el.scrollIntoView({behavior:"smooth"});}});});// Password submit
-document.getElementById("pw-submit").addEventListener("click",submitPW);document.getElementById("pw-input").addEventListener("keypress",function(e){if(e.key==="Enter")submitPW();});document.getElementById("pw-input").addEventListener("input",function(){document.getElementById("pw-error").textContent="";});}
+// ═══════════════════════════════════
+// SCROLL NAVIGATION
+// ═══════════════════════════════════
+function initScroll(){
+  var navLinks=document.querySelectorAll(".nav-item a");
+  var sections=[];
+  navLinks.forEach(function(a){
+    var href=a.getAttribute("href");
+    if(href&&href.startsWith("#")){
+      var el=document.querySelector(href);
+      if(el)sections.push({el:el,link:a});
+    }
+  });
+  window.addEventListener("scroll",function(){
+    var scrollY=window.scrollY+100;
+    sections.forEach(function(s){
+      var top=s.el.offsetTop;
+      var bottom=top+s.el.offsetHeight;
+      if(scrollY>=top&&scrollY<bottom){
+        navLinks.forEach(function(l){l.classList.remove("active");});
+        s.link.classList.add("active");
+      }
+    });
+  });
+}
 
-// ═══ INIT ═══
-function init(){var sc=document.getElementById("story-content");sc.innerHTML='<div class="story-card"><h3>📜 案件背景</h3><p>1897年，外科医生<span class="clue-highlight">维克多·霍桑</span>建造了这座宅邸，与妻子<span class="clue-highlight">埃莉诺</span>和七岁的女儿<span class="clue-highlight">莉莉安</span>一起搬入。然而，一场手术事故后，维克多开始沉迷于通灵仪式。他在<span class="clue-highlight">地下室</span>建造了祭坛，试图打破生与死的界限。埃莉诺发现了他的计划，将仪式所需的钥匙分成<span class="clue-highlight">三片</span>藏在宅邸各处——但她还是晚了一步。如今，这座宅邸依然矗立。你需要<span class="clue-highlight">收集线索、解开谜题、找到三片钥匙碎片</span>，在一切太晚之前终结这段黑暗的历史。</p></div>';renderRooms();renderJ();initParticles();initScroll();initEvents();updateHUD();}
+// ═══════════════════════════════════
+// EVENT LISTENERS
+// ═══════════════════════════════════
+function initEvents(){
+  var heroBtn=document.getElementById("hero-enter-btn");
+  if(heroBtn){
+    heroBtn.addEventListener("click",function(){
+      ia();playCreak();
+      document.getElementById("rooms").scrollIntoView({behavior:"smooth"});
+      showToast("你踏入了暗影宅邸的大门。探索每一个房间，收集线索，解开谜题。");
+      setTimeout(function(){playWhisper();},2000);
+    });
+  }
+  var modal=document.getElementById("room-modal");
+  if(modal){
+    modal.addEventListener("click",function(e){
+      if(e.target===modal)closeModal();
+    });
+  }
+  var pwModal=document.getElementById("pw-modal");
+  if(pwModal){
+    pwModal.addEventListener("click",function(e){
+      if(e.target===pwModal)closePW();
+    });
+  }
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"){
+      if(document.getElementById("pw-modal").classList.contains("open")){closePW();}
+      else{closeModal();}
+    }
+  });
+  document.querySelectorAll(".nav-item a").forEach(function(a){
+    a.addEventListener("click",function(e){
+      e.preventDefault();
+      var href=this.getAttribute("href");
+      if(href&&href.startsWith("#")){
+        var el=document.querySelector(href);
+        if(el)el.scrollIntoView({behavior:"smooth"});
+      }
+    });
+  });
+  document.getElementById("pw-submit").addEventListener("click",submitPW);
+  document.getElementById("pw-input").addEventListener("keypress",function(e){if(e.key==="Enter")submitPW();});
+  document.getElementById("pw-input").addEventListener("input",function(){document.getElementById("pw-error").textContent="";});
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+function init(){
+  var sc=document.getElementById("story-content");
+  sc.innerHTML='<div class="story-card"><h3>案件背景</h3><p>1897年，著名外科医生<span class="clue-highlight">维克多·霍桑</span>建造了这座哥特式宅邸。他与妻子<span class="clue-highlight">埃莉诺</span>和七岁的女儿<span class="clue-highlight">莉莉安</span>一同搬入。起初，一切看起来都像是一个幸福的开始。然而，一次失败的手术后，维克多的精神状况急转直下。他开始在<span class="clue-highlight">地下室</span>进行某种禁忌的通灵实验——试图打破生与死的界限。埃莉诺发现了真相并试图带女儿逃离，但她没有成功。如今，一百多年过去了，这座宅邸依然矗立——而黑暗仪式似乎从未真正结束。你需要<span class="clue-highlight">探索每个房间、收集线索、解开谜题</span>，在一切太晚之前终结这段黑暗的历史。</p></div>';
+  initParticles();initScroll();initEvents();renderRooms();renderJ();updateHUD();
+}
 
 // Expose globals
-window.openRoom=openRoom;window.closeModal=closeModal;window.doAction=doAction;window.doRitual=doRitual;window.closePW=closePW;window.submitPW=submitPW;window.doJumpScare=doJumpScare;
+window.openRoom=openRoom;window.closeModal=closeModal;window.doAction=doAction;
+window.doRitual=doRitual;window.closePW=closePW;window.submitPW=submitPW;
+window.doJumpScare=doJumpScare;
 
-// Run
 if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}
 })();
 
