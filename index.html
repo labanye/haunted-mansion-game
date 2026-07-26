@@ -142,8 +142,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;background:linear-gradient(1
 <div class="footer">霍桑庄园 · Shadow Manor · 1897</div>
 
 <script>
-"use strict";
 
+"use strict";
 
 var actx=null;
 function ia(){if(actx)return;try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
@@ -162,7 +162,6 @@ function startBGM(){
   mg.gain.setValueAtTime(0,actx.currentTime);
   mg.gain.linearRampToValueAtTime(0.16,actx.currentTime+3);
   mg.connect(actx.destination);
-  // Pad 1 - 110Hz sawtooth, lowpass filtered
   var p1=actx.createOscillator();p1.type="sawtooth";p1.frequency.value=110;
   var p1f=actx.createBiquadFilter();p1f.type="lowpass";p1f.frequency.value=250;
   var p1g=actx.createGain();p1g.gain.value=0.1;
@@ -170,23 +169,18 @@ function startBGM(){
   var v1g=actx.createGain();v1g.gain.value=5;
   v1.connect(v1g);v1g.connect(p1.frequency);
   p1.connect(p1f);p1f.connect(p1g);p1g.connect(mg);
-  // Pad 2 - detuned for dissonance
   var p2=actx.createOscillator();p2.type="sawtooth";p2.frequency.value=117;
   var p2f=actx.createBiquadFilter();p2f.type="lowpass";p2f.frequency.value=200;
   var p2g=actx.createGain();p2g.gain.value=0.06;
   p2.connect(p2f);p2f.connect(p2g);p2g.connect(mg);
-  // High eerie tone
   var p3=actx.createOscillator();p3.type="sine";p3.frequency.value=880;
   var p3g=actx.createGain();p3g.gain.value=0.025;
   var v3=actx.createOscillator();v3.type="triangle";v3.frequency.value=0.15;
   var v3g=actx.createGain();v3g.gain.value=30;
   v3.connect(v3g);v3g.connect(p3.frequency);
   p3.connect(p3g);p3g.connect(mg);
-  // Low boom
-  var boomCount=0;
   function boom(){
     if(!bgmPlaying)return;
-    boomCount++;
     var bo=actx.createOscillator();bo.type="sine";bo.frequency.value=50;
     var bog=actx.createGain();
     bog.gain.setValueAtTime(0.12,actx.currentTime);
@@ -196,7 +190,6 @@ function startBGM(){
     if(bgmPlaying)setTimeout(boom,5500+Math.random()*2000);
   }
   setTimeout(boom,3000);
-  // Start all
   p1.start();p2.start();p3.start();v1.start();v3.start();
   bgmNodes={p1:p1,p2:p2,p3:p3,v1:v1,v3:v3,master:mg};
 }
@@ -207,14 +200,25 @@ function setBGMTension(level){
   bgmNodes.master.gain.linearRampToValueAtTime(v,actx.currentTime+1);
 }
 
-function stopBGM(){
-  if(!bgmPlaying||!bgmNodes)return;
-  bgmNodes.master.gain.linearRampToValueAtTime(0,actx.currentTime+2);
-  setTimeout(function(){
-    if(bgmNodes){bgmNodes.p1.stop();bgmNodes.p2.stop();bgmNodes.p3.stop();bgmNodes.v1.stop();bgmNodes.v3.stop();}
-    bgmPlaying=false;bgmNodes=null;
-  },2100);
+var ROOMS = [{"id": "foyer", "name": "门厅", "eng": "FOYER", "icon": "🚪", "unlocked": true, "desc": "沉重的橡木大门在你身后缓缓关闭，发出一声令人不安的闷响。门厅比从外面看起来要宽敞得多。一盏巨大的水晶吊灯悬挂在正中央，上面蒙着的灰尘厚得像一层灰色的毛毯，但水晶棱镜仍然在某种看不见的气流中轻轻晃动，发出细微的咔嗒声。墙壁上贴着暗红色的织锦壁纸，金色花纹已经褪成了病态的黄色。一张桃花心木桌上放着三样东西：一封用红蜡封好的信件、一把系着泛黄标签的黄铜小钥匙、一本皮质封面的来访登记簿。桌腿旁的地板上有一条明显的深色拖痕。墙上钉着一张字条：不要一个人去地下室。"}, {"id": "living", "name": "客厅", "eng": "LIVING ROOM", "icon": "🛋️", "unlocked": true, "desc": "客厅比你想像的要大得多，也暗得多——这里的黑暗似乎拥有重量。厚重的酒红色天鹅绒窗帘紧紧闭合着。壁炉已经冰冷了一个多世纪。壁炉台上摆着一张褪了色的全家福：维克多医生、埃莉诺和莉莉安。角落里立着一架桃花心木的三角钢琴，琴凳的盖子被一把精致的小锁锁住了，锁孔旁有三个字母的空位。谱架上放着一张被烧掉一半的乐谱——第一个和最后一个被红圈标注的音符都是D。沙发扶手上放着埃莉诺的皮质日记。"}, {"id": "kitchen", "name": "厨房", "eng": "KITCHEN", "icon": "🍳", "unlocked": false, "unlock_item": "brass_key", "desc": "黄铜小钥匙在锁孔里转动时发出一声尖锐的金属摩擦声。厨房中央一座巨大的铸铁炉灶占据了房间的三分之一。炉灶上还架着一口黑铁锅，锅底残留着深褐色硬壳。橱柜门上有从内部向外的抓痕。最高的那个柜子半开着，铰链上挂着一小片深绿色的碎布。储物柜上贴着标签：医疗用品——仅限维克多医生使用。水龙头每隔几秒就滴下一滴水。"}, {"id": "dining", "name": "餐厅", "eng": "DINING ROOM", "icon": "🍽️", "unlocked": false, "unlock_item": "diary_clue", "desc": "餐厅的桃花心木长桌可以坐十二个人，但现在只有三个位置摆放着餐具。桌上的银质烛台已经发黑。桌布上有大片暗色污渍。墙上挂着一幅静物油画——野鸡的眼睛被换成了一个小小的黑色按钮。三个茶杯中有一个被打翻在地，碎成了两半。墙角有一台老式的留声机，黄铜喇叭上蒙着蛛网。"}, {"id": "study", "name": "书房", "eng": "STUDY", "icon": "📚", "unlocked": false, "unlock_puzzle": "书房门上有一个四位数字密码锁。提示：莉莉安的生日（月日）。", "unlock_answer": "0706", "desc": "书房的空气比宅邸里其他任何地方都要浓稠。三面墙壁被顶天立地的书架占据。维克多的书桌上放着一张医学院毕业证书：维克多·霍桑，阿卡姆大学医学院，1882届。证书下方压着一本皮面笔记本，封面上写着：VEN。靠窗的位置有一个上锁的橡木抽屉，把手上系着一根粉色丝带。窗台上放着玻璃罐，里面浸泡着的标本形状不太对。"}, {"id": "hallway", "name": "走廊", "eng": "HALLWAY", "icon": "🕯️", "unlocked": false, "unlock_msg": "需要更多线索才能探查走廊", "desc": "走廊比宅邸里其他任何地方都要狭窄、都要长。墙壁上挂着六幅画像。第六幅——维克多的画像——脸部被刮掉了。地板有几处松动的木板。墙壁上有蜡烛壁灯，一盏还在燃烧，下面压着一张纸条：372。走廊尽头有一扇窗户，月光在地板上投下十字形阴影。十字形正中心有一个小小的暗门。"}, {"id": "bedroom", "name": "卧室", "eng": "BEDROOM", "icon": "🛏️", "unlocked": true, "desc": "主卧室弥漫着闷热的、带着轻微腐烂气息的暖意。双人床上铺着褪色的深红色床单。被子下面像是躺着一个人。梳妆台上摆满了维多利亚时代的化妆品。镜子被人用口红涂满了字：你永远无法离开。我也是。埃莉诺的衣柜半开着。梳妆台的抽屉里有一本小圣经，唯一还能看清的一行字被用红墨水圈出：信我的人，虽然死了，也必复活。"}, {"id": "bathroom", "name": "浴室", "eng": "BATHROOM", "icon": "🛁", "unlocked": true, "desc": "浴室的门一推开，潮湿的霉味扑面而来。浴缸里盛着半缸水——一个多世纪后还没有蒸发？水底沉着一个小小的、布制的、只有一只眼睛的绿色娃娃。莉莉安的娃娃。洗手台上方的镜子上用口红写满了字。浴帘后面藏着一个隐藏的壁龛——壁龛里有一台密码锁保险箱。"}, {"id": "attic", "name": "阁楼", "eng": "ATTIC", "icon": "🪜", "unlocked": false, "unlock_msg": "需要打开走廊暗门才能进入阁楼", "desc": "阁楼的天花板低得你必须弯着腰走路。灰尘聚集成一缕一缕的，像是有人刚刚走过。角落里堆满了旧家具——在黑暗中像一群蹲伏的生物。正中央放着一台缝纫机，踏板上夹着一件未完成的白色小裙子。靠近天窗有一张儿童书桌。墙角大木箱贴着霍桑家族文件。天窗玻璃上刻着：妈妈从这扇窗户看星星。最亮的那颗比爸爸大七倍。"}, {"id": "basement", "name": "地下室", "eng": "BASEMENT", "icon": "⚠️", "unlocked": false, "unlock_msg": "需要集齐三片钥匙碎片", "desc": "通往地下室的楼梯又窄又陡。越往下走空气越冷——一种掠夺体温的阴寒。拱顶很低，中央地面上刻着巨大的圆形图案。图案里嵌套着倒三角形，每个角上都摆放着黑色蜡烛。正对楼梯的墙上有一扇沉重的铁门——暗门。门上没有锁孔，没有把手，只有一个圆形凹槽。暗门旁散落着几本古籍。角落有一个巨大的铁笼子。实验台上摆满手术器械，台面上有一个干净的、人头大小的长方形区域。"}];
+var ACTIONS = {"foyer": [{"type": "read", "label": "阅读信件", "item": "letter", "result": "你小心地拆开那封用红蜡封好的信。信纸已经泛黄发脆。\n\n致我最爱的埃莉诺：\n仪式所需的最后一个条件，我已经找到了。莉莉安会好起来的，我向你保证。\n\n你拆散的那把钥匙，我已经找回了第一片——就在你藏在钢琴凳里的那个天鹅绒小袋里。\n\n不要试图阻止我。仪式一旦开始就不能中断。\n\n永远爱你的，维克多\n又及：记住我们女儿最喜欢在浴室里唱的那首歌——它也是解开她保险箱的密码。"}, {"type": "read", "label": "翻阅来访登记簿", "item": "register", "result": "登记簿的皮革封面已经干裂。翻到1897年11月之后，记录戛然而止。最后一页只有一行字：他不会再让别人进来了。登记簿的封底夹层里塞着一张折叠的小纸条，写着：1897.12.24。纸条背面画着一个符号：圆圈里套着一个倒三角形，三角形里写着一个数字：3。"}, {"type": "pickup", "label": "拾起黄铜小钥匙", "item": "brass_key", "result": "你拾起那把黄铜小钥匙。标签上写着几个褪色的字：厨房储物柜。钥匙握在手中有一种异常的冰冷，仿佛它从未被任何人的体温温暖过。"}], "living": [{"type": "read", "label": "阅读埃莉诺的日记", "item": "diary", "result": "你拿起沙发上的皮质日记。书签夹在1897年12月20日。\n\n12月20日\n我今天趁维克多出门，偷偷去了地下室。门上的密码锁还是那三个字母——LIL，莉莉安的名字缩写。\n\n我把钥匙拆成了三片。一片在钢琴凳里，一片在厨房最高的柜子里，最后一片在书房带锁的橡木抽屉里。密码是她的生日。"}, {"type": "puzzle", "label": "打开钢琴凳锁", "item": "piano_lock", "puzzle": "请输入三个字母的密码打开钢琴凳（提示：日记中提到地下室密码锁是哪三个字母？）：", "answer": "LIL", "reward": "key_fragment_1", "result": "锁咔嗒一声弹开了。钢琴凳的夹层里有一个天鹅绒小袋。你打开小袋，里面躺着一片形状奇特的金属碎片。这是第一片钥匙碎片。"}, {"type": "read", "label": "查看被烧毁的乐谱", "item": "sheet_music", "result": "你拿起那张烧掉一半的乐谱。第一行和最后一行都被红圈标注了D音。乐谱空白处有人用铅笔潦草地写道：D是开始也是结束。女儿的昵称，母亲的姓氏，父亲每天念叨的那个词的前三个字母。"}], "kitchen": [{"type": "pickup", "label": "打开储物柜", "item": "storage", "result": "你打开贴有医疗用品标签的储物柜。柜子底层有一个上锁的铁盒，盒子上刻着一行字：每日服用，一次一片，父亲的希望。铁盒的密码锁是一个四位数字。"}, {"type": "puzzle", "label": "打开铁盒密码锁", "item": "iron_box", "puzzle": "铁盒密码锁。提示：维克多的医学院毕业年份（四位数字）：", "answer": "1882", "reward": "diary_clue", "result": "铁盒打开了。里面有一张羊皮纸，画着人体解剖图，所有标注汇聚到颅骨底部的松果体。下方写着：松果体——灵魂的居所。仪式第三阶段：在子夜时分，将三片钥匙合而为一。"}, {"type": "pickup", "label": "翻找最高处的橱柜", "item": "top_cabinet", "result": "你搬来椅子够到最高的橱柜。里面有一件深绿色长裙。裙子的口袋里有一张纸片，上面写着：我把第二片藏在了每天都能看到阳光的地方。莉莉安最喜欢在那里吃东西。"}], "dining": [{"type": "read", "label": "播放留声机", "item": "phonograph", "result": "你转动留声机的手柄——它还能工作。唱针落到唱片上，不是弥撒。不是唱诗班。是一个男人和一个女人在争吵，夹杂着瓷器碎裂声和孩子的哭声。你听出了几个词：……地下室……放开她……你疯了维克多……然后是一声枪响。这是1897年平安夜的真实录音。"}, {"type": "pickup", "label": "检查被打翻的茶杯", "item": "teacup", "result": "茶杯碎片之间夹着一张羊皮纸卷。展开一看——上面写着三个字母：VEN。你想起了乐谱上的提示：父亲每天念叨的那个词的前三个字母。"}, {"type": "puzzle", "label": "打开餐边柜密码抽屉", "item": "buffet_drawer", "puzzle": "餐边柜密码抽屉。锁上刻着父亲的身份。请输入三个字母。", "answer": "VEN", "reward": "key_fragment_2", "result": "抽屉滑开了。里面有一个天鹅绒小袋——第二片钥匙碎片。和第一片刚好互补，拼在一起能看到圆环和三角形的轮廓。还缺最后一角。"}], "study": [{"type": "read", "label": "翻阅笔记本(VEN)", "item": "notebook", "result": "你翻开封面写着VEN的皮面笔记本。VENI, VIDI, VICI——我来，我见，我征服。凯撒的名言。维克多写道：Veni——来到医学的边界。Vidi——见到了莉莉安的病。Vici——将征服死亡本身。仪式需要三样东西：一把钥匙（已被埃莉诺拆成三片）、一句真言（VENI VIDI VICI）、以及一个足够纯洁的灵魂容器。"}, {"type": "puzzle", "label": "打开莉莉安的橡木抽屉", "item": "lily_drawer", "puzzle": "抽屉锁上刻着我女儿的生日。请输入四位数（月日）：", "answer": "0706", "reward": "silver_key", "result": "抽屉打开了。里面是一叠莉莉安的画作。最后几张画上出现了黑色和红色。一个小女孩躺在桌子上，周围站着三个没有脸的人。画的背面，莉莉安用歪歪扭扭的笔迹写着：爸爸说要带我去一个很远的地方。妈妈哭了。我不想去。画纸下面压着一把银色小钥匙。"}], "hallway": [{"type": "pickup", "label": "拾起左轮手枪", "item": "revolver", "result": "走廊地板下面有一把左轮手枪，枪柄刻着V.H.——维克多·霍桑。弹仓里卡着一颗哑火子弹。取出来之后，子弹壳里掉出一张纸条：372。"}, {"type": "puzzle", "label": "打开走廊暗门", "item": "hallway_door", "puzzle": "暗门上刻着以372为钥。请输入三位数密码。", "answer": "372", "reward": "attic_unlock", "result": "暗门上的密码锁咔嗒一声打开了。一条狭窄的楼梯通往上方——通往阁楼。灰尘滚滚而下。"}], "bedroom": [{"type": "read", "label": "阅读未寄出的信", "item": "unsent_letter", "result": "你拆开埃莉诺衣柜里那封未寄出的信。收件人是阿卡姆镇警察局。\n\n致阿卡姆镇警察局：\n维克多在宅邸地下室进行非法的医学实验。他和某些不该打交道的东西建立了联系。我已经把钥匙拆成了三片藏了起来。请立刻派人来。不要一个人来。带枪。\n\n埃莉诺·霍桑\n1897年12月22日\n\n两天后，三个人都死了。"}, {"type": "pickup", "label": "搜查梳妆台抽屉", "item": "dresser", "result": "梳妆台底层抽屉有假夹层。里面排列着：一张埃莉诺结婚前的照片——她笑得很灿烂；一把银质发梳，背面刻着给妈妈——莉莉安，1897年圣诞礼物；一个玻璃瓶，标签写着：水合氯醛——用于镇静。瓶子几乎是空的。"}], "bathroom": [{"type": "read", "label": "检查镜子上口红字迹", "item": "mirror_writing", "result": "你用袖子擦去镜面上的灰尘。埃莉诺用口红写的是：莉莉安最喜欢在洗澡时唱歌。那首歌的名字是她名字的前三个字母。莉莉安的前三个字母：L-I-L。"}, {"type": "puzzle", "label": "打开壁龛保险箱", "item": "alcove_safe", "puzzle": "保险箱密码锁。提示：莉莉安在洗澡时唱的歌是什么（三个字母）？", "answer": "LIL", "reward": "locket", "result": "保险箱打开了。里面是一个心形小金盒吊坠。打开吊坠，里面有一张微型照片：埃莉诺抱着莉莉安，两个人都笑得很灿烂。吊坠背面刻着：无论发生什么，妈妈永远爱你。吊坠链子上还系着一个小小的银色钥匙——标签上写着：地下室。"}], "attic": [{"type": "read", "label": "检查缝纫机和未完成的裙子", "item": "sewing", "result": "你拿起那条未完成的白色小裙子。裙摆上绣的花是铃兰——莉莉安的名字就是铃兰的意思。裙子内部缝着标签：给我最亲爱的莉莉安——希望你永远不需要穿它。缝纫机台面下有一个暗格，里面躺着一枚金戒指，内侧刻着V. & E. 1885。戒指旁有纸条：我把最后一片藏在了离天空最近的地方，和他从大学带回的第一个奖杯放在一起。"}, {"type": "pickup", "label": "翻找霍桑家族文件箱", "item": "family_crate", "result": "你在文件箱中找到了一份阿卡姆大学的劝退通知书——维克多因非法器官移植实验被开除。文件最底部压着一个金色奖杯，刻着：阿卡姆大学解剖学竞赛第一名——维克多·霍桑，1882。奖杯是中空的——你拧开底部，天鹅绒衬里中掉出了第三片钥匙碎片。三片拼在一起——一把完整的钥匙。"}], "basement": [{"type": "read", "label": "检查古籍中的拉丁文", "item": "ancient_book", "result": "你翻阅那本古籍。在子夜，当月亮运行至天顶，点燃三支蜡烛，将钥匙插入暗门。念诵真言三次：Veni, Vidi, Vici。暗门将开启，门后的存在将回应你的呼唤。警告：不要试图在仪式中途离开。那个存在不喜欢被打断。"}, {"type": "ending", "label": "治愈莉莉安——完成仪式", "ending_key": "cure", "result": "你大声说出了你的选择：治愈她。黑暗中伸出了一只无形的手，穿透了时间，穿透了空间——然后一切都归于安静。\n\n当你再次醒来时，宅邸已经不同了。阳光透过窗户照进来——真正的阳光。你听到楼上传来一个小女孩的笑声。维克多和埃莉诺站在楼梯口，穿着1887年的衣服，面带微笑。莉莉安从楼梯上跑下来——她是真实的，温暖的，活着的。\n\n🎭 结局一：轮回\n你改写了历史。莉莉安活了下来。但你付出的代价——你被困在了1887年，永永远远地成为了霍桑家庭的一员。"}, {"type": "ending", "label": "摧毁暗门——释放灵魂", "ending_key": "destroy", "result": "你拔出那把在走廊找到的左轮手枪。对着暗门后的黑暗扣动了扳机。一声巨大的爆炸声响彻了整个地下室。三片钥匙碎片同时炸开，化作三道刺眼的白光。\n\n当你的视线恢复时，你看到三个模糊的人影——一个高个子男人、一个穿着长裙的女人、中间是一个抱着布娃娃的小女孩。他们消失了。暗门也消失了。你走出宅邸时，天已经亮了。\n\n🎭 结局二：解脱\n你释放了霍桑一家的灵魂。暗门被永远封印。但你的人生从此不同——你看到的世界比常人多了一个层面。每当夜深人静时，你能看到那些被困在两个世界之间的人影。而你学会了不去打扰他们。"}]};
+
+var G = {
+    inv: [],
+    frags: 0,
+    done: {},
+    unlocked: {foyer:true,living:true,kitchen:false,dining:false,study:false,hallway:false,bedroom:true,bathroom:true,attic:false,basement:false},
+    curRoom: null,
+    gameOver: false
+};
+
+function toast(m) {
+    var t = document.getElementById("toast");
+    t.textContent = m; t.classList.add("show");
+    clearTimeout(t._tid);
+    t._tid = setTimeout(function(){t.classList.remove("show");}, 3000);
 }
+
 
 function closePrologue() {
     document.getElementById("prologue-overlay").style.display = "none";
@@ -421,6 +425,7 @@ function uInv() {
 
 rRooms(); uInv();
 document.addEventListener("click",function(){ia();if(!bgmPlaying)startBGM();},{once:true});
+
 </script>
 </body>
 </html>
