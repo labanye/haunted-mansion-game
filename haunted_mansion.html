@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>暗影宅邸 - 恐怖探索</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--accent:#8b0000;--dim:#3a3a3a}
+body{background:#000;color:#c4b998;font-family:Georgia,"Noto Serif SC",serif;min-height:100vh;display:flex;justify-content:center;align-items:center;overflow-y:auto;cursor:default;user-select:none}
+#game-container{position:relative;z-index:2;width:100%;max-width:780px;padding:20px}
+#game{background:linear-gradient(180deg,#0d0d0d 0%,#141210 100%);border:2px solid var(--dim);border-radius:8px;padding:30px;min-height:580px;position:relative;box-shadow:0 0 60px rgba(139,0,0,0.15),inset 0 0 100px rgba(0,0,0,0.5)}
+#title-area{text-align:center;padding:24px 0;border-bottom:1px solid #1f1f1f;margin-bottom:18px}
+#room-title{font-size:2em;color:#d4a574;text-shadow:0 0 20px rgba(200,100,50,0.3);letter-spacing:6px;margin-bottom:4px}
+#room-subtitle{font-size:0.85em;color:#665544;letter-spacing:3px;font-style:italic}
+#description{font-size:1.05em;line-height:1.8;margin:18px 0;padding:18px;background:rgba(0,0,0,0.3);border-left:3px solid var(--dim);min-height:70px;transition:opacity 0.4s;white-space:pre-line}
+#description.shake{animation:shake 0.5s ease-in-out}
+#description.flash{animation:flashRed 0.3s ease-in-out}
+@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-4px)}20%,40%,60%,80%{transform:translateX(4px)}}
+@keyframes flashRed{0%,100%{background:rgba(0,0,0,0.3)}50%{background:rgba(139,0,0,0.35)}}
+@keyframes flicker{0%,100%{opacity:1}8%{opacity:0.7}10%{opacity:1}45%{opacity:0.85}47%{opacity:1}92%{opacity:0.6}94%{opacity:1}}
+#exits{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.exit-btn{background:transparent;border:1px solid #2a2520;color:#998866;padding:10px 22px;font-family:inherit;font-size:0.95em;cursor:pointer;border-radius:3px;transition:all 0.3s;letter-spacing:2px}
+.exit-btn:hover{border-color:var(--accent);color:#ddaa88;background:rgba(139,0,0,0.1);box-shadow:0 0 15px rgba(139,0,0,0.2)}
+.exit-btn:active{transform:scale(0.96)}
+.exit-btn.locked{opacity:0.4;cursor:not-allowed}
+#actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.action-btn{background:rgba(30,25,20,0.8);border:1px solid #2a2018;color:#887766;padding:6px 16px;font-family:inherit;font-size:0.9em;cursor:pointer;border-radius:3px;transition:all 0.3s}
+.action-btn:hover{border-color:#554433;color:#bba899}
+#hud{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding:10px 14px;background:rgba(0,0,0,0.4);border-top:1px solid #1a1a1a;border-radius:0 0 4px 4px;flex-wrap:wrap;gap:8px}
+#inventory{display:flex;gap:8px;flex-wrap:wrap;flex:1;min-width:0}
+.inv-item{background:rgba(60,40,20,0.5);border:1px solid #3a2a15;padding:4px 10px;border-radius:3px;font-size:0.85em;color:#bba888;white-space:nowrap}
+#sanity-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
+#sanity-bar{width:100px;height:8px;background:#1a1a1a;border-radius:4px;overflow:hidden;border:1px solid #2a2a2a}
+#sanity-fill{height:100%;background:linear-gradient(90deg,#448844,#88cc44);transition:width 0.8s,background 0.8s;border-radius:3px}
+#sanity-fill.low{background:linear-gradient(90deg,#884422,#cc6622)}
+#sanity-fill.critical{background:linear-gradient(90deg,#881111,#cc2222);animation:pulse 0.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+#notification{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0d0d0d;border:1px solid var(--accent);color:#ff6666;padding:10px 22px;border-radius:4px;z-index:10;font-family:inherit;letter-spacing:2px;font-size:0.9em;opacity:0;transition:opacity 0.5s;pointer-events:none;text-align:center;max-width:90vw}
+#notification.show{opacity:1}
+#jumpscare{position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:100;display:flex;justify-content:center;align-items:center;opacity:0;pointer-events:none;transition:opacity 0.08s}
+#jumpscare.active{opacity:1}
+#jumpscare-face{font-size:18em}
+#jumpscare.active #jumpscare-face{animation:jitter 0.05s infinite}
+@keyframes jitter{0%{transform:translate(0,0) scale(1)}25%{transform:translate(-10px,5px) scale(1.12)}50%{transform:translate(8px,-4px) scale(0.93)}75%{transform:translate(-3px,8px) scale(1.06)}}
+#start-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:200;display:flex;flex-direction:column;justify-content:center;align-items:center}
+#start-screen.hidden{display:none}
+#start-screen h1{font-size:3em;color:#8b0000;text-shadow:0 0 40px rgba(139,0,0,0.6);letter-spacing:10px;margin-bottom:6px;animation:flicker 3s infinite}
+#start-screen .sub{color:#665544;letter-spacing:5px;margin-bottom:36px;font-style:italic}
+#start-btn{background:transparent;border:2px solid #8b0000;color:#aa4444;padding:14px 44px;font-family:inherit;font-size:1.2em;cursor:pointer;letter-spacing:5px;border-radius:3px;transition:all 0.5s}
+#start-btn:hover{background:rgba(139,0,0,0.2);box-shadow:0 0 30px rgba(139,0,0,0.3);text-shadow:0 0 10px rgba(200,100,100,0.5)}
+#start-warning{color:#443322;font-size:0.8em;margin-top:18px;letter-spacing:3px}
+#ending-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:150;display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px}
+#ending-screen.show{display:flex}
+#ending-screen h1{font-size:2.5em;color:#d4a574;letter-spacing:8px;margin-bottom:14px}
+#ending-screen p{color:#998877;font-size:1.05em;line-height:2;max-width:460px;margin-bottom:28px;white-space:pre-line}
+@media(max-width:600px){#game{padding:14px}#room-title{font-size:1.3em}#description{font-size:0.9em;padding:10px}#start-screen h1{font-size:2em}}
+</style>
+</head>
+<body>
+<div id="start-screen"><h1>暗 影 宅 邸</h1><div class="sub">SHADOW MANOR</div><button id="start-btn" onclick="startGame()">进 入</button><div id="start-warning">&#9888; 包含恐怖元素与突发惊吓 &#9888;</div></div>
+<div id="jumpscare"><div id="jumpscare-face">&#128065;</div></div>
+<div id="notification"></div>
+<div id="game-container" style="display:none"><div id="game">
+<div id="title-area"><div id="room-title"></div><div id="room-subtitle"></div></div>
+<div id="description"></div><div id="exits"></div><div id="actions"></div>
+<div id="hud"><div id="inventory"></div><div id="sanity-wrap"><span style="font-size:0.8em;color:#554433;">理智</span><div id="sanity-bar"><div id="sanity-fill" style="width:100%"></div></div></div></div>
+</div></div>
+<div id="ending-screen"><h1 id="ending-title"></h1><p id="ending-text"></p><button class="exit-btn" onclick="location.reload()">重新开始</button></div>
+
+<script>
+// === Audio Engine ===
+var AC = window.AudioContext || window.webkitAudioContext;
+var actx = null;
+
+function ia() {
+  if (!actx) { actx = new AC(); if (actx.state === 'suspended') actx.resume(); }
+}
+
+function pt(f, ty, d, v, r) {
+  v = v || 0.08; r = r !== false;
+  if (!actx) return;
+  try {
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = ty; o.frequency.value = f;
+    g.gain.setValueAtTime(v, actx.currentTime);
+    if (r) g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + d);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + d);
+  } catch(e) {}
+}
+
+function dr() {
+  if (!actx) return;
+  try {
+    var o = actx.createOscillator(), g = actx.createGain();
+    var l = actx.createOscillator(), lg = actx.createGain();
+    o.type = 'sawtooth'; o.frequency.value = 35;
+    l.type = 'sine'; l.frequency.value = 0.1; lg.gain.value = 3;
+    l.connect(lg); lg.connect(o.frequency); l.start();
+    g.gain.value = 0.025; o.connect(g); g.connect(actx.destination);
+    o.start();
+    window._dr = { o: o, g: g, l: l, lg: lg };
+  } catch(e) {}
+}
+
+function sd() {
+  try { var d = window._dr; if (d) { d.o.stop(); d.l.stop(); } window._dr = null; } catch(e) {}
+}
+
+function hb() {
+  if (!actx) return;
+  try {
+    for (var i = 0; i < 3; i++) {
+      (function(j) {
+        var o = actx.createOscillator(), g = actx.createGain();
+        o.type = 'sine'; o.frequency.value = 45;
+        g.gain.setValueAtTime(0.06, actx.currentTime + j * 0.7);
+        g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + j * 0.7 + 0.5);
+        o.connect(g); g.connect(actx.destination);
+        o.start(actx.currentTime + j * 0.7);
+        o.stop(actx.currentTime + j * 0.7 + 0.5);
+      })(i);
+    }
+  } catch(e) {}
+}
+
+function jsnd() {
+  if (!actx) return;
+  try {
+    for (var i = 0; i < 6; i++) {
+      (function(j) {
+        var o = actx.createOscillator(), g = actx.createGain();
+        o.type = 'square'; o.frequency.value = 200 + Math.random() * 800;
+        g.gain.setValueAtTime(0.15, actx.currentTime + j * 0.07);
+        g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + j * 0.07 + 0.18);
+        o.connect(g); g.connect(actx.destination);
+        o.start(actx.currentTime + j * 0.07);
+        o.stop(actx.currentTime + j * 0.07 + 0.18);
+      })(i);
+    }
+  } catch(e) {}
+}
+
+function cw() {
+  if (!actx) return;
+  try {
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(200, actx.currentTime);
+    o.frequency.linearRampToValueAtTime(80, actx.currentTime + 2);
+    g.gain.setValueAtTime(0.03, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 2.5);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + 2.5);
+  } catch(e) {}
+}
+
+// === Game State ===
+var state = {
+  currentRoom: 'foyer', inventory: [], sanity: 100,
+  visited: {}, events: {}, key_pieces: 0, candle_lit: false, game_over: false
+};
+
+// === Room Data ===
+var rooms = {
+  foyer: {
+    name: '门 厅', sub: 'FOYER',
+    desc: '厚重的橡木大门在你身后缓缓合拢，发出令人不安的闷响。\n灰尘在惨淡的月光中缓缓飘浮，空气里弥漫着腐朽与旧木头的气息。\n一盏摇摇欲坠的水晶吊灯悬挂在天花板上，偶尔发出微弱的叮当声。\n墙壁上褪色的壁纸描绘着诡异的森林场景——那些树似乎在盯着你看。\n地板上散落着几封泛黄的信件，字迹已经模糊难辨。',
+    exits: [
+      { label: '上楼', room: 'hallway_up' },
+      { label: '客厅', room: 'living_room' },
+      { label: '餐厅', room: 'dining_room' }
+    ],
+    actions: [
+      { label: '查看信件', action: 'read_letters' },
+      { label: '检查吊灯', action: 'chandelier' }
+    ]
+  },
+  living_room: {
+    name: '客 厅', sub: 'LIVING ROOM',
+    desc: '客厅里摆满了盖着白布的家具，像是等待着永远不会到来的客人。\n一座巨大的壁炉占据了整面北墙，里面残留着灰烬的余温——奇怪，这座宅子应该已经废弃多年了。\n壁炉上方挂着一幅肖像画，画中是一位面无表情的中年男人，但他的眼睛似乎在跟随你的移动。\n一架老式留声机静静地站在角落，唱针悬浮在黑胶唱片上方。',
+    exits: [
+      { label: '门厅', room: 'foyer' },
+      { label: '厨房', room: 'kitchen' }
+    ],
+    actions: [
+      { label: '检查肖像画', action: 'portrait' },
+      { label: '打开留声机', action: 'gramophone' },
+      { label: '查看壁炉', action: 'fireplace' }
+    ]
+  },
+  kitchen: {
+    name: '厨 房', sub: 'KITCHEN',
+    desc: '厨房里弥漫着一股令人作呕的甜腻气味。\n水槽里堆满了生锈的餐具，水龙头偶尔会自己滴下水珠——滴滴答答的声音在寂静中格外刺耳。\n橱柜门半开着，里面空空如也，但你能看到架子上有人刻下了什么。\n桌上放着一把沉重的铁质钥匙，旁边有一只死去的飞蛾。',
+    exits: [
+      { label: '客厅', room: 'living_room' },
+      { label: '地下室', room: 'basement', locked: true, key: 'iron_key' }
+    ],
+    actions: [
+      { label: '拿起铁钥匙', action: 'take_iron' },
+      { label: '看橱柜留言', action: 'cabinet' }
+    ]
+  },
+  dining_room: {
+    name: '餐 厅', sub: 'DINING ROOM',
+    desc: '一张长长的红木餐桌占据了房间中央，桌面上铺着发霉的桌布。\n十二把椅子整齐地排列着——但其中一把被拉了出来，仿佛有人刚刚离开。\n餐具已经摆好，但盘子里的东西早已腐烂成黑色的污渍。\n墙上的烛台里还有半截蜡烛，旁边放着一盒火柴。\n角落里有一面落满灰尘的全身镜。',
+    exits: [
+      { label: '门厅', room: 'foyer' },
+      { label: '书房', room: 'study' }
+    ],
+    actions: [
+      { label: '点燃蜡烛', action: 'candle' },
+      { label: '照镜子', action: 'mirror' },
+      { label: '查看那把椅子', action: 'chair' }
+    ]
+  },
+  study: {
+    name: '书 房', sub: 'STUDY',
+    desc: '书房里到处都是书架，但大部分书籍都已经腐烂或散落一地。\n一张红木书桌上放着一本打开的日记，旁边是已经干涸的墨水瓶。\n日记的最后一页写着什么，字迹潦草而疯狂。\n书房窗户被厚重的窗帘遮住，一丝光线都透不进来。\n地板上有一块松动的地板，下面似乎藏着什么。',
+    exits: [
+      { label: '餐厅', room: 'dining_room' }
+    ],
+    actions: [
+      { label: '阅读日记', action: 'diary' },
+      { label: '检查地板', action: 'floorboard', requiresLight: true }
+    ]
+  },
+  hallway_up: {
+    name: '二楼走廊', sub: 'UPSTAIRS HALLWAY',
+    desc: '楼梯在你脚下吱吱作响，每走一步都像在惊扰这座房子的梦魇。\n走廊延伸向黑暗深处，两侧的房门紧闭着。\n墙上挂着更多的肖像画，这一层的画中人表情更加痛苦——有的甚至像在尖叫。\n走廊尽头的窗户映出朦胧的月光，照亮了空气中飘浮的尘埃。\n你能听到某处传来微弱的声音——是呼吸声吗？',
+    exits: [
+      { label: '下楼', room: 'foyer' },
+      { label: '主卧室', room: 'master_bedroom' },
+      { label: '浴室', room: 'bathroom' },
+      { label: '阁楼', room: 'attic', locked: true, key: 'attic_key' }
+    ],
+    actions: [
+      { label: '看窗外', action: 'window_view' },
+      { label: '屏息聆听...', action: 'listen_hall' }
+    ]
+  },
+  master_bedroom: {
+    name: '主 卧 室', sub: 'MASTER BEDROOM',
+    desc: '一张巨大的四柱床占据了房间的大部分空间，帷幔已经腐烂成碎片。\n梳妆台上摆满了古老的化妆品瓶罐，镜子上覆盖着一层灰——上面有手指划过的痕迹：离开。\n衣柜的门微微开着，里面挂着一件黑色连衣裙，轻轻摆动......尽管没有风。\n床头柜上放着一把生锈的钥匙。',
+    exits: [
+      { label: '走廊', room: 'hallway_up' }
+    ],
+    actions: [
+      { label: '拿起床头柜钥匙', action: 'take_attic' },
+      { label: '检查梳妆台', action: 'vanity' },
+      { label: '打开衣柜', action: 'wardrobe' }
+    ]
+  },
+  bathroom: {
+    name: '浴 室', sub: 'BATHROOM',
+    desc: '浴室的地砖冰冷潮湿，每走一步都能听到水渍被挤压的声音。\n浴缸里装满了暗红色的液体——你不确定那是不是水。\n洗手台上方的镜子已经碎裂，碎片映出你支离破碎的倒影。\n药柜半开着，里面有几瓶标签已经模糊的药瓶，以及一张纸条。',
+    exits: [
+      { label: '走廊', room: 'hallway_up' }
+    ],
+    actions: [
+      { label: '查看药柜', action: 'medicine' },
+      { label: '检查浴缸', action: 'bathtub' }
+    ]
+  },
+  attic: {
+    name: '阁 楼', sub: 'ATTIC',
+    desc: '阁楼的空气闷热而浑浊，头顶的房梁上挂满了蜘蛛网。\n月光透过屋顶的裂缝洒进来，形成了诡异的光影图案。\n角落里堆满了蒙尘的箱子，其中一只被打开了——装着泛黄的照片和一封未寄出的信。\n在地上，你发现了最后一片钥匙碎片，和其他碎片组合在一起......\n\n你隐约听到楼下的地下室传来沉重的叩击声。',
+    exits: [
+      { label: '走廊', room: 'hallway_up' }
+    ],
+    actions: [
+      { label: '拿起钥匙碎片', action: 'take_piece' },
+      { label: '查看照片', action: 'photos' },
+      { label: '读信', action: 'attic_letter' }
+    ]
+  },
+  basement: {
+    name: '地 下 室', sub: 'BASEMENT',
+    desc: '楼梯通向无尽的黑暗。每向下走一步，温度就下降一度。\n墙壁上凝结着水珠，你的呼吸在空气中化为白雾。\n地下室里摆放着令人不安的东西——老旧的手术器械、生锈的锁链......\n\n一个祭坛。\n\n祭坛上放着一本巨大的皮面书，书页自动翻动着。\n周围的蜡烛在无风的情况下摇曳。\n你感到一股无形的力量正在拉扯你的意识......',
+    exits: [],
+    actions: [
+      { label: '走近祭坛', action: 'approach' },
+      { label: '试图逃跑', action: 'escape' }
+    ]
+  }
+};
+
+// === Action handlers ===
+function addMsg(t) {
+  var el = document.getElementById('description');
+  el.style.opacity = '0';
+  setTimeout(function() { el.textContent = t; el.style.opacity = '1'; }, 300);
+}
+
+function doAction(n) {
+  if (state.game_over) return;
+  switch (n) {
+    case 'read_letters':
+      addMsg('你捡起一封信，勉强辨认出几行字："......仪式将于满月之夜完成......必须收集钥匙碎片......他就在下面等着......"信纸突然在你手中碎裂成粉末。');
+      state.events['letters'] = true; break;
+    case 'chandelier':
+      addMsg('你抬头凝视吊灯。水晶中折射出不属于这个世界的颜色——一瞬间，你看到吊灯的倒影中有一张不属于你的脸。你的心跳漏了一拍。');
+      state.sanity = Math.max(0, state.sanity - 2); updateHUD(); break;
+    case 'portrait':
+      if (!state.events['portrait']) {
+        addMsg('你走近肖像画。画中的男人穿着19世纪的礼服，面容严肃。当你凝视他的眼睛时——他眨了眨眼。你猛地后退，再看时画中人已恢复原状（如果这个词在这里还有意义的话）。');
+        state.events['portrait'] = true; state.sanity = Math.max(0, state.sanity - 4);
+        updateHUD(); pt(300, 'square', 0.2, 0.1);
+      } else { addMsg('你避开了与肖像画的目光接触。它还在看着你。'); } break;
+    case 'gramophone':
+      if (!state.events['gramophone']) {
+        addMsg('你放下唱针。留声机发出刺耳的杂音，然后一段扭曲的华尔兹旋律流淌出来。音乐中似乎夹杂着人声——低语、哭泣、还有笑声。唱针自动抬起，音乐戛然而止。');
+        state.events['gramophone'] = true;
+        pt(180, 'triangle', 3, 0.04);
+        setTimeout(function() { pt(220, 'triangle', 2, 0.03); }, 1000);
+      } else { addMsg('留声机不再响应。那张唱片似乎已经消失了。'); } break;
+    case 'fireplace':
+      if (!state.events['fireplace']) {
+        addMsg('你拨开灰烬，找到一个烧焦的小盒子。里面有一块布，包裹着一小片钥匙碎片。这似乎是某把大钥匙的一部分。');
+        state.key_pieces++; state.events['fireplace'] = true;
+        state.inventory.push('钥匙碎片 (' + state.key_pieces + '/4)'); updateHUD();
+      } else { addMsg('灰烬中已经什么都没有了。'); } break;
+    case 'take_iron':
+      if (state.inventory.indexOf('铁钥匙') === -1) {
+        state.inventory.push('铁钥匙');
+        addMsg('你拿起了沉重的铁钥匙。它冰冷刺骨，上面刻着奇怪的符号。');
+        updateHUD(); rooms.kitchen.exits[1].locked = false;
+      } else { addMsg('你已经拿走了铁钥匙。'); } break;
+    case 'cabinet':
+      addMsg('架子上刻着歪歪扭扭的字："他在地下室。不要下去。他在地下室。求你不要下去。他......欢迎你......"最后几个字的笔迹完全不同，变得扭曲而兴奋。');
+      state.events['cabinet'] = true; break;
+    case 'candle':
+      if (!state.candle_lit) {
+        state.candle_lit = true;
+        addMsg('你划燃火柴，点亮了蜡烛。温暖的橘色光芒驱散了部分黑暗，让你感到稍微安心了一些。在烛光下，你能看到更多细节——墙纸上隐藏的图案，地板上的暗色污渍......');
+        state.sanity = Math.min(100, state.sanity + 5); updateHUD(); pt(440, 'sine', 0.5, 0.03);
+      } else { addMsg('蜡烛已经在燃烧了。蜡油缓缓滴落，在桌面上形成了一个诡异的形状。'); } break;
+    case 'mirror':
+      if (!state.events['mirror']) {
+        state.events['mirror'] = true;
+        addMsg('你擦去镜子上的灰尘。镜中的你看起来疲惫而苍白——但当你准备移开目光时，镜中的倒影对你笑了一下。不是你。你的倒影还在微笑，然后缓缓举起手，指向了你身后的门。');
+        state.sanity = Math.max(0, state.sanity - 8); updateHUD(); flashScreen(); pt(500, 'sawtooth', 0.3, 0.12);
+      } else { addMsg('你不敢再看那面镜子了。它让你感到......被暴露。'); } break;
+    case 'chair':
+      if (!state.events['chair']) {
+        addMsg('那把被拉出的椅子上留着一件叠好的衣服——和肖像画中的一模一样。椅子上还有一小片钥匙碎片。它是温热的。');
+        state.key_pieces++; state.events['chair'] = true;
+        state.inventory.push('钥匙碎片 (' + state.key_pieces + '/4)'); updateHUD();
+      } else { addMsg('那把椅子静静地伫立着。空气中若有若无的香水味让你打了个寒颤。'); } break;
+    case 'diary':
+      if (!state.events['diary']) {
+        state.events['diary'] = true;
+        addMsg('日记的最后一页写着："我知道他要来了。脚步声越来越近。我已经把钥匙分成四片藏在了宅邸各处——他找不到的，他不能完成仪式。如果我失败了，请读到这段话的你帮我完成我未能做到的事。地下室的门需要用铁钥匙打开。阁楼的门需要床头柜里的钥匙。收集所有碎片，在地下室的祭坛前......摧毁那本书。"');
+        state.key_pieces++; state.inventory.push('钥匙碎片 (' + state.key_pieces + '/4)'); updateHUD();
+      } else { addMsg('你已经读过这篇日记了。日记主人的绝望从每一页渗透出来。'); } break;
+    case 'floorboard':
+      if (!state.candle_lit) { addMsg('太黑了，你看不清地板下面有什么。你需要光源。'); return; }
+      if (!state.events['floorboard']) {
+        state.events['floorboard'] = true; state.key_pieces++;
+        state.inventory.push('钥匙碎片 (' + state.key_pieces + '/4)');
+        addMsg('在烛光下，你撬开了松动的地板。下面藏着一个天鹅绒小袋，里面装着最后一片钥匙碎片。所有碎片在你手中自动组合——形成了一把完整的封印钥匙，散发出微弱但温暖的光芒。');
+        state.inventory.push('封印钥匙'); updateHUD();
+      } else { addMsg('地板下的暗格已经空了。'); } break;
+    case 'window_view':
+      addMsg('你透过窗户看向外面的花园。月光下，花园里站着一个人影——一动不动。当你眨眼时，人影消失了。但窗户的玻璃上留下了一个手印......在室内这一侧。');
+      state.sanity = Math.max(0, state.sanity - 2); updateHUD(); break;
+    case 'listen_hall':
+      addMsg('你屏住呼吸仔细聆听。在走廊深处，你听到了呢喃——低沉的、重复的呢喃，像在念诵什么。声音似乎来自......四面八方。同时在所有方向响起。');
+      cw(); state.sanity = Math.max(0, state.sanity - 3); updateHUD(); break;
+    case 'take_attic':
+      if (state.inventory.indexOf('阁楼钥匙') === -1) {
+        state.inventory.push('阁楼钥匙');
+        addMsg('你拿起了床头柜上的生锈钥匙。标签上写着"阁楼"——字迹和日记中的一模一样。');
+        updateHUD(); rooms.hallway_up.exits[3].locked = false;
+      } else { addMsg('你已经拿走了阁楼钥匙。'); } break;
+    case 'vanity':
+      addMsg('你看到了镜子上的"离开"字样。梳妆台上，一排化妆品瓶子诡异地排列着——最靠前一瓶口红被拧开，在桌面写了两个字："太晚了"。'); break;
+    case 'wardrobe':
+      if (!state.events['wardrobe']) {
+        state.events['wardrobe'] = true;
+        addMsg('你缓缓打开衣柜。黑色连衣裙在你眼前轻轻摆动，仿佛被无形的手抚摸。衣服内侧缝着一个口袋——里面有一张褪色的照片，照片上一家三口站在这座宅邸前。小女孩的眼睛被抠掉了。');
+        jsnd();
+      } else { addMsg('连衣裙已经停止了摆动。但它的位置......似乎和上次不一样了。'); } break;
+    case 'medicine':
+      addMsg('你拉开药柜。里面药品标签写着各种镇静剂和非处方药物。一张便条贴在柜门内侧："他们给我开了这些药，让我以为是我疯了。但我知道——我看到的东西都是真的。如果你能看到这张纸条，你也能看到它们。不要相信你的眼睛——但也不要怀疑它们。"');
+      state.events['medicine'] = true; break;
+    case 'bathtub':
+      if (!state.events['bathtub']) {
+        state.events['bathtub'] = true;
+        addMsg('你走近浴缸。暗红色的液体散发着铁锈的味道。水面上漂浮着一小片东西——你伸手去拿，但水面骤然沸腾。你缩回手，那片东西已经沉下去了。浴缸中的液体缓缓恢复平静，但颜色......更深了。');
+        state.sanity = Math.max(0, state.sanity - 5); updateHUD(); pt(60, 'sawtooth', 2, 0.05);
+      } else { addMsg('浴缸看起来平静无波。但你注意到水位似乎比上次更高了。'); } break;
+    case 'take_piece':
+      if (state.inventory.indexOf('封印钥匙') === -1 && state.key_pieces >= 4) {
+        state.inventory.push('封印钥匙');
+        addMsg('你捡起了钥匙碎片。所有碎片组合在一起——一把完整的封印钥匙。钥匙在你手中散发出微弱的光芒，温暖而坚定。');
+        rooms.kitchen.exits[1].locked = false; updateHUD();
+      } else if (state.inventory.indexOf('封印钥匙') >= 0) {
+        addMsg('封印钥匙已经在你手中了。');
+      } else { addMsg('你还缺少一些碎片。去宅邸各处寻找剩下的钥匙碎片吧。'); } break;
+    case 'photos':
+      addMsg('泛黄的照片展示了同一个家庭的场景——生日派对、圣诞晚餐、花园聚会。但每一张照片的背景中都站着一个模糊的黑影，越来越近。最后一张中，黑影已经清晰可见：一个没有面孔的人形，正对着镜头。'); break;
+    case 'attic_letter':
+      addMsg('信封上写着"给找到这里的人"。信的内容简短而绝望："我把他封印在地下室了。但封印正在减弱。如果你在阅读这封信，说明我可能已经不在了。地下室里的那本书——它是活的。它在等待。不要相信它展示给你的任何东西。用钥匙封印它，或者......跑。能跑多远跑多远。"');
+      state.events['attic_letter'] = true; break;
+    case 'approach':
+      if (state.inventory.indexOf('封印钥匙') >= 0) { state.game_over = true; goodEnding(); }
+      else {
+        addMsg('你靠近祭坛。那本书的书页翻动得更快了，你听到了千万个声音在你脑海中同时低语。你没有封印的钥匙——黑暗抓住了你。');
+        state.sanity = Math.max(0, state.sanity - 30); updateHUD();
+        if (state.sanity <= 0) { state.game_over = true; badEnding(); }
+        else {
+          notify('你勉强挣脱了那股力量......但你的心智已经开始崩溃。');
+          setTimeout(function() {
+            if (!state.game_over) {
+              state.sanity = Math.max(0, state.sanity - 20); updateHUD();
+              if (state.sanity <= 0) { state.game_over = true; madnessEnding(); }
+            }
+          }, 3000);
+        }
+      } break;
+    case 'escape':
+      addMsg('你转身想跑，但楼梯已经消失了。你面前只有一面光滑的墙壁。空气中回荡着低沉的笑声。无处可逃。');
+      hb(); state.sanity = Math.max(0, state.sanity - 8); updateHUD(); break;
+  }
+}
+
+// === Core functions ===
+function startGame() {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('game-container').style.display = 'block';
+  ia(); dr(); goToRoom('foyer');
+}
+
+function goToRoom(roomId) {
+  if (state.game_over) return;
+  var room = rooms[roomId]; if (!room) return;
+  var exit = findExitTo(roomId);
+  if (exit && exit.locked) {
+    notify('这扇门被锁住了。你需要钥匙来打开它。');
+    pt(200, 'square', 0.15, 0.06); return;
+  }
+  state.currentRoom = roomId; state.visited[roomId] = true;
+  document.getElementById('description').style.opacity = '0';
+  setTimeout(function() {
+    document.getElementById('room-title').textContent = room.name;
+    document.getElementById('room-subtitle').textContent = room.sub;
+    var desc = room.desc.replace(/\\n/g, '\n');
+    if (roomId === 'study' && !state.candle_lit) desc += '\n\n(黑暗笼罩着一切，你几乎什么都看不清。)';
+    document.getElementById('description').textContent = desc;
+    document.getElementById('description').style.opacity = '1';
+    renderExits(room); renderActions(room);
+    
+    // Room enter events
+    if (roomId === 'foyer' && !state.visited['fi']) { state.visited['fi'] = true; notify('你走进了这座被遗忘的宅邸......'); }
+    if (roomId === 'living_room' && Math.random() < 0.3 && !state.events['lc']) { state.events['lc'] = true; notify('你感到一阵刺骨的寒意......'); state.sanity = Math.max(0, state.sanity - 2); updateHUD(); }
+    if (roomId === 'kitchen' && !state.visited['ki']) { state.visited['ki'] = true; pt(90, 'sine', 1.5, 0.04); }
+    if (roomId === 'dining_room' && !state.visited['di']) { state.visited['di'] = true; cw(); }
+    if (roomId === 'hallway_up') {
+      hb();
+      if (Math.random() < 0.3) {
+        setTimeout(function() {
+          if (state.currentRoom === 'hallway_up' && !state.game_over) {
+            flashScreen(); notify('你眼角的余光捕捉到了什么......一闪而过。');
+            state.sanity = Math.max(0, state.sanity - 3); updateHUD();
+          }
+        }, 3000);
+      }
+    }
+    if (roomId === 'master_bedroom' && !state.visited['mb']) { state.visited['mb'] = true; pt(55, 'sawtooth', 2, 0.03); notify('空气中弥漫着浓烈的薰衣草味——混合着别的什么......腐烂。'); }
+    if (roomId === 'bathroom') { var de = document.getElementById('description'); de.classList.add('shake'); setTimeout(function() { de.classList.remove('shake'); }, 500); pt(120, 'square', 0.3, 0.05); }
+    if (roomId === 'attic') { jsnd(); var da = document.getElementById('description'); da.classList.add('flash'); setTimeout(function() { da.classList.remove('flash'); }, 300); notify('有什么东西在阁楼的阴影中注视着你......'); state.sanity = Math.max(0, state.sanity - 5); updateHUD(); }
+    if (roomId === 'basement') { sd(); jsnd(); setTimeout(function() { hb(); }, 500); notify('你已到达黑暗的源头......这里是一切开始和结束的地方。'); state.sanity = Math.max(0, state.sanity - 10); updateHUD(); }
+    checkSanity();
+  }, 400);
+}
+
+function findExitTo(target) {
+  var room = rooms[state.currentRoom]; if (!room) return null;
+  for (var i = 0; i < room.exits.length; i++) { if (room.exits[i].room === target) return room.exits[i]; }
+  return null;
+}
+
+function renderExits(room) {
+  var c = document.getElementById('exits'); c.innerHTML = '';
+  for (var i = 0; i < room.exits.length; i++) {
+    var e = room.exits[i], b = document.createElement('button');
+    b.className = 'exit-btn';
+    if (e.locked) { b.className += ' locked'; b.textContent = e.label + ' (上锁)'; }
+    else { b.textContent = '前往 ' + e.label; }
+    (function(r) { b.addEventListener('click', function() { goToRoom(r); }); })(e.room);
+    c.appendChild(b);
+  }
+}
+
+function renderActions(room) {
+  var c = document.getElementById('actions'); c.innerHTML = '';
+  for (var i = 0; i < (room.actions || []).length; i++) {
+    var a = room.actions[i]; if (a.requiresLight && !state.candle_lit) continue;
+    var b = document.createElement('button'); b.className = 'action-btn'; b.textContent = a.label;
+    (function(act) { b.addEventListener('click', function() { doAction(act); }); })(a.action);
+    c.appendChild(b);
+  }
+}
+
+function updateHUD() {
+  var inv = document.getElementById('inventory'); inv.innerHTML = '';
+  for (var i = 0; i < state.inventory.length; i++) {
+    var s = document.createElement('span'); s.className = 'inv-item'; s.textContent = state.inventory[i];
+    inv.appendChild(s);
+  }
+  var f = document.getElementById('sanity-fill'); f.style.width = state.sanity + '%'; f.className = '';
+  if (state.sanity <= 25) f.className = 'critical';
+  else if (state.sanity <= 50) f.className = 'low';
+}
+
+function checkSanity() { if (state.sanity <= 0 && !state.game_over) { state.game_over = true; madnessEnding(); } }
+
+function notify(t) {
+  var el = document.getElementById('notification'); el.textContent = t; el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 2800);
+}
+
+function flashScreen() {
+  var el = document.getElementById('description'); el.classList.add('flash');
+  setTimeout(function() { el.classList.remove('flash'); }, 300);
+}
+
+// === Endings ===
+function goodEnding() {
+  sd();
+  document.getElementById('ending-title').textContent = '封 印';
+  document.getElementById('ending-text').textContent = '你举起封印钥匙，古老的咒文自动从你口中流出。\n\n那本书发出刺耳的尖叫，黑色的能量从书页中喷涌而出，但钥匙的光芒更亮。\n\n随着最后一声哀嚎，书合上了，祭坛化为齑粉。\n\n宅邸中的黑暗消散了，月光透过窗户温柔地洒进来。\n\n你做到了。你完成了日记主人的遗愿。\n\n★ 幸 存 结 局 ★';
+  document.getElementById('ending-screen').classList.add('show');
+  pt(523, 'sine', 1.5, 0.06);
+  setTimeout(function() { pt(659, 'sine', 1.5, 0.06); }, 800);
+  setTimeout(function() { pt(784, 'sine', 2, 0.08); }, 1600);
+}
+
+function badEnding() {
+  sd(); jsnd();
+  document.getElementById('jumpscare').classList.add('active');
+  setTimeout(function() {
+    document.getElementById('jumpscare').classList.remove('active');
+    document.getElementById('ending-title').textContent = '沦 陷';
+    document.getElementById('ending-text').textContent = '黑暗淹没了你的意识。\n\n你成为了这座宅邸的一部分——又一个被困在永恒噩梦中的灵魂。\n\n也许下一个闯入者会在走廊中看到你的身影......\n\n☠ BAD END · 黑暗吞噬 ☠';
+    document.getElementById('ending-screen').classList.add('show');
+  }, 1500);
+}
+
+function madnessEnding() {
+  sd();
+  document.getElementById('ending-title').textContent = '疯 狂';
+  document.getElementById('ending-text').textContent = '现实在你眼前破碎。\n\n墙壁在呼吸，地板在脉动，每一个影子都在低声诉说着你的恐惧。\n\n你已分不清什么是真实的，什么是幻觉。\n\n在疯狂的边缘，你做出了最后的选择——你成为了这座宅子中最新的幽灵。\n\n☠ BAD END · 精神崩溃 ☠';
+  document.getElementById('ending-screen').classList.add('show');
+  pt(100, 'sawtooth', 3, 0.08);
+}
+
+console.log('暗影宅邸已就绪 - 点击「进入」开始探索');
+</script>
+</body>
+</html>
