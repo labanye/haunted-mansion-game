@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>????????? | SHADOW MANOR</title>
+<title>暗影宅邸：真相之谜 | SHADOW MANOR</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:#2a1515 #000}
@@ -102,7 +102,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-serif);line-h
 @keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-5px)}20%,40%,60%,80%{transform:translateX(5px)}}
 #jumpscare{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:3000;background:#000;justify-content:center;align-items:center;flex-direction:column}
 #jumpscare.active{display:flex}
-#jumpscare .js-face{font-size:8em;animation:jsPulse 0.3s ease-out;filter:invert(1) brightness(0.6) saturate(0);}
+#jumpscare .js-face{font-size:8em;animation:jsPulse 0.3s ease-out;filter:invert(1) brightness(0.6) saturate(0)}
 #jumpscare .js-text{color:#ff0000;font-size:2em;letter-spacing:6px;margin-top:20px;animation:jsPulse 0.3s ease-out}
 @keyframes jsPulse{0%{transform:scale(3);opacity:0}50%{transform:scale(0.8)}100%{transform:scale(1);opacity:1}}
 #jumpscare .js-flash{position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle,rgba(255,0,0,0.3) 0%,transparent 70%);animation:jsFlash 0.1s}
@@ -118,10 +118,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-serif);line-h
 #inv-bar .inv-slot:hover{border-color:var(--accent);background:rgba(139,0,0,0.15)}
 #inv-bar .inv-slot .inv-tip{display:none;position:absolute;bottom:55px;background:#0a0202;border:1px solid var(--accent);color:#d4a574;padding:6px 12px;font-size:0.75em;white-space:nowrap;border-radius:3px;letter-spacing:1px}
 #inv-bar .inv-slot:hover .inv-tip{display:block}
-.puzzle-pieces{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
-.puzzle-piece{width:80px;height:80px;background:var(--card);border:1px solid #2a1515;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:2em;cursor:pointer;transition:all 0.3s;position:relative}
-.puzzle-piece.collected{border-color:var(--accent);background:rgba(139,0,0,0.1)}
-.puzzle-piece.used{border-color:#448844;opacity:0.7;cursor:default}
 .story-card{background:var(--card);border:1px solid #2a1515;border-radius:6px;padding:25px;margin:20px 0;line-height:1.9}
 .story-card h3{color:#d4a574;letter-spacing:4px;margin-bottom:15px;font-size:1.2em}
 .story-card .clue-highlight{color:#cc8844;font-weight:600;padding:2px 6px;background:rgba(139,0,0,0.1);border-radius:2px}
@@ -133,11 +129,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-serif);line-h
 .ded-option:hover{border-color:var(--accent);color:#ddaa88;background:rgba(139,0,0,0.08)}
 .ded-option.correct{border-color:#448844;color:#88aa88!important;background:rgba(68,136,68,0.1)!important}
 .ded-option.wrong{border-color:#884444;color:#cc6666!important;animation:shake 0.5s}
-.site-footer{background:#020102;border-top:1px solid #1a0a0a;padding:30px;text-align:center;margin-bottom:60px}
-.footer-text{color:#443322;font-size:0.8em;letter-spacing:3px}
-.clue-image{width:100%;max-width:300px;margin:15px auto;display:block;border:1px solid #2a1515;border-radius:4px;filter:sepia(0.5) brightness(0.8)}
 #red-flash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2999;background:rgba(180,0,0,0.6);pointer-events:none;opacity:0;transition:opacity 0.15s}
 #red-flash.flash{opacity:1;transition:opacity 0s}
+.site-footer{background:#020102;border-top:1px solid #1a0a0a;padding:30px;text-align:center;margin-bottom:60px}
+.footer-text{color:#443322;font-size:0.8em;letter-spacing:3px}
 @media(max-width:768px){.nav-menu{display:none}.room-grid{grid-template-columns:1fr}.section{padding:50px 16px}.main-nav{padding:0 16px}}
 </style>
 </head>
@@ -146,41 +141,42 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-serif);line-h
 <canvas id="particles"></canvas>
 <div id="toast"></div>
 <div id="red-flash"></div>
-<div id="jumpscare"><div class="js-flash"></div><div class="js-face">???</div><div class="js-text">? ? ? ? ? ?</div></div>
+<div id="jumpscare"><div class="js-flash"></div><div class="js-face">👁️</div><div class="js-text">你 不 该 来 这 里</div></div>
 <nav class="main-nav">
-<div class="nav-logo"><span class="nav-logo-icon">???</span><span class="nav-logo-text">? ? ? ?</span></div>
-<ul class="nav-menu"><li class="nav-item"><a href="#hero" class="active">??</a></li><li class="nav-item"><a href="#rooms">??</a></li><li class="nav-item"><a href="#story">??</a></li><li class="nav-item"><a href="#journal">??</a></li><li class="nav-item"><a href="#ending">??</a></li></ul>
-<div class="nav-hud"><span class="sanity-label">??</span><div class="sanity-bar"><div class="sanity-fill" id="sanity-fill" style="width:100%"></div></div><span class="inv-count" id="inv-count">?? 0</span></div>
+<div class="nav-logo"><span class="nav-logo-icon">🏚️</span><span class="nav-logo-text">暗 影 宅 邸</span></div>
+<ul class="nav-menu"><li class="nav-item"><a href="#hero" class="active">首页</a></li><li class="nav-item"><a href="#rooms">房间</a></li><li class="nav-item"><a href="#story">故事</a></li><li class="nav-item"><a href="#journal">日志</a></li><li class="nav-item"><a href="#ending">终焉</a></li></ul>
+<div class="nav-hud"><span class="sanity-label">理智</span><div class="sanity-bar"><div class="sanity-fill" id="sanity-fill" style="width:100%"></div></div><span class="inv-count" id="inv-count">物品 0</span></div>
 </nav>
-<section id="hero"><div class="hero-bg"></div>
+<section id="hero">
+<div class="hero-bg"></div>
 <div class="hero-content">
-<h1 class="hero-title">? ? ? ?</h1>
-<p class="hero-year">?? 1897 ? ???? ? ????</p>
-<p class="hero-subtitle">SHADOW MANOR ? THE MYSTERY OF TRUTH</p>
-<p style="color:#887766;font-size:0.9em;letter-spacing:2px;margin-bottom:30px">??????????????<br>?????????????</p>
-<button class="hero-btn" id="hero-enter-btn">? ? ? ?</button>
+<h1 class="hero-title">暗 影 宅 邸</h1>
+<p class="hero-year">建于 1897 · 霍桑庄园 · 真相之谜</p>
+<p class="hero-subtitle">SHADOW MANOR · THE MYSTERY OF TRUTH</p>
+<p style="color:#887766;font-size:0.9em;letter-spacing:2px;margin-bottom:30px">每一道锁背后，都藏着一个谜题<br>每一个谜题，都指向一段真相</p>
+<button class="hero-btn" id="hero-enter-btn">踏 入 宅 邸</button>
 </div>
-<div class="hero-scroll">?</div>
+<div class="hero-scroll">▼</div>
 </section>
 <section id="rooms" class="section section-dark"><div class="container">
-<div class="section-header"><h2 class="section-title">? ? ? ?</h2><p class="section-subtitle">MANSION ROOMS</p><div class="section-divider"></div>
-<p style="color:#887766;margin-top:10px;font-size:0.85em">?? ?????????????</p></div>
+<div class="section-header"><h2 class="section-title">宅 邸 房 间</h2><p class="section-subtitle">MANSION ROOMS</p><div class="section-divider"></div>
+<p style="color:#887766;margin-top:10px;font-size:0.85em">🔒 部分房间需要通过解谜来解锁</p></div>
 <div class="room-grid" id="room-grid"></div></div></section>
 <section id="story" class="section section-darker"><div class="container">
-<div class="section-header"><h2 class="section-title">? ? ? ?</h2><p class="section-subtitle">INVESTIGATION NOTES</p><div class="section-divider"></div></div>
+<div class="section-header"><h2 class="section-title">探 索 笔 记</h2><p class="section-subtitle">INVESTIGATION NOTES</p><div class="section-divider"></div></div>
 <div id="story-content" style="max-width:700px;margin:0 auto"></div></div></section>
 <section id="journal" class="section section-dark"><div class="container">
-<div class="section-header"><h2 class="section-title">? ? ? ?</h2><p class="section-subtitle">EXPLORATION JOURNAL</p><div class="section-divider"></div></div>
+<div class="section-header"><h2 class="section-title">探 索 日 志</h2><p class="section-subtitle">EXPLORATION JOURNAL</p><div class="section-divider"></div></div>
 <div id="journal-entries" style="max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:12px">
-<div class="journal-entry" style="text-align:center;font-style:italic;color:#443322;border-left-color:#1a1512"><div class="j-title">????</div><div class="j-date">??????????????...</div></div>
+<div class="journal-entry" style="text-align:center;font-style:italic;color:#443322;border-left-color:#1a1512"><div class="j-title">空白日志</div><div class="j-date">探索宅邸并解开谜题以发现线索...</div></div>
 </div></div></section>
 <section id="ending" class="section section-darker"><div class="container">
-<div class="section-header"><h2 class="section-title">? ?</h2><p class="section-subtitle">THE TRUTH AWAITS</p><div class="section-divider"></div></div>
+<div class="section-header"><h2 class="section-title">终 焉</h2><p class="section-subtitle">THE TRUTH AWAITS</p><div class="section-divider"></div></div>
 <div id="ending-content" style="text-align:center;max-width:600px;margin:0 auto;font-size:0.95em;color:#665544;line-height:2">
-??????????????<br>???????????<br>????????????????...</div></div></section>
-<footer class="site-footer"><p class="footer-text">SHADOW MANOR ? HAWTHORNE ESTATE ? 1897 ? THE MYSTERY OF TRUTH</p></footer>
+解开所有谜题，收集钥匙碎片。<br>前往地下室，直面黑暗。<br>你的每一个选择，都通向不同的命运...</div></div></section>
+<footer class="site-footer"><p class="footer-text">SHADOW MANOR · HAWTHORNE ESTATE · 1897 · THE MYSTERY OF TRUTH</p></footer>
 <div id="room-modal"><div class="modal-content">
-<button class="modal-close" onclick="closeModal()">?</button>
+<button class="modal-close" onclick="closeModal()">✕</button>
 <div id="modal-image"></div>
 <div class="modal-title" id="modal-title"></div>
 <div class="modal-subtitle" id="modal-subtitle"></div>
@@ -189,19 +185,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-serif);line-h
 <div class="modal-actions" id="modal-actions"></div>
 </div></div>
 <div id="pw-modal"><div class="pw-content">
-<div class="pw-title" id="pw-title">?? ????</div>
+<div class="pw-title" id="pw-title">🔐 输入密码</div>
 <div class="pw-subtitle" id="pw-subtitle"></div>
 <div class="pw-hint" id="pw-hint"></div>
-<input type="text" class="pw-input" id="pw-input" placeholder="????..." autocomplete="off">
+<input type="text" class="pw-input" id="pw-input" placeholder="输入密码..." autocomplete="off">
 <div class="pw-error" id="pw-error"></div>
 <div class="pw-buttons">
-<button class="pw-submit" id="pw-submit">? ?</button>
-<button class="pw-cancel" onclick="closePW()">? ?</button>
+<button class="pw-submit" id="pw-submit">验 证</button>
+<button class="pw-cancel" onclick="closePW()">取 消</button>
 </div></div></div>
-<div id="inv-bar">
-<span class="inv-label">?? ???</span>
-<div id="inv-slots"></div>
-</div>
+<div id="inv-bar"><span class="inv-label">🎒 物品栏</span><div id="inv-slots"></div></div>
 <script>
 ﻿(function(){
 "use strict";
