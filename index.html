@@ -219,6 +219,7 @@ function toast(m) {
 
 function closePrologue() {
     document.getElementById("prologue-overlay").style.display = "none";
+    ia();pc();startBGM();
     toast("序章已阅。你站在庄园大门前。");
 }
 
@@ -420,7 +421,7 @@ function uInv() {
 }
 
 rRooms(); uInv();
-document.addEventListener("click",function(){ia();},{once:true});
+document.addEventListener("click",function(){ia();if(!bgmPlaying)startBGM();},{once:true});
 </script>
 </body>
 </html>
