@@ -294,6 +294,10 @@ function tryUnlock(rm) {
         toast("🔒 " + (rm.unlock_msg || "你需要先找到进入这个房间的方法"));
         return;
     }
+    if (rm.unlock_msg && !G.unlocked[rm.id]) {
+        toast("🔒 " + rm.unlock_msg);
+        return;
+    }
     G.unlocked[rm.id] = true;
     G.done[rm.id + "_ul"] = true;
     rRooms();
